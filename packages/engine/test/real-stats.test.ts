@@ -65,8 +65,8 @@ describe('stats réelles (format Lolalytics)', () => {
   it("avec l'adversaire de lane connu, le counter utilise le matchup lissé", () => {
     const e = mid({ ...base, enemy: { ...base.enemy, Mid: 'Zed' } });
     expect(e.matchup).toEqual({ opponent: 'Zed', winRate: 56, games: 2000 });
-    // (56 × 2000 + 52 × 200) / 2200 = 55,64 %
-    expect(e.counter).toBe(wrScore((56 * 2000 + 52 * 200) / 2200));
+    // (56 × 2000 + 52 × 1000) / 3000 = 54,67 %
+    expect(e.counter).toBe(wrScore((56 * 2000 + 52 * 1000) / 3000));
   });
 
   it('lisse le win rate vers 50 % et ne classe sans pool que les rôles principaux', () => {

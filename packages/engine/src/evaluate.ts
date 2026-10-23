@@ -5,14 +5,16 @@ import type { CompMember, Entry, Evaluation, Phase, Reason } from './types';
 
 export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
 export const LOW_SAMPLE_GAMES = 500;
-/** Parties « fictives » au win rate du champion, pour lisser un matchup ou un duo peu joué. */
-const PRIOR_GAMES = 200;
+/** Parties « fictives » à écart nul, pour lisser un duo peu joué. */
+const DUO_PRIOR_GAMES = 200;
+/** Parties « fictives » au win rate lissé du champion, pour lisser un matchup peu joué. */
+const MATCHUP_PRIOR_GAMES = 1000;
 /** Points de synergie par point d'écart moyen de win rate en duo. */
 const DUO_WEIGHT = 4;
 /** Écart de duo (lissé) à partir duquel une raison est affichée. */
 const DUO_REASON_MIN = 1;
 
-const smooth = (value: number, games: number, prior: number) => (value * games + prior * PRIOR_GAMES) / (games + PRIOR_GAMES);
+const smooth = (value: number, games: number, prior: number, priorGames: number) => (value * games + prior * priorGames) / (games + priorGames);
 
 /**
  * Évalue un candidat face au contexte allié `ctx` (les autres picks) et aux ennemis connus.
@@ -52,7 +54,7 @@ export const evaluate = (
     const duos: { ally: string; delta: number }[] = [];
     for (const x of ctx) {
       const d = c.duos[x.role]?.[x.name];
-      if (d) duos.push({ ally: x.name, delta: smooth(d[0], d[1], 0) });
+      if (d) duos.push({ ally: x.name, delta: smooth(d[0], d[1], 0, DUO_PRIOR_GAMES) });
     }
     if (duos.length) {
       syn += Math.round((DUO_WEIGHT * duos.reduce((s, d) => s + d.delta, 0)) / duos.length);
@@ -87,7 +89,7 @@ export const evaluate = (
   const baseWr = c.priorGames > 0 ? (c.gameWinRate * c.games + 50 * c.priorGames) / (c.games + c.priorGames) : c.gameWinRate;
   const m = laneOpponent ? c.matchups?.[laneOpponent] : undefined;
   const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1] } : null;
-  const gameWr = m ? smooth(m[0], m[1], baseWr) : baseWr;
+  const gameWr = m ? smooth(m[0], m[1], baseWr, MATCHUP_PRIOR_GAMES) : baseWr;
   // Sans win rate de lane (Lolalytics), le counter repose sur le win rate de partie seul.
   const ctr = c.laneWinRate == null ? wrScore(gameWr) : Math.round(wrScore(c.laneWinRate) * 0.4 + wrScore(gameWr) * 0.6);
   const total = c.mastery == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + c.mastery * 0.25);
