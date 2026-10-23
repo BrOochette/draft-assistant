@@ -71,6 +71,22 @@ describe('écran Draft', () => {
 });
 
 describe('écran Joueurs', () => {
+  it('supprime un joueur après confirmation', async () => {
+    const user = userEvent.setup();
+    location.hash = '#/joueurs';
+    render(<App initialData={sampleAppData()} />);
+    await user.click(await screen.findByRole('button', { name: /^Lou/ }));
+    await user.click(screen.getByRole('button', { name: 'Supprimer le joueur' }));
+    await user.click(screen.getByRole('button', { name: 'Annuler' }));
+    expect(screen.getByRole('button', { name: /^Lou/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Supprimer le joueur' }));
+    expect(screen.getByRole('group', { name: 'Confirmer la suppression de Lou' })).toHaveTextContent('Supprimer Lou et ses pools ?');
+    await user.click(screen.getByRole('button', { name: 'Oui, supprimer' }));
+    expect(screen.queryByRole('button', { name: /^Lou/ })).not.toBeInTheDocument();
+    await waitFor(async () => expect(Object.keys(await loadPools())).toEqual(['Alex', 'Sam', 'Noa', 'Max']));
+  });
+
   it('enregistre une modification de pool dans IndexedDB', async () => {
     const user = userEvent.setup();
     location.hash = '#/joueurs';

@@ -24,7 +24,19 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
   const [role, setRole] = useState<Role>('Top');
   const [newChamp, setNewChamp] = useState('');
   const [newPlayer, setNewPlayer] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const player = pools[sel] ? sel : names[0] ?? '';
+
+  const select = (p: string) => {
+    setSel(p);
+    setConfirmDelete(false);
+  };
+
+  const deletePlayer = () => {
+    const { [player]: _, ...rest } = pools;
+    onChange(rest);
+    select(Object.keys(rest)[0] ?? '');
+  };
   const pool = pools[player]?.[role] ?? [];
 
   const setPool = (fn: (list: PoolEntry[]) => PoolEntry[]) =>
@@ -47,7 +59,7 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
     const name = newPlayer.trim();
     if (!name || pools[name]) return;
     onChange({ ...pools, [name]: {} });
-    setSel(name);
+    select(name);
     setNewPlayer('');
   };
 
@@ -71,7 +83,7 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
                 const roles = ROLES.filter((r) => (pools[p]?.[r]?.length ?? 0) > 0);
                 return (
                   <li key={p}>
-                    <button type="button" className={'list-btn' + (p === player ? ' is-on' : '')} aria-pressed={p === player} onClick={() => setSel(p)}>
+                    <button type="button" className={'list-btn' + (p === player ? ' is-on' : '')} aria-pressed={p === player} onClick={() => select(p)}>
                       <span className="strong">{p}</span>
                       <span className="small muted">{roles.length ? 'Pools : ' + roles.join(', ') : 'Aucun pool'}</span>
                     </button>
@@ -79,6 +91,7 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
                 );
               })}
             </ul>
+            {names.length === 0 && <span className="small muted">Aucun joueur.</span>}
           </section>
           <section className="card col gap-10">
             <h2 className="h3">Créer un joueur</h2>
@@ -88,8 +101,22 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
           </section>
         </aside>
 
+        {player && (
         <section className="col gap-16 players-center">
-          <h2 className="h2">Pools de {player}</h2>
+          <div className="row-between wrap">
+            <h2 className="h2">Pools de {player}</h2>
+            {confirmDelete ? (
+              <div role="group" aria-label={'Confirmer la suppression de ' + player} className="row-gap wrap">
+                <span className="small warn-text strong">Supprimer {player} et ses pools ?</span>
+                <button type="button" className="btn btn-danger" onClick={deletePlayer}>Oui, supprimer</button>
+                <button type="button" className="btn" onClick={() => setConfirmDelete(false)}>Annuler</button>
+              </div>
+            ) : (
+              <button type="button" className="btn neg-text" onClick={() => setConfirmDelete(true)}>
+                <Icon name="close" size={14} />Supprimer le joueur
+              </button>
+            )}
+          </div>
           <div role="group" aria-label="Rôle" className="row-gap wrap">
             {ROLES.map((r) => {
               const empty = !(pools[player]?.[r]?.length);
@@ -139,7 +166,9 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
             })}
           </ul>
         </section>
+        )}
 
+        {player && (
         <aside className="col gap-16 players-right">
           <section className="card col gap-10">
             <h2 className="h3">Ajouter un champion</h2>
@@ -171,6 +200,7 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
             </dl>
           </section>
         </aside>
+        )}
       </div>
     </main>
   );
