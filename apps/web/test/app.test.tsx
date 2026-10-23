@@ -55,6 +55,11 @@ describe('écran Draft', () => {
 
     await user.click(opener);
     expect(screen.getByRole('button', { name: 'Jhin, indisponible : Banni' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Saisir Lux en ADC' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Tous' }));
+    expect(screen.getByRole('button', { name: 'Saisir Lux en ADC' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ahri, indisponible : Déjà pris' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'ADC' }));
     await user.click(screen.getByRole('button', { name: 'Saisir Jinx en ADC' }));
     expect(screen.getByRole('status')).toHaveTextContent('Pick ennemi en ADC : Jinx');
   });

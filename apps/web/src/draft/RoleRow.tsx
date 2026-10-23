@@ -3,7 +3,7 @@ import { availability, type DraftAction, type Evaluation, type RoleResult, type 
 import { blockedLabel, fmtDelta, fmtInt, fmtPct, formatReason, POOL_TAG, recNoteText } from '@draft/i18n-fr';
 import type { DraftState, Note } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, ScalingBars, scoreStats, useData, WinRateChips } from '../ui';
-import { ChampionPicker } from './ChampionPicker';
+import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
 
 interface Props {
   row: RoleResult;
@@ -120,6 +120,7 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
   const [expanded, setExpanded] = useState(false);
   const [picker, setPicker] = useState<Side | null>(null);
   const [query, setQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<RoleFilterValue>(role);
   const ally = row.allyPick;
   const enemy = row.enemyPick;
   const active = !ally;
@@ -127,21 +128,21 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
   const openPicker = (side: Side) => {
     setPicker(picker === side ? null : side);
     setQuery('');
+    setRoleFilter(role);
   };
 
   const items = useMemo(() => {
     if (!picker) return [];
     const avail = availability(draft);
-    const q = query.trim().toLowerCase();
     const current = picker === 'ally' ? ally : enemy;
-    return [...engine.catalog.values()]
-      .filter((c) => c.roles.includes(role) && (!q || c.name.toLowerCase().includes(q)))
-      .map((c) => {
-        const why = avail.blocked(c.name, picker, role);
-        const isCurrent = c.name === current;
-        return { name: c.name, note: isCurrent ? 'Actuel' : why ? blockedLabel(why, picker) : '', disabled: !!why, current: isCurrent };
-      });
-  }, [picker, query, draft, engine, role, ally, enemy]);
+    return filterChampions(engine.catalog, roleFilter, query).map((c) => {
+      const why = avail.blocked(c.name, picker, role);
+      const isCurrent = c.name === current;
+      // Hors rôle : on affiche le rôle principal du champion.
+      const note = isCurrent ? 'Actuel' : why ? blockedLabel(why, picker) : c.roles.includes(role) ? '' : c.roles[0]!;
+      return { name: c.name, note, disabled: !!why, current: isCurrent };
+    });
+  }, [picker, query, roleFilter, draft, engine, role, ally, enemy]);
 
   const lock = (champion: string) => {
     dispatch({ type: 'lock', role, champion });
@@ -287,6 +288,7 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
             }
           }}
           onClose={() => setPicker(null)}
+          filters={<RoleFilter value={roleFilter} onChange={setRoleFilter} />}
           actions={picker === 'enemy' && enemy ? (
             <button type="button" className="btn neg-text" onClick={() => { dispatch({ type: 'clearEnemy', role }); setPicker(null); }}>Effacer</button>
           ) : null}

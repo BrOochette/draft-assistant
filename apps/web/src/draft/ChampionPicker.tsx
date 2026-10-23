@@ -1,6 +1,26 @@
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { ROLES, type Champion, type Role } from '@draft/schemas';
 import { Icon, Portrait } from '../ui';
+
+export type RoleFilterValue = Role | 'Tous';
+
+/** Champions du catalogue pour un filtre de rôle (« Tous » : ordre alphabétique) et une recherche. */
+export const filterChampions = (catalog: ReadonlyMap<string, Champion>, filter: RoleFilterValue, query: string): Champion[] => {
+  const q = query.trim().toLowerCase();
+  const all = [...catalog.values()].filter((c) => !q || c.name.toLowerCase().includes(q));
+  return filter === 'Tous'
+    ? all.sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+    : all.filter((c) => c.roles.includes(filter));
+};
+
+export const RoleFilter = ({ value, onChange }: { value: RoleFilterValue; onChange: (v: RoleFilterValue) => void }) => (
+  <div role="group" aria-label="Filtrer par rôle" className="row-gap wrap">
+    {(['Tous', ...ROLES] as const).map((r) => (
+      <button key={r} type="button" className={'btn btn-toggle' + (value === r ? ' is-on' : '')} aria-pressed={value === r} onClick={() => onChange(r)}>{r}</button>
+    ))}
+  </div>
+);
 
 export interface PickerItem {
   name: string;

@@ -1,9 +1,9 @@
 import { useMemo, useState, type Dispatch } from 'react';
 import { availability, MAX_BANS, type DraftAction, type DraftResult, type Side } from '@draft/engine';
 import { BAN_BLOCKED_LABEL } from '@draft/i18n-fr';
-import { ROLES, type DraftState, type Role } from '@draft/schemas';
+import type { DraftState } from '@draft/schemas';
 import { Icon, Portrait, useData } from '../ui';
-import { ChampionPicker } from './ChampionPicker';
+import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
 
 interface Props {
   draft: DraftState;
@@ -16,7 +16,7 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
   const [open, setOpen] = useState(false);
   const [picker, setPicker] = useState<Side | null>(null);
   const [query, setQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<Role | 'Tous'>('Tous');
+  const [roleFilter, setRoleFilter] = useState<RoleFilterValue>('Tous');
 
   const openPicker = (side: Side) => {
     setPicker(side);
@@ -28,17 +28,10 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
     if (!picker) return [];
     const avail = availability(draft);
     const full = (picker === 'ally' ? draft.allyBans : draft.enemyBans).length >= MAX_BANS;
-    const q = query.trim().toLowerCase();
-    const all = [...engine.catalog.values()];
-    const list = roleFilter === 'Tous'
-      ? all.map((c) => c.name).sort((a, b) => a.localeCompare(b, 'fr'))
-      : all.filter((c) => c.roles.includes(roleFilter)).map((c) => c.name);
-    return list
-      .filter((n) => !q || n.toLowerCase().includes(q))
-      .map((n) => {
-        const why = avail.banBlocked(n);
-        return { name: n, note: why ? BAN_BLOCKED_LABEL[why] : engine.catalog.get(n)!.roles[0]!, disabled: !!why || full };
-      });
+    return filterChampions(engine.catalog, roleFilter, query).map((c) => {
+      const why = avail.banBlocked(c.name);
+      return { name: c.name, note: why ? BAN_BLOCKED_LABEL[why] : c.roles[0]!, disabled: !!why || full };
+    });
   }, [picker, draft, query, roleFilter, engine]);
 
   const slots = (side: Side) => {
@@ -106,13 +99,7 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
             setPicker(null);
           }}
           onClose={() => setPicker(null)}
-          filters={
-            <div role="group" aria-label="Filtrer par rôle" className="row-gap wrap">
-              {(['Tous', ...ROLES] as const).map((r) => (
-                <button key={r} type="button" className={'btn btn-toggle' + (roleFilter === r ? ' is-on' : '')} aria-pressed={roleFilter === r} onClick={() => setRoleFilter(r)}>{r}</button>
-              ))}
-            </div>
-          }
+          filters={<RoleFilter value={roleFilter} onChange={setRoleFilter} />}
           footer={sideFull ? <span className="small warn-text">Les 5 bans de ce côté sont déjà posés.</span> : null}
         />
       )}
