@@ -23,6 +23,8 @@ export interface EngineData {
   catalog: ReadonlyMap<string, Champion>;
   matchupNotes: MatchupNotes;
   banSuggestions: readonly BanSuggestion[];
+  /** Lissage du win rate des candidats vers 50 % (parties fictives), 0 sans lissage. */
+  winRatePriorGames: number;
 }
 
 const FALLBACK = { games: 3000, synergyBase: 55, laneWinRate: 50, gameWinRate: 50 };
@@ -66,6 +68,7 @@ export const createEngineData = (snapshot: StatsSnapshot): EngineData => {
     stats: new SnapshotStatsProvider(snapshot.candidates, catalog),
     catalog,
     matchupNotes: snapshot.matchupNotes,
+    winRatePriorGames: snapshot.winRatePriorGames ?? 0,
     banSuggestions: snapshot.banSuggestions
   };
 };

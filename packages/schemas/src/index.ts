@@ -73,7 +73,9 @@ export const CandidateSchema = z.object({
   /** Win rate de partie de ce champion contre chaque adversaire de la même lane. */
   matchups: z.record(z.string(), rateSample).optional(),
   /** Écart de win rate en duo avec chaque allié, par rôle de l'allié. */
-  duos: z.record(RoleSchema, z.record(z.string(), deltaSample)).optional()
+  duos: z.record(RoleSchema, z.record(z.string(), deltaSample)).optional(),
+  /** Part des parties du champion jouées sur ce rôle, en %. Absente : rôle principal supposé. */
+  laneShare: z.number().min(0).max(100).optional()
 });
 export type Candidate = z.infer<typeof CandidateSchema>;
 
@@ -146,7 +148,9 @@ export const StatsSnapshotSchema = z.object({
   champions: z.array(ChampionSchema),
   candidates: CandidatesSchema,
   matchupNotes: MatchupNotesSchema,
-  banSuggestions: z.array(BanSuggestionSchema)
+  banSuggestions: z.array(BanSuggestionSchema),
+  /** Parties fictives à 50 % ajoutées au win rate de chaque candidat pour le counter (0 ou absent : pas de lissage). */
+  winRatePriorGames: z.number().int().nonnegative().optional()
 });
 export type StatsSnapshot = z.infer<typeof StatsSnapshotSchema>;
 

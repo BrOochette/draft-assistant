@@ -19,6 +19,8 @@ const CANDIDATE_SHARE = 5;
 const CANDIDATE_GAMES = 300;
 /** Base de synergie identique pour tous : les duos mesurés s'y ajoutent dans le moteur. */
 const SYNERGY_BASE = 55;
+/** Lissage du win rate vers 50 % dans le counter : un pick peu joué ne sature plus le score. */
+const WIN_RATE_PRIOR_GAMES = 3000;
 const PRIOR_GAMES = 200;
 /** Suggestions de bans : par rôle, champions dont c'est la lane principale (au moins BAN_LANE_SHARE % de leurs parties) et d'au moins BAN_GAMES parties, les BAN_PER_ROLE meilleurs win rates. */
 const BAN_GAMES = 1000;
@@ -112,7 +114,8 @@ export const assembleLolalyticsSnapshot = (
         damage,
         notes: [],
         matchups: s.matchups,
-        duos: s.duos
+        duos: s.duos,
+        laneShare: s.laneShare
       });
     }
   }
@@ -136,6 +139,7 @@ export const assembleLolalyticsSnapshot = (
     champions,
     candidates,
     matchupNotes: { matchups: {}, fixedInfo: {} },
-    banSuggestions: bans
+    banSuggestions: bans,
+    winRatePriorGames: WIN_RATE_PRIOR_GAMES
   });
 };

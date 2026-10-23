@@ -69,6 +69,25 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(e.counter).toBe(wrScore((56 * 2000 + 52 * 200) / 2200));
   });
 
+  it('lisse le win rate vers 50 % et ne classe sans pool que les rôles principaux', () => {
+    const top = (name: string, games: number, gameWinRate: number, laneShare: number) => cand(name, { games, gameWinRate, laneShare });
+    const d = createEngineData({
+      ...snapshot,
+      winRatePriorGames: 3000,
+      champions: [...snapshot.champions, champ('Malphite', ['Top'], 'TANK'), champ("Rek'Sai", ['Jungle'], 'AD'), champ('Zac', ['Jungle'], 'TANK')],
+      candidates: { Top: [top('Malphite', 34916, 53.13, 78.5), top("Rek'Sai", 517, 55.51, 6.9), top('Zac', 2506, 53.71, 25)] }
+    });
+    const r = computeDraft(base, {}, d).roles[0]!;
+    // Rek'Sai joue Top dans 6,9 % de ses parties : consultable, mais pas classé.
+    expect(r.recommendations.map((e) => e.champion)).toEqual(['Malphite', 'Zac']);
+    expect(r.secondaryRole.map((e) => e.champion)).toEqual(["Rek'Sai"]);
+    // 34 916 parties à 53,13 % pèsent plus que 2 506 parties à 53,71 % une fois lissées.
+    const malphite = r.recommendations[0]!;
+    expect(malphite.counter).toBe(wrScore((53.13 * 34916 + 50 * 3000) / (34916 + 3000)));
+    expect(r.recommendations[1]!.counter).toBe(wrScore((53.71 * 2506 + 50 * 3000) / (2506 + 3000)));
+    expect(malphite.gameWinRate).toBe(53.13);
+  });
+
   it('ajoute la synergie de duo avec un allié verrouillé', () => {
     const without = mid(base);
     const withSej = mid({ ...base, ally: { ...base.ally, Jungle: 'Sejuani' } });

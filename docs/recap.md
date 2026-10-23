@@ -155,6 +155,8 @@ Ces formules sont celles de la maquette, **Proposé** comme point de départ. Le
 - `wrScore(wr) = borne(50 + (wr - 50) × 10)`
 - `counter = 0,4 × wrScore(lane) + 0,6 × wrScore(partie)`
 - **Décidé** (23/10/2026), avec les stats Lolalytics : pas de win rate de lane. Le counter vaut `wrScore(partie)`, où « partie » est le win rate du champion contre l'adversaire de sa lane quand celui-ci est connu (lissé vers le win rate du champion avec 200 parties fictives), sinon son win rate sur la lane. L'interface affiche « Lane — » et un chip « vs Adversaire ».
+- **Décidé** (23/10/2026) : le win rate de partie d'un candidat est lissé vers 50 % avec 3 000 parties fictives, `(win rate × parties + 50 × 3 000) / (parties + 3 000)`, avant le calcul du counter. Le matchup est ensuite lissé vers cette valeur. Sans ce lissage, des picks peu joués à fort win rate (Rek'Sai Top : 517 parties à 55,5 %) saturaient le counter. Le chip « Partie » affiche toujours le win rate brut.
+- **Décidé** (23/10/2026) : sans pool (ou sans joueur), seuls les champions qui jouent ce rôle dans au moins 20 % de leurs parties sont classés. Les autres apparaissent dans « Plus de détails », section « Rôle secondaire, non classés ». Avec un pool, ses champions restent classés quel que soit leur rôle principal.
 
 **Score total** :
 - avec pool : `0,40 × synergie + 0,35 × counter + 0,25 × maîtrise`, où la maîtrise vaut note × 10 et un hors pool compte 0 ;
@@ -294,4 +296,4 @@ Principes :
 ## 9. Questions ouvertes
 
 - Formule réelle des suggestions de bans (une formule provisoire est en place, section 5).
-- Coefficients à ajuster sur de vraies drafts : poids des duos dans la synergie, seuils de candidat (5 % de la lane, 300 parties).
+- Coefficients à ajuster sur de vraies drafts : poids des duos dans la synergie, seuils de candidat (5 % de la lane, 300 parties), lissage du win rate (3 000 parties), seuil de rôle principal (20 %).

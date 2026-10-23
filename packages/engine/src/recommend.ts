@@ -2,7 +2,7 @@ import { ROLES, type DraftState, type Pools, type Role } from '@draft/schemas';
 import { allyContext, entryFor, rowMeta, type Availability } from './context';
 import { evaluate } from './evaluate';
 import type { EngineData } from './stats-provider';
-import type { CompMember, RoleResult } from './types';
+import type { CompMember, Evaluation, RoleResult } from './types';
 
 export const recommendRole = (
   role: Role,
@@ -23,7 +23,7 @@ export const recommendRole = (
     const ev = evaluate(entryFor(data, meta, role, allyPick), ctx, enemies, meta.player, enemyPick);
     const matchupNotes = enemyPick ? data.matchupNotes.matchups[allyPick + '|' + enemyPick] ?? null : null;
     const info = data.matchupNotes.fixedInfo[allyPick] ?? null;
-    return { ...base, locked: { ...ev, matchupNotes, info }, recommendations: [], inPool: [], outOfPool: [], note: null };
+    return { ...base, locked: { ...ev, matchupNotes, info }, recommendations: [], inPool: [], outOfPool: [], secondaryRole: [], note: null };
   }
 
   const evals = data.stats
@@ -32,15 +32,29 @@ export const recommendRole = (
     .map((c) => evaluate(entryFor(data, meta, role, c.name), ctx, enemies, meta.player, enemyPick));
   // Array.prototype.sort est stable : à égalité, l'ordre de la source est conservé.
   evals.sort((a, b) => b.total - a.total);
-  const inPool = evals.filter((e) => e.pool !== 'out');
+
+  if (!meta.hasPool) {
+    // Sans pool, seuls les champions dont c'est un rôle principal sont classés ; les autres restent consultables.
+    const main = evals.filter(isMainRole);
+    const secondaryRole = evals.filter((e) => !isMainRole(e));
+    const shown = main.length ? main : secondaryRole;
+    return { ...base, locked: null, recommendations: shown.slice(0, 3), inPool: main, outOfPool: [], secondaryRole, note: 'NO_POOL' };
+  }
+  const inPool = evals.filter((e) => e.pool === 'in');
   const outOfPool = evals.filter((e) => e.pool === 'out');
-  const shown = inPool.length ? inPool : outOfPool;
+  // Pool épuisé : propositions hors pool, en priorité parmi les champions dont c'est un rôle principal.
+  const fallback = outOfPool.filter(isMainRole).length ? outOfPool.filter(isMainRole) : outOfPool;
   return {
     ...base,
     locked: null,
-    recommendations: shown.slice(0, 3),
+    recommendations: (inPool.length ? inPool : fallback).slice(0, 3),
     inPool,
     outOfPool,
-    note: inPool.length ? (meta.hasPool ? 'POOL' : 'NO_POOL') : 'POOL_EXHAUSTED'
+    secondaryRole: [],
+    note: inPool.length ? 'POOL' : 'POOL_EXHAUSTED'
   };
 };
+
+/** Part minimale des parties d'un champion sur un rôle pour qu'il y soit classé sans pool (en %). */
+export const MAIN_ROLE_SHARE = 20;
+const isMainRole = (e: Evaluation) => e.laneShare == null || e.laneShare >= MAIN_ROLE_SHARE;

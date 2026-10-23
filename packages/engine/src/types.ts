@@ -22,6 +22,10 @@ export interface Entry {
   matchups?: Record<string, [number, number]>;
   /** Rôle de l'allié, puis allié vers [écart de win rate en duo, parties]. */
   duos?: Partial<Record<Role, Record<string, [number, number]>>>;
+  /** Part des parties du champion jouées sur ce rôle (%), null si inconnue. */
+  laneShare: number | null;
+  /** Parties fictives à 50 % pour lisser le win rate dans le counter (0 : pas de lissage). */
+  priorGames: number;
 }
 
 /** Win rate mesuré contre l'adversaire de lane connu. */
@@ -74,6 +78,8 @@ export interface Evaluation {
   gameWinRate: number;
   /** Matchup contre l'adversaire de lane, s'il est connu et mesuré. */
   matchup: MatchupStat | null;
+  /** Part des parties du champion jouées sur ce rôle (%), null si inconnue. */
+  laneShare: number | null;
   scaling: Scaling;
 }
 
@@ -109,9 +115,11 @@ export interface RoleResult {
   locked: LockedResult | null;
   /** Les 3 meilleurs : du pool, ou hors pool si aucun champion du pool n'est disponible. */
   recommendations: Evaluation[];
-  /** Liste complète : pool (ou tous les champions sans pool), puis hors pool. */
+  /** Liste complète : pool (ou, sans pool, les champions dont c'est un rôle principal), puis hors pool. */
   inPool: Evaluation[];
   outOfPool: Evaluation[];
+  /** Sans pool : champions pour qui ce rôle est secondaire (moins de MAIN_ROLE_SHARE % de leurs parties), non classés. */
+  secondaryRole: Evaluation[];
   note: RecNote | null;
 }
 

@@ -34,6 +34,7 @@ export { compScore, verdictOf } from './composition';
 export { evaluate, LOW_SAMPLE_GAMES } from './evaluate';
 export { avgScal, clamp, wrScore } from './math';
 export { MAX_BANS } from './bans';
+export { MAIN_ROLE_SHARE } from './recommend';
 export { createSession, draftReducer, type ActionMessage, type DraftAction, type DraftSession, type Side } from './reducer';
 export { createEngineData, SnapshotStatsProvider, type EngineData, type StatsProvider } from './stats-provider';
 export * from './types';

@@ -102,7 +102,7 @@ export const CompoPanel = ({ result }: { result: DraftResult }) => {
               <dd>
                 {snapshot.source === 'sample'
                   ? `Patch ${snapshot.patch}, rang ${snapshot.rank}. Valeurs d'exemple.`
-                  : `Lolalytics, patch ${snapshot.patch}, rang ${snapshot.rank}, toutes régions. Win rate de lane indisponible : le counter repose sur le win rate de partie, contre l'adversaire de lane quand il est connu. La synergie inclut les win rates de duo avec les alliés verrouillés.`}
+                  : `Lolalytics, patch ${snapshot.patch}, rang ${snapshot.rank}, toutes régions. Win rate de lane indisponible : le counter repose sur le win rate de partie, contre l'adversaire de lane quand il est connu, lissé vers 50 % (3 000 parties fictives) pour ne pas surévaluer les picks peu joués. Sans pool, seuls les champions qui jouent ce rôle dans au moins 20 % de leurs parties sont classés. La synergie inclut les win rates de duo avec les alliés verrouillés.`}
               </dd>
             </div>
           </dl>

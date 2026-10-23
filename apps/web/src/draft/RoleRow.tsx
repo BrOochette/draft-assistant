@@ -1,5 +1,5 @@
 import { useMemo, useState, type Dispatch } from 'react';
-import { availability, type DraftAction, type Evaluation, type RoleResult, type Side } from '@draft/engine';
+import { availability, MAIN_ROLE_SHARE, type DraftAction, type Evaluation, type RoleResult, type Side } from '@draft/engine';
 import { blockedLabel, fmtDelta, fmtInt, formatReason, POOL_TAG, recNoteText } from '@draft/i18n-fr';
 import type { DraftState, Note } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, ScalingBars, scoreStats, useData, WinRateChips } from '../ui';
@@ -77,13 +77,15 @@ const StatLine = ({ e, barWidth }: { e: Evaluation; barWidth: number }) => (
   </>
 );
 
-const DetailItem = ({ e, best, selected, onLock, role }: { e: Evaluation; best: boolean; selected: boolean; onLock: () => void; role: string }) => (
+const DetailItem = ({ e, best, selected, onLock, role, secondary = false }: { e: Evaluation; best: boolean; selected: boolean; onLock: () => void; role: string; secondary?: boolean }) => (
   <div className={'detail' + (selected ? ' is-selected' : '')}>
     <div className="row-gap wrap center">
       <Portrait name={e.champion} size={48} label={e.champion} />
       <div className="row-gap wrap center grow min0">
         <span className="detail-name">{e.champion}</span>
-        <Chip tone={e.pool === 'out' ? 'warn' : 'plain'}>{POOL_TAG[e.pool]}</Chip>
+        {secondary && e.laneShare != null
+          ? <Chip title={'Part des parties du champion jouées en ' + role}>Rôle secondaire · {fmtInt(Math.round(e.laneShare))} %</Chip>
+          : <Chip tone={e.pool === 'out' ? 'warn' : 'plain'}>{POOL_TAG[e.pool]}</Chip>}
       </div>
       <div className="row-gap baseline">
         <span className={'score-md' + (best ? ' is-best' : '')}>{e.total}</span>
@@ -237,7 +239,7 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
                 <ul className="details">
                   {row.inPool.map((e, i) => (
                     <li key={e.champion} className="col gap-6">
-                      {i === 0 && <span className="detail-head accent-text">{row.hasPool ? 'Pool' : 'Tous les champions ' + role + ' (aucun pool)'}</span>}
+                      {i === 0 && <span className="detail-head accent-text">{row.hasPool ? 'Pool' : 'Tous les champions ' + role + (player ? ' (aucun pool)' : ' (aucun joueur)')}</span>}
                       <DetailItem e={e} best={i === 0} role={role} selected={selected === e.champion} onLock={() => lock(e.champion)} />
                     </li>
                   ))}
@@ -245,6 +247,16 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
                     <li key={e.champion} className="col gap-6">
                       {i === 0 && <span className="detail-head warn-text">Hors pool</span>}
                       <DetailItem e={e} best={false} role={role} selected={selected === e.champion} onLock={() => lock(e.champion)} />
+                    </li>
+                  ))}
+                  {row.secondaryRole.map((e, i) => (
+                    <li key={e.champion} className="col gap-6">
+                      {i === 0 && (
+                        <span className="detail-head muted" title={'Moins de ' + MAIN_ROLE_SHARE + ' % des parties de ces champions sont jouées en ' + role}>
+                          Rôle secondaire, non classés
+                        </span>
+                      )}
+                      <DetailItem e={e} best={false} role={role} secondary selected={selected === e.champion} onLock={() => lock(e.champion)} />
                     </li>
                   ))}
                 </ul>

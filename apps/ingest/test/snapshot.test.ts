@@ -73,7 +73,8 @@ describe('assemblage du snapshot Lolalytics', () => {
     expect(snap.source).toBe('lolalytics');
     expect(snap.candidates.Mid?.map((c) => c.name)).toEqual(['Ahri']);
     const ahri = snap.candidates.Mid![0]!;
-    expect(ahri).toMatchObject({ laneWinRate: null, gameWinRate: 52.7, synergyBase: 55, provides: ['Peel'] });
+    expect(ahri).toMatchObject({ laneWinRate: null, gameWinRate: 52.7, synergyBase: 55, provides: ['Peel'], laneShare: 90 });
+    expect(snap.winRatePriorGames).toBe(3000);
     expect(ahri.matchups).toEqual({ Zed: [50.6, 2017] });
     expect(ahri.duos).toEqual({ Jungle: { Sejuani: [2.1, 900] } });
   });

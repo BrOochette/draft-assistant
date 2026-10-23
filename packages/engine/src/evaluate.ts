@@ -83,9 +83,11 @@ export const evaluate = (
   if (c.games < LOW_SAMPLE_GAMES) reasons.push({ sign: '-', code: 'LOW_SAMPLE', games: c.games });
 
   syn = clamp(syn);
+  // Win rate lissé vers 50 % : un pick peu joué au win rate élevé ne sature plus le counter.
+  const baseWr = c.priorGames > 0 ? (c.gameWinRate * c.games + 50 * c.priorGames) / (c.games + c.priorGames) : c.gameWinRate;
   const m = laneOpponent ? c.matchups?.[laneOpponent] : undefined;
   const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1] } : null;
-  const gameWr = m ? smooth(m[0], m[1], c.gameWinRate) : c.gameWinRate;
+  const gameWr = m ? smooth(m[0], m[1], baseWr) : baseWr;
   // Sans win rate de lane (Lolalytics), le counter repose sur le win rate de partie seul.
   const ctr = c.laneWinRate == null ? wrScore(gameWr) : Math.round(wrScore(c.laneWinRate) * 0.4 + wrScore(gameWr) * 0.6);
   const total = c.mastery == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + c.mastery * 0.25);
@@ -105,6 +107,7 @@ export const evaluate = (
     laneWinRate: c.laneWinRate,
     gameWinRate: c.gameWinRate,
     matchup,
+    laneShare: c.laneShare,
     scaling: c.scaling
   };
 };
