@@ -1,0 +1,35 @@
+{
+  "assign": {
+    "Top": "Alex",
+    "Jungle": "Sam",
+    "Mid": "Noa",
+    "ADC": "Lou",
+    "Support": "Max"
+  },
+  "picks": {
+    "Jungle": null,
+    "Mid": null,
+    "ADC": null
+  },
+  "fixedPicks": {
+    "Top": "Aurora",
+    "Support": "Brand"
+  },
+  "enemy": {
+    "Top": "Ornn",
+    "Jungle": null,
+    "Mid": "Ahri",
+    "ADC": null,
+    "Support": "Nautilus"
+  },
+  "allyBans": [
+    "Zed",
+    "Yone",
+    "Jhin"
+  ],
+  "enemyBans": [
+    "Syndra",
+    "Zyra",
+    "Sylas"
+  ]
+}

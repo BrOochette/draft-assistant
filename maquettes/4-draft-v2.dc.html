@@ -1,0 +1,1361 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Draft v2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0F1218}
+button,input,select{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #3DD6C3;outline-offset:2px}
+.face:hover{outline:2px solid #3DD6C3;outline-offset:2px}
+.hv:hover{background:#1B2130}
+.side{position:sticky;top:16px}
+@media (max-width:1100px){.side{position:static}}
+</style>
+</helmet>
+<div style="background:#0F1218;color:#E9ECF3;font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.45;box-sizing:border-box">
+
+<header style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 32px;padding:14px 32px;border-bottom:1px solid #2B3242;background:#12161E">
+<div style="display:flex;align-items:center;gap:12px">
+<svg aria-hidden="true" width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="1" y="1" width="26" height="26" rx="6" stroke="#3DD6C3" stroke-width="2"></rect><path d="M8 19l6-11 6 11" stroke="#3DD6C3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;letter-spacing:.02em">Draft Assistant</span>
+</div>
+<nav aria-label="Navigation principale" style="display:flex;flex-wrap:wrap;gap:8px">
+<a href="Players.dc.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;color:#A3ABBD;text-decoration:none;font-weight:600;border:1px solid transparent">Joueurs</a>
+<a href="Draft2.dc.html" aria-current="page" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;background:#1E2430;color:#E9ECF3;text-decoration:none;font-weight:600;border:1px solid #3DD6C3">Draft</a>
+<a href="Main.dc.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;color:#A3ABBD;text-decoration:none;font-weight:600;border:1px solid transparent">Version précédente</a>
+</nav>
+<div style="flex-grow:1"></div>
+<span title="Win rates et échantillons : données d'exemple" style="display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:16px;background:#1E2430;color:#C9D0DF;font-size:13px;font-weight:600;border:1px solid #2B3242">Patch 26.21 · Emerald+</span>
+<span style="display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:16px;background:#3A3016;color:#FFD27A;font-size:13px;font-weight:600">Maquette, données d'exemple</span>
+<sc-if value="{{reset.asking}}" hint-placeholder-val="{{ false }}">
+<div role="group" aria-label="Confirmer la nouvelle draft" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+<span style="font-size:13px;color:#FFD27A;font-weight:600">Effacer tes picks et sélections ?</span>
+<button onClick="{{reset.confirm}}" style="min-height:44px;padding:0 14px;border-radius:10px;border:0;background:#FFB98A;color:#2A1608;font-size:13px;font-weight:700;cursor:pointer">Oui, nouvelle draft</button>
+<button onClick="{{reset.cancel}}" style="min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #2B3242;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600;cursor:pointer">Annuler</button>
+</div>
+</sc-if>
+<sc-if value="{{reset.idle}}" hint-placeholder-val="{{ true }}">
+<button onClick="{{reset.ask}}" style="min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #2B3242;background:#171B24;color:#E9ECF3;font-size:14px;font-weight:600;cursor:pointer">Nouvelle draft</button>
+</sc-if>
+</header>
+
+<main style="display:flex;flex-wrap:wrap;gap:20px;padding:20px 32px 64px;align-items:flex-start">
+
+<div style="flex:1 1 640px;min-width:0;display:flex;flex-direction:column;gap:16px">
+
+<section aria-label="Bans" style="display:flex;flex-direction:column;gap:12px;padding:12px 16px;border-radius:12px;background:#171B24;border:1px solid #2B3242">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px">
+<h2 style="margin:0;font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:600">Bans</h2>
+<div style="display:flex;align-items:center;gap:8px" role="group" aria-label="Bans de ton équipe">
+<span style="font-size:13px;font-weight:600;color:#6AA8FF">Alliés {{ban.allyCount}}</span>
+<sc-for list="{{allyBans}}" as="b" hint-placeholder-count="5">
+<button class="face" onClick="{{b.act}}" aria-label="{{b.label}}" title="{{b.label}}" style="position:relative;width:48px;height:48px;box-sizing:border-box;padding:0;border-radius:8px;background:{{b.bg}};border:{{b.border}};display:flex;align-items:center;justify-content:center;color:#E9ECF3;font-weight:600;font-size:18px;cursor:pointer;overflow:hidden">{{b.code}}<svg aria-hidden="true" width="48" height="48" viewBox="0 0 48 48" style="position:absolute;left:0;top:0;opacity:{{b.strike}}"><line x1="6" y1="42" x2="42" y2="6" stroke="#E9ECF3" stroke-width="2"></line></svg></button>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:8px" role="group" aria-label="Bans de l'équipe ennemie">
+<span style="font-size:13px;font-weight:600;color:#FF9F5A">Ennemis {{ban.enemyCount}}</span>
+<sc-for list="{{enemyBans}}" as="b" hint-placeholder-count="5">
+<button class="face" onClick="{{b.act}}" aria-label="{{b.label}}" title="{{b.label}}" style="position:relative;width:48px;height:48px;box-sizing:border-box;padding:0;border-radius:8px;background:{{b.bg}};border:{{b.border}};display:flex;align-items:center;justify-content:center;color:#E9ECF3;font-weight:600;font-size:18px;cursor:pointer;overflow:hidden">{{b.code}}<svg aria-hidden="true" width="48" height="48" viewBox="0 0 48 48" style="position:absolute;left:0;top:0;opacity:{{b.strike}}"><line x1="6" y1="42" x2="42" y2="6" stroke="#E9ECF3" stroke-width="2"></line></svg></button>
+</sc-for>
+</div>
+<div style="flex-grow:1"></div>
+<button onClick="{{ban.toggleOpen}}" aria-expanded="{{ban.open}}" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid #2B3242;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600;cursor:pointer">
+<span>Suggestions de bans</span>
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" style="transform:{{ban.chevRot}}"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+</div>
+
+<sc-if value="{{ban.open}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px">
+<sc-if value="{{ban.showSuggest}}" hint-placeholder-val="{{ true }}">
+<ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+<sc-for list="{{ban.cards}}" as="c" hint-placeholder-count="6">
+<li style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#12161E;border:1px solid #2B3242">
+<span role="img" aria-label="{{c.name}}" title="{{c.name}}" style="width:44px;height:44px;box-sizing:border-box;border-radius:8px;background:{{c.bg}};border:1px solid #2B3242;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;flex-shrink:0">{{c.code}}</span>
+<div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column">
+<span style="font-size:13px;color:#A3ABBD">{{c.role}} · menace {{c.score}}</span>
+<span style="font-size:13px;color:#C9D0DF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{c.reason}}</span>
+</div>
+<button onClick="{{c.ban}}" disabled="{{c.disabled}}" aria-label="{{c.label}}" style="min-width:72px;min-height:44px;padding:0 12px;border-radius:10px;border:{{c.btnBorder}};background:{{c.btnBg}};color:{{c.btnFg}};font-size:13px;font-weight:600;cursor:{{c.cursor}}">Bannir</button>
+</li>
+</sc-for>
+</ul>
+</sc-if>
+<sc-if value="{{ban.full}}" hint-placeholder-val="{{ false }}">
+<p style="margin:0;font-size:13px;color:#C9D0DF">Les 5 bans de ton équipe sont posés.</p>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ban.pickerOpen}}" hint-placeholder-val="{{ false }}">
+<div role="group" aria-label="Saisie manuelle d'un ban" style="display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-radius:10px;background:#12161E;border:1px solid {{ban.pickerAccent}}">
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px">
+<span style="font-weight:600">{{ban.pickerTitle}}</span>
+<button onClick="{{ban.closePicker}}" style="min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #2B3242;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600;cursor:pointer">Fermer</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px">
+<input type="text" aria-label="Rechercher un champion à bannir" value="{{ban.q}}" onChange="{{ban.onQ}}" placeholder="Rechercher un champion" style="flex:1 1 200px;min-width:0;min-height:44px;box-sizing:border-box;padding:0 12px;border-radius:10px;border:1px solid #2B3242;background:#0F1218;color:#E9ECF3;font-size:14px">
+<div role="group" aria-label="Filtrer par rôle" style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{ban.roleChips}}" as="f" hint-placeholder-count="6">
+<button onClick="{{f.select}}" aria-pressed="{{f.selected}}" style="min-height:44px;padding:0 12px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:#E9ECF3;background:{{f.bg}};border:{{f.border}}">{{f.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="max-height:264px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;align-content:start">
+<sc-for list="{{ban.pickerItems}}" as="c" hint-placeholder-count="12">
+<button onClick="{{c.choose}}" disabled="{{c.disabled}}" aria-label="{{c.label}}" style="display:flex;flex-direction:column;align-items:center;gap:4px;min-height:92px;box-sizing:border-box;padding:8px 4px;border-radius:10px;cursor:{{c.cursor}};color:#E9ECF3;background:#171B24;border:{{c.border}};opacity:{{c.opacity}}">
+<span style="width:44px;height:44px;box-sizing:border-box;border-radius:8px;background:{{c.bg}};border:1px solid #2B3242;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px">{{c.code}}</span>
+<span style="font-size:13px;font-weight:600;text-align:center">{{c.name}}</span>
+<span style="font-size:13px;color:#A3ABBD;text-align:center">{{c.note}}</span>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{ban.pickerEmpty}}" hint-placeholder-val="{{ false }}">
+<span style="font-size:13px;color:#A3ABBD">Aucun champion trouvé.</span>
+</sc-if>
+<sc-if value="{{ban.pickerFull}}" hint-placeholder-val="{{ false }}">
+<span style="font-size:13px;color:#FFD27A">Les 5 bans de ce côté sont déjà posés.</span>
+</sc-if>
+</div>
+</sc-if>
+</section>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+<section style="display:flex;flex-direction:column;border-radius:12px;background:#171B24;border:{{r.border}};box-shadow:{{r.shadow}};overflow:hidden">
+<div style="display:flex;flex-wrap:wrap;align-items:stretch">
+
+<div style="flex:0 0 250px;box-sizing:border-box;padding:12px 14px;display:flex;flex-direction:column;gap:10px;background:#151A26;border-right:1px solid #2B3242">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+<span style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6AA8FF;font-weight:600">{{r.role}}</span>
+<span style="display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 10px;border-radius:14px;font-size:13px;font-weight:600;background:{{r.stateBg}};color:{{r.stateFg}}"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="{{r.stateIcon}}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>{{r.stateText}}</span>
+</div>
+<div style="display:flex;align-items:flex-start;gap:6px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1 1 0;min-width:0">
+<div style="position:relative;width:60px;height:60px">
+<button class="face" onClick="{{r.openAlly}}" aria-label="{{r.allyLabel}}" title="{{r.allyTitle}}" aria-expanded="{{r.allyPickerOpen}}" style="width:60px;height:60px;box-sizing:border-box;padding:0;border-radius:10px;background:{{r.bg}};border:{{r.allyBorder}};display:flex;align-items:center;justify-content:center;color:#E9ECF3;font-weight:600;font-size:20px;cursor:pointer">{{r.code}}</button>
+<sc-if value="{{r.canRemove}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{r.unlock}}" aria-label="{{r.removeLabel}}" title="{{r.removeLabel}}" style="position:absolute;right:-9px;top:-9px;width:28px;height:28px;box-sizing:border-box;padding:0;border-radius:14px;border:2px solid #151A26;background:#3A2618;color:#FFB98A;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"></path></svg></button>
+</sc-if>
+</div>
+<span style="font-size:13px;font-weight:600;text-align:center">{{r.name}}</span>
+</div>
+<span style="align-self:flex-start;padding-top:20px;font-size:13px;font-weight:700;color:#A3ABBD">VS</span>
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1 1 0;min-width:0">
+<button class="face" onClick="{{r.openEnemy}}" aria-label="{{r.enemyLabel}}" title="{{r.enemyTitle}}" aria-expanded="{{r.enemyPickerOpen}}" style="width:60px;height:60px;box-sizing:border-box;padding:0;border-radius:10px;background:{{r.vsBg}};border:{{r.vsBorder}};display:flex;align-items:center;justify-content:center;color:#E9ECF3;font-weight:600;font-size:20px;cursor:pointer">{{r.vsCode}}</button>
+<span style="font-size:13px;font-weight:600;text-align:center;color:{{r.vsColor}}">{{r.vs}}</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<label for="{{r.selId}}" style="font-size:13px;color:#A3ABBD">Joueur</label>
+<select id="{{r.selId}}" value="{{r.playerId}}" onChange="{{r.onPlayer}}" style="min-height:44px;box-sizing:border-box;padding:0 10px;border-radius:10px;border:1px solid #2B3242;background:#0F1218;color:#E9ECF3;font-size:14px;font-weight:600">
+<sc-for list="{{playerOptions}}" as="o" hint-placeholder-count="5">
+<option value="{{o.value}}">{{o.label}}</option>
+</sc-for>
+</select>
+</div>
+<sc-if value="{{r.noPool}}" hint-placeholder-val="{{ false }}">
+<span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#FFD27A"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2.5l6 10.5H2zM8 7v3M8 11.5v.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Sans pool : tous les champions</span>
+</sc-if>
+<sc-if value="{{r.dup}}" hint-placeholder-val="{{ false }}">
+<span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#FFB98A"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2.5l6 10.5H2zM8 7v3M8 11.5v.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Placé sur plusieurs rôles</span>
+</sc-if>
+</div>
+
+<div style="flex:999 1 380px;min-width:0;box-sizing:border-box;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:10px">
+
+<sc-if value="{{r.showRecs}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px">
+<span style="font-size:13px;color:#C9D0DF">{{r.recNote}}</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button onClick="{{r.toggle}}" aria-expanded="{{r.isExpanded}}" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid #2B3242;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600;cursor:pointer">
+<span>{{r.toggleText}}</span>
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" style="transform:{{r.chevRot}}"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+</div>
+</div>
+
+<sc-if value="{{r.noRecs}}" hint-placeholder-val="{{ false }}">
+<span style="padding:12px;border-radius:10px;border:1px dashed #FFD27A;color:#FFD27A;font-size:13px">Aucun champion disponible pour ce rôle.</span>
+</sc-if>
+
+<ul style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px;align-items:stretch">
+<sc-for list="{{r.recs}}" as="c" hint-placeholder-count="3">
+<li style="flex:1 1 200px;min-width:0;display:flex;flex-direction:column;border-radius:10px;background:{{c.cardBg}};border:{{c.border}};overflow:hidden">
+<button class="hv" onClick="{{c.select}}" aria-pressed="{{c.selected}}" aria-label="{{c.selectLabel}}" title="{{c.tip}}" style="flex:1 1 auto;display:flex;flex-direction:column;gap:10px;padding:10px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer">
+<span style="display:flex;align-items:center;gap:10px;width:100%">
+<span style="position:relative;width:56px;height:56px;box-sizing:border-box;border-radius:10px;background:{{c.bg}};border:1px solid #2B3242;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px;flex-shrink:0">{{c.code}}<span style="position:absolute;left:-6px;top:-6px;min-width:22px;height:22px;box-sizing:border-box;padding:0 6px;border-radius:11px;background:{{c.badgeBg}};color:{{c.badgeFg}};font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1px solid #0F1218">{{c.rank}}</span></span>
+<span style="display:flex;flex-direction:column;gap:1px;min-width:0">
+<span style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:700;line-height:1;color:{{c.scoreColor}}">{{c.total}}</span>
+<span style="font-size:13px;font-weight:600;color:#A9C9FF">Compo {{c.delta}}</span>
+</span>
+<span style="flex:1 1 0"></span>
+<sc-if value="{{c.selected}}" hint-placeholder-val="{{ false }}">
+<span style="display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:#8FE8D3"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.5 3.5L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Sélectionné</span>
+</sc-if>
+</span>
+<span style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%">
+<sc-for list="{{c.stats}}" as="s" hint-placeholder-count="3">
+<span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+<span style="font-size:13px;color:#A3ABBD;white-space:nowrap">{{s.label}} <span style="color:#E9ECF3;font-weight:600">{{s.v}}</span></span>
+<span style="display:block;height:5px;border-radius:3px;background:#2B3242"><span style="display:block;height:5px;border-radius:3px;background:{{s.color}};width:{{s.w}}"></span></span>
+</span>
+</sc-for>
+</span>
+<span style="display:flex;flex-wrap:wrap;gap:6px">
+<span title="Win rate de lane" style="display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 9px;border-radius:14px;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13 3L6 10M4.5 8.5l3 3M6 10L3 13M3 3l7 7M8.5 11.5l3-3M10 10l3 3" stroke="#A3ABBD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Lane {{c.lane}}</span>
+<span title="Win rate de partie" style="display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 9px;border-radius:14px;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 14V2M4 3h8l-2.5 3L12 9H4" stroke="#A3ABBD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Partie {{c.game}}</span>
+<sc-if value="{{c.low}}" hint-placeholder-val="{{ false }}">
+<span title="{{c.sampleTip}}" style="display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 9px;border-radius:14px;background:#3A3016;color:#FFD27A;font-size:13px;font-weight:600"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2.5l6 10.5H2zM8 7v3M8 11.5v.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Peu fiable</span>
+</sc-if>
+</span>
+</button>
+<sc-if value="{{c.selected}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{c.lock}}" aria-label="{{c.lockLabel}}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:0;border-top:1px solid #1F6F66;background:#3DD6C3;color:#06201C;font-size:14px;font-weight:700;cursor:pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4.5 7V5.5a3.5 3.5 0 0 1 7 0V7M3.5 7h9v6.5h-9z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Verrouiller</button>
+</sc-if>
+</li>
+</sc-for>
+</ul>
+
+<sc-if value="{{r.showDetails}}" hint-placeholder-val="{{ false }}">
+<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{r.details}}" as="d" hint-placeholder-count="4">
+<li style="display:flex;flex-direction:column;gap:6px">
+<sc-if value="{{d.showHead}}" hint-placeholder-val="{{ false }}">
+<span style="padding-top:4px;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:{{d.headColor}}">{{d.head}}</span>
+</sc-if>
+<div style="display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:10px;background:#12161E;border:{{d.border}}">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px">
+<span role="img" aria-label="{{d.name}}" title="{{d.name}}" style="width:48px;height:48px;box-sizing:border-box;border-radius:8px;background:{{d.bg}};border:1px solid #2B3242;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex-shrink:0">{{d.code}}</span>
+<div style="flex:1 1 140px;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px">
+<span style="font-size:17px;font-weight:600">{{d.name}}</span>
+<span style="display:inline-flex;align-items:center;min-height:26px;padding:0 10px;border-radius:13px;font-size:13px;font-weight:600;background:{{d.tagBg}};color:{{d.tagFg}}">{{d.tag}}</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:8px">
+<span style="font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;line-height:1;color:{{d.scoreColor}}">{{d.total}}</span>
+<span style="font-size:13px;font-weight:600;color:#A9C9FF">Compo {{d.delta}}</span>
+</div>
+<button onClick="{{d.lock}}" aria-label="{{d.lockLabel}}" style="min-height:44px;padding:0 14px;border-radius:10px;border:0;background:#3DD6C3;color:#06201C;font-size:13px;font-weight:600;cursor:pointer">Verrouiller</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{d.reasons}}" as="x" hint-placeholder-count="3">
+<span style="display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:14px;font-size:13px;background:{{x.bg}};color:{{x.fg}}">{{x.text}}</span>
+</sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px">
+<sc-for list="{{d.stats}}" as="s" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#A3ABBD"><span style="min-width:62px">{{s.label}}</span><span style="display:block;width:64px;height:5px;border-radius:3px;background:#2B3242"><span style="display:block;height:5px;border-radius:3px;background:{{s.color}};width:{{s.w}}"></span></span><span style="color:#E9ECF3;font-weight:600">{{s.v}}</span></div>
+</sc-for>
+<div title="Puissance au début, au milieu et en fin de partie" style="display:flex;align-items:flex-end;gap:6px;font-size:13px;color:#A3ABBD"><span>Scaling</span>
+<sc-for list="{{d.scal}}" as="b" hint-placeholder-count="3">
+<span title="{{b.tip}}" style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="display:block;width:10px;height:{{b.h}};border-radius:2px;background:{{b.bg}}"></span><span>{{b.label}}</span></span>
+</sc-for>
+</div>
+<span title="Win rate de lane" style="display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 9px;border-radius:14px;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600">Lane {{d.lane}}</span>
+<span title="Win rate de partie" style="display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 9px;border-radius:14px;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600">Partie {{d.game}}</span>
+<span style="font-size:13px;color:{{d.sampleColor}}">{{d.sampleText}}</span>
+</div>
+</div>
+</li>
+</sc-for>
+</ul>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{r.showSum}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px">
+<span style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:700;line-height:1;color:#3DD6C3">{{r.sum.total}}</span>
+<span style="font-size:13px;font-weight:600;color:#A9C9FF">Compo {{r.sum.delta}}</span>
+<span style="display:inline-flex;align-items:center;min-height:26px;padding:0 10px;border-radius:13px;font-size:13px;font-weight:600;background:{{r.sum.tagBg}};color:{{r.sum.tagFg}}">{{r.sum.tag}}</span>
+<span title="Win rate de lane" style="display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 9px;border-radius:14px;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13 3L6 10M4.5 8.5l3 3M6 10L3 13M3 3l7 7M8.5 11.5l3-3M10 10l3 3" stroke="#A3ABBD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Lane {{r.sum.lane}}</span>
+<span title="Win rate de partie" style="display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 9px;border-radius:14px;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 14V2M4 3h8l-2.5 3L12 9H4" stroke="#A3ABBD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Partie {{r.sum.game}}</span>
+<span title="{{r.sum.sampleTip}}" style="font-size:13px;color:{{r.sum.sampleColor}}">{{r.sum.sampleText}}</span>
+</div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px">
+<sc-for list="{{r.sum.stats}}" as="s" hint-placeholder-count="3">
+<div title="{{s.tip}}" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#A3ABBD"><span style="min-width:62px">{{s.label}}</span><span style="display:block;width:80px;height:5px;border-radius:3px;background:#2B3242"><span style="display:block;height:5px;border-radius:3px;background:{{s.color}};width:{{s.w}}"></span></span><span style="color:#E9ECF3;font-weight:600">{{s.v}}</span></div>
+</sc-for>
+<div title="Puissance au début, au milieu et en fin de partie" style="display:flex;align-items:flex-end;gap:6px;font-size:13px;color:#A3ABBD"><span>Scaling</span>
+<sc-for list="{{r.sum.scal}}" as="b" hint-placeholder-count="3">
+<span title="{{b.tip}}" style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="display:block;width:10px;height:{{b.h}};border-radius:2px;background:{{b.bg}}"></span><span>{{b.label}}</span></span>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{r.sum.chips}}" as="x" hint-placeholder-count="4">
+<span style="display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:14px;font-size:13px;background:{{x.bg}};color:{{x.fg}}">{{x.text}}</span>
+</sc-for>
+</div>
+</sc-if>
+
+</div>
+</div>
+
+<sc-if value="{{r.showPicker}}" hint-placeholder-val="{{ false }}">
+<div role="group" aria-label="{{r.pickerTitle}}" style="display:flex;flex-direction:column;gap:10px;margin:0 14px 12px;padding:12px 14px;border-radius:10px;background:#12161E;border:1px solid {{r.pickerAccent}}">
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px">
+<span style="font-weight:600">{{r.pickerTitle}}</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-if value="{{r.canClear}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{r.clearEnemy}}" style="min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #2B3242;background:#1E2430;color:#FFB98A;font-size:13px;font-weight:600;cursor:pointer">Effacer</button>
+</sc-if>
+<button onClick="{{r.closePicker}}" style="min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #2B3242;background:#1E2430;color:#E9ECF3;font-size:13px;font-weight:600;cursor:pointer">Fermer</button>
+</div>
+</div>
+<input type="text" aria-label="Rechercher un champion" value="{{r.q}}" onChange="{{r.onQ}}" placeholder="Rechercher un champion" style="min-height:44px;box-sizing:border-box;padding:0 12px;border-radius:10px;border:1px solid #2B3242;background:#0F1218;color:#E9ECF3;font-size:14px">
+<div style="max-height:264px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;align-content:start">
+<sc-for list="{{r.pickerItems}}" as="c" hint-placeholder-count="12">
+<button onClick="{{c.choose}}" disabled="{{c.disabled}}" aria-label="{{c.label}}" style="display:flex;flex-direction:column;align-items:center;gap:4px;min-height:92px;box-sizing:border-box;padding:8px 4px;border-radius:10px;cursor:{{c.cursor}};color:#E9ECF3;background:#171B24;border:{{c.border}};opacity:{{c.opacity}}">
+<span style="width:44px;height:44px;box-sizing:border-box;border-radius:8px;background:{{c.bg}};border:1px solid #2B3242;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px">{{c.code}}</span>
+<span style="font-size:13px;font-weight:600;text-align:center">{{c.name}}</span>
+<span style="font-size:13px;color:#A3ABBD;text-align:center">{{c.note}}</span>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{r.pickerEmpty}}" hint-placeholder-val="{{ false }}">
+<span style="font-size:13px;color:#A3ABBD">Aucun champion trouvé.</span>
+</sc-if>
+</div>
+</sc-if>
+</section>
+</sc-for>
+</div>
+</div>
+
+<aside aria-label="Analyse de la composition" class="side" style="flex:0 1 340px;min-width:300px;display:flex;flex-direction:column;gap:14px">
+
+<section aria-label="Note globale de la composition" style="display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:12px;background:#171B24;border:1px solid #2B3242">
+<div style="display:flex;align-items:center;gap:16px">
+<div style="display:flex;flex-direction:column;align-items:center;min-width:96px">
+<span style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6AA8FF;font-weight:600">Ta compo</span>
+<span style="font-family:'Barlow Condensed',sans-serif;font-size:68px;font-weight:700;line-height:1;color:{{comp.color}}">{{comp.now}}</span>
+<span style="font-size:13px;color:#A3ABBD">sur 100</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+<span style="display:inline-flex;align-items:center;min-height:28px;padding:0 12px;border-radius:14px;font-size:13px;font-weight:700;background:{{comp.vbg}};color:{{comp.vfg}}">{{comp.verdict}}</span>
+<span style="font-size:13px;color:#A3ABBD">Ennemis : <span style="font-weight:700;color:{{comp.enemyColor}}">{{comp.enemy}}</span> · {{comp.enemyVerdict}}</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{comp.parts}}" as="p" hint-placeholder-count="5">
+<div title="{{p.tip}}" style="display:grid;grid-template-columns:104px 1fr 34px;align-items:center;gap:10px;font-size:13px;color:#A3ABBD">
+<span>{{p.label}}</span>
+<span style="display:block;height:8px;border-radius:4px;background:#2B3242"><span style="display:block;height:8px;border-radius:4px;background:{{p.color}};width:{{p.w}}"></span></span>
+<span style="text-align:right;color:#E9ECF3;font-weight:600">{{p.v}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section aria-label="Scaling des deux équipes" style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:12px;background:#171B24;border:1px solid #2B3242">
+<h2 style="margin:0;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600">Scaling</h2>
+<sc-for list="{{phases}}" as="p" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px"><span style="font-weight:600">{{p.label}}</span><span style="display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:12px;font-weight:600;background:{{p.bg}};color:{{p.fg}}">{{p.verdict}}</span></div>
+<div style="display:grid;grid-template-columns:52px 1fr 30px;align-items:center;gap:8px;font-size:13px;color:#A3ABBD"><span>Alliés</span><span style="display:block;height:6px;border-radius:3px;background:#2B3242"><span style="display:block;height:6px;border-radius:3px;background:#6AA8FF;width:{{p.allyW}}"></span></span><span style="text-align:right;color:#E9ECF3">{{p.ally}}</span></div>
+<div style="display:grid;grid-template-columns:52px 1fr 30px;align-items:center;gap:8px;font-size:13px;color:#A3ABBD"><span>Ennemis</span><span style="display:block;height:6px;border-radius:3px;background:#2B3242"><span style="display:block;height:6px;border-radius:3px;background:#FF9F5A;width:{{p.enemyW}}"></span></span><span style="text-align:right;color:#E9ECF3">{{p.enemy}}</span></div>
+</div>
+</sc-for>
+</section>
+
+<section aria-label="Lecture des compositions" style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:12px;background:#171B24;border:1px solid #2B3242">
+<h2 style="margin:0;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600">Ta compo</h2>
+<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{allyRead}}" as="x" hint-placeholder-count="5">
+<li style="display:flex;gap:8px;font-size:13px;color:{{x.fg}}"><span style="font-weight:700;min-width:10px">{{x.sign}}</span><span style="color:#E9ECF3">{{x.label}}</span></li>
+</sc-for>
+</ul>
+<h2 style="margin:6px 0 0;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600">Compo ennemie</h2>
+<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{enemyRead}}" as="x" hint-placeholder-count="4">
+<li style="font-size:13px;color:#E9ECF3">{{x}}</li>
+</sc-for>
+</ul>
+</section>
+
+<sc-if value="{{team.show}}" hint-placeholder-val="{{ false }}">
+<section aria-label="Points d'attention sur l'équipe" style="display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:12px;background:#1B1710;border:1px solid #5A4A1C">
+<h2 style="margin:0;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600;color:#FFD27A">Équipe</h2>
+<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{team.notes}}" as="n" hint-placeholder-count="2">
+<li style="font-size:13px;color:#E9ECF3">{{n}}</li>
+</sc-for>
+</ul>
+</section>
+</sc-if>
+
+<section aria-label="Aide" style="display:flex;flex-direction:column;gap:10px;padding:12px 16px;border-radius:12px;background:#171B24;border:1px solid #2B3242">
+<button onClick="{{help.toggle}}" aria-expanded="{{help.open}}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:0;border:0;background:transparent;color:#E9ECF3;font-size:14px;font-weight:600;cursor:pointer">
+<span>Lire les scores</span>
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" style="transform:{{help.chevRot}}"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+<sc-if value="{{help.open}}" hint-placeholder-val="{{ false }}">
+<dl style="margin:0;display:flex;flex-direction:column;gap:8px;font-size:13px">
+<sc-for list="{{help.items}}" as="h" hint-placeholder-count="6">
+<div><dt style="font-weight:600;color:#E9ECF3">{{h.t}}</dt><dd style="margin:0;color:#A3ABBD">{{h.d}}</dd></div>
+</sc-for>
+</dl>
+</sc-if>
+</section>
+</aside>
+</main>
+
+<div style="position:sticky;bottom:16px;display:flex;justify-content:center;pointer-events:none;padding:0 16px;height:0;overflow:visible">
+<sc-if value="{{toast.show}}" hint-placeholder-val="{{ false }}">
+<div role="status" aria-live="polite" style="pointer-events:auto;display:flex;align-items:center;gap:12px;transform:translateY(-100%);padding:8px 8px 8px 16px;border-radius:12px;background:#1E2430;border:1px solid #3DD6C3;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+<span style="font-size:14px;font-weight:600">{{toast.msg}}</span>
+<button onClick="{{toast.undo}}" style="min-height:44px;padding:0 14px;border-radius:10px;border:0;background:#3DD6C3;color:#06201C;font-size:13px;font-weight:700;cursor:pointer">Annuler</button>
+<button onClick="{{toast.close}}" aria-label="Fermer la notification" style="width:44px;height:44px;border-radius:10px;border:0;background:transparent;color:#A3ABBD;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></button>
+</div>
+</sc-if>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      assign: { Top: 'Alex', Jungle: 'Sam', Mid: 'Noa', ADC: 'Lou', Support: 'Max' },
+      picks: { Jungle: null, Mid: null, ADC: null },
+      fix: { Top: 'Aurora', Support: 'Brand' },
+      enemy: { Top: 'Ornn', Jungle: null, Mid: 'Ahri', ADC: null, Support: 'Nautilus' },
+      allyBans: ['Zed', 'Yone', 'Jhin'],
+      enemyBans: ['Syndra', 'Zyra', 'Sylas'],
+      sel: {},
+      exp: {},
+      banOpen: false,
+      helpOpen: false,
+      confirmReset: false,
+      toast: null,
+      pk: null,
+      q: '',
+      bk: null,
+      bq: '',
+      bkRole: 'Tous'
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const ROLES = ['Top', 'Jungle', 'Mid', 'ADC', 'Support'];
+    const OPEN = ['Jungle', 'Mid', 'ADC'];
+    const pos = (t) => ({ text: '+ ' + t, fg: '#8FE8D3', bg: '#12332E' });
+    const neg = (t) => ({ text: '- ' + t, fg: '#FFB98A', bg: '#3A2618' });
+    const W = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
+    const LBL = { Frontline: 'Frontline', Engage: 'Engage de teamfight', Physique: 'Dégâts physiques', Peel: 'Peel' };
+    const PH = ['en début de partie', 'en milieu de partie', 'en fin de partie'];
+    const PHL = [
+      { label: 'Début de partie', range: '0 à 15 min' },
+      { label: 'Milieu de partie', range: '15 à 25 min' },
+      { label: 'Fin de partie', range: '25 min et plus' }
+    ];
+    const ICON = {
+      check: 'M3 8.5l3.5 3.5L13 4.5',
+      arrow: 'M3 8h9M8.5 4l4 4-4 4',
+      circle: 'M8 3.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z',
+      lock: 'M4.5 7V5.5a3.5 3.5 0 0 1 7 0V7M3.5 7h9v6.5h-9z'
+    };
+    const fmt = (n) => n.toFixed(1).replace('.', ',');
+    const clamp = (n) => Math.max(0, Math.min(100, n));
+    const wrScore = (wr) => clamp(Math.round(50 + (wr - 50) * 10));
+    const codeOf = (n) => {
+      const p = n.split(' ');
+      return p.length > 1 ? p[0].charAt(0) + p[1].charAt(0) : n.slice(0, 2);
+    };
+    // Portraits Data Dragon (patch 16.21.1) : nom du champion vers image importée.
+    const IMG = {
+      "Ahri": "/_blob/a252d110b0a60f6a7f0c04436a1cb8da",
+      "Akali": "/_blob/4957fc0f7e6d042ffa956a417df948ec",
+      "Alistar": "/_blob/5d3bf9cf857633627d3439be9616a264",
+      "Amumu": "/_blob/00b9dcb51b2b17a2a20249d7ae4e0f73",
+      "Aphelios": "/_blob/5a1cb3c9d119eb97ad3c90713704d3fb",
+      "Ashe": "/_blob/0b9f93843e1d79c4579dac04560b32c8",
+      "Aurora": "/_blob/a593ae4ff3a8963368c271d24534b2da",
+      "Azir": "/_blob/064ac5bcdb7420cdfc0073d490fa7b69",
+      "Blitzcrank": "/_blob/066c23f5132a1f17edfe8e49cebea93e",
+      "Brand": "/_blob/80265ac70fcd8153411f4006f1531019",
+      "Braum": "/_blob/71c2b5f96a1fc47af7ed6772c909cb3b",
+      "Caitlyn": "/_blob/a2e18113d9df290dc2e688075862c907",
+      "Camille": "/_blob/a2bc83803a88fc37cda708c5f7a4fde5",
+      "Darius": "/_blob/b897478bb829d64a059c1ac40c8e51d1",
+      "Draven": "/_blob/8fc094bb2bc18cf9a13201c6a338cc43",
+      "Elise": "/_blob/200a76a8b826578ed82aa4a5c0be4a96",
+      "Ezreal": "/_blob/7bbef5f05f7ea710c294dc03a0cf05fc",
+      "Fiddlesticks": "/_blob/18999a0a0b68b6dcf33b81287c280c63",
+      "Fiora": "/_blob/732f53f268bc15a86c6489fd6caae6b6",
+      "Galio": "/_blob/b93002ade1fda8752e9fab94303a68ca",
+      "Garen": "/_blob/e95ed3966e69b6c727eb745b26efa423",
+      "Gnar": "/_blob/d513119d1bb05ffa02d5cd92adcd76d3",
+      "Gragas": "/_blob/033a1242176e40b7249a2677dafa7811",
+      "Graves": "/_blob/5758e5a6f98c33f5f57cddd5067bcc07",
+      "Gwen": "/_blob/b2ecb55e249506542c2851dbd66720f4",
+      "Hecarim": "/_blob/cf94cfb427daf917b3c7ae679e64cdc6",
+      "Jarvan IV": "/_blob/a2a7d99db69c317f9f1a9c399a1926fa",
+      "Jax": "/_blob/67aa1f6c5624c234c67b855e6d0e0fca",
+      "Jhin": "/_blob/84fbaa86da7d9339fd95f19a3ad98bc1",
+      "Jinx": "/_blob/c6c7b3035b6fdfc7c6170f22853a6571",
+      "K'Sante": "/_blob/a31c63427418580cd61672a85583878f",
+      "Kai'Sa": "/_blob/6ebdda37ee6c74855410cdcd01ef4c00",
+      "Karma": "/_blob/67f1e1f940ab8b86ee191d63e3cca22b",
+      "Katarina": "/_blob/d309046c26b51ef080ff8012b713016e",
+      "Kayn": "/_blob/cda604678c7648bf9473cee8460fd52f",
+      "Kha'Zix": "/_blob/f950742cf1065a9f172b24457263d629",
+      "Lee Sin": "/_blob/3b60e1649160460c112308c036c7d85c",
+      "Leona": "/_blob/25676a1fa160d2a9b28d2b1c0c7b1fa0",
+      "Lillia": "/_blob/a81d9bbae800062ee07b4224d4db5f48",
+      "Lissandra": "/_blob/180d6d54b4b62acf54f1480dd53070cf",
+      "Lucian": "/_blob/18bac993c93ce0a63b0cc898619fd9bd",
+      "Lulu": "/_blob/8d8b569d5d12a627ac85f63bcc9d5370",
+      "Lux": "/_blob/d7a217c77e5bc769737938115807bd5b",
+      "Malphite": "/_blob/aa081d6555188724328857ca8d2c0fc3",
+      "Miss Fortune": "/_blob/478fd0037e03716df5ac2260cab463bf",
+      "Mordekaiser": "/_blob/8809d1e633058d0c34e1e3dc63f1da94",
+      "Morgana": "/_blob/0fa696d4be55a780a83a4ebfe5cf6002",
+      "Nami": "/_blob/90444256e3418b29840065305dbde5d4",
+      "Nautilus": "/_blob/850ef04a24ecaaffef58732792112b75",
+      "Nocturne": "/_blob/14b24fbcf07e2722afd99ee3ada77ae7",
+      "Orianna": "/_blob/3ad59576ae105e04290ae928ad491d9d",
+      "Ornn": "/_blob/8c44682207729a8d34adb95bc547ade6",
+      "Pyke": "/_blob/48ed8fce0d6cc1dbac86a78b425c353c",
+      "Rakan": "/_blob/c47a481ff29e7d8cb1817bd761abefd5",
+      "Rammus": "/_blob/3ab1b3f6b5a35b7bb21faaba44d2b35b",
+      "Renekton": "/_blob/71c561d7ace10b2f679d5644558d792a",
+      "Samira": "/_blob/56d302ec9f3e5d2304faa6a2ef7dc468",
+      "Sejuani": "/_blob/b9aba1223e1de223ccb11a76e5132b89",
+      "Shen": "/_blob/c49ee2aefe21a935ecff68edbd1e5a61",
+      "Sion": "/_blob/30fcd65c634addc469da70a90204eb29",
+      "Sivir": "/_blob/92b221f7509f228966f53e94b33cea2d",
+      "Soraka": "/_blob/2cd3d3f9aeca97a8e4c2a69cbb28c0f1",
+      "Sylas": "/_blob/f6f0bfcead2818a12e81080f2353fb3a",
+      "Syndra": "/_blob/3b069767d3753e252281156718acafd2",
+      "Talon": "/_blob/e4d6dcf04c9ec1c1696860c2a8e6e9f8",
+      "Thresh": "/_blob/efadfcf7f4867a01a8890c478dbe6c95",
+      "Tristana": "/_blob/cf5cadb3fad338a5291f8ff0c6bdf9dd",
+      "Varus": "/_blob/ce829ebd3b029469dcd21c0bba30f07b",
+      "Vayne": "/_blob/6b348c0af70b4054d962ea897aec7d0f",
+      "Veigar": "/_blob/a4dd57bfc8ddab6489866e4d3bfe13d5",
+      "Vex": "/_blob/67a1f9307314c2d94c195a65d8d9a807",
+      "Vi": "/_blob/f773f0ac16f58b268985c586f63efed6",
+      "Viego": "/_blob/7a3231829149336926edb918069b5659",
+      "Viktor": "/_blob/f2036e6e0cf1b1f5dd83769f7de56c27",
+      "Xayah": "/_blob/ea1ebac3c73bdfaed0a84510741b1d77",
+      "Xerath": "/_blob/1a00ee086b2d10cb5d40825944f373dc",
+      "Yone": "/_blob/2918d7cc1d713334b6410d9fd2d7ef54",
+      "Zac": "/_blob/34560d9bd0a19ffce72083ee8c75deb2",
+      "Zed": "/_blob/016244ff6ad1bf4fc71291dc02e889ec",
+      "Zyra": "/_blob/41dddca30cb5f53d105115eb2a619b7c"
+    };
+    const face = (n) => (IMG[n]
+      ? { code: '', bg: '#252B3A url(' + IMG[n] + ') center/cover no-repeat' }
+      : { code: codeOf(n), bg: '#252B3A' });
+
+    // Catalogue d'exemple : [nom, type de dégâts, apports (F frontline, E engage, L peel), scaling D/M/F]
+    const GV = { F: 'Frontline', E: 'Engage', L: 'Peel' };
+    const RAW = {
+      Top: [
+        ['Aurora', 'AP', '', [4, 4, 3]], ['Malphite', 'TANK', 'FE'], ['Ornn', 'TANK', 'FE', [2, 3, 5]], ['Jax', 'AD', ''],
+        ['Gnar', 'AD', 'F'], ['Camille', 'AD', ''], ['Fiora', 'AD', ''], ['Darius', 'AD', 'F'], ['Garen', 'AD', 'F'],
+        ['Sion', 'TANK', 'FE'], ['Shen', 'TANK', 'FL'], ['Renekton', 'AD', 'F'], ["K'Sante", 'TANK', 'FE'],
+        ['Mordekaiser', 'AP', 'F'], ['Gwen', 'AP', ''], ['Gragas', 'AP', 'FE']
+      ],
+      Jungle: [
+        ['Sejuani', 'TANK', 'FE', [3, 4, 3]], ['Fiddlesticks', 'AP', 'E', [3, 4, 4]], ['Viego', 'AD', '', [3, 4, 4]],
+        ['Lee Sin', 'AD', '', [5, 4, 2]], ['Zac', 'TANK', 'FE', [3, 4, 4]], ['Kayn', 'AD', ''], ['Jarvan IV', 'AD', 'FE'],
+        ['Amumu', 'TANK', 'FE'], ['Elise', 'AP', ''], ['Nocturne', 'AD', 'E'], ['Vi', 'AD', 'E'], ['Hecarim', 'AD', 'FE'],
+        ['Graves', 'AD', ''], ["Kha'Zix", 'AD', ''], ['Lillia', 'AP', ''], ['Rammus', 'TANK', 'FE']
+      ],
+      Mid: [
+        ['Orianna', 'AP', 'EL', [3, 4, 4]], ['Talon', 'AD', '', [4, 4, 2]], ['Viktor', 'AP', '', [2, 3, 5]],
+        ['Galio', 'AP', 'FE', [3, 4, 4]], ['Lux', 'AP', 'L'], ['Ahri', 'AP', '', [3, 4, 4]], ['Syndra', 'AP', ''],
+        ['Zed', 'AD', '', [4, 4, 2]], ['Yone', 'AD', ''], ['Sylas', 'AP', 'F'], ['Veigar', 'AP', '', [2, 3, 5]],
+        ['Xerath', 'AP', ''], ['Akali', 'AP', ''], ['Lissandra', 'AP', 'E'], ['Vex', 'AP', ''], ['Katarina', 'AP', ''], ['Azir', 'AP', '']
+      ],
+      ADC: [
+        ['Ashe', 'AD', 'E', [4, 4, 4]], ['Miss Fortune', 'AD', '', [4, 4, 3]], ["Kai'Sa", 'AD', '', [3, 4, 5]],
+        ['Vayne', 'AD', '', [2, 4, 5]], ['Jinx', 'AD', '', [2, 3, 5]], ['Jhin', 'AD', ''], ['Caitlyn', 'AD', '', [4, 3, 3]],
+        ['Ezreal', 'AD', ''], ['Draven', 'AD', '', [5, 3, 2]], ['Lucian', 'AD', ''], ['Tristana', 'AD', ''],
+        ['Xayah', 'AD', 'L'], ['Samira', 'AD', 'E'], ['Aphelios', 'AD', ''], ['Varus', 'AD', ''], ['Sivir', 'AD', '']
+      ],
+      Support: [
+        ['Brand', 'AP', '', [3, 4, 3]], ['Nautilus', 'TANK', 'FE', [4, 3, 3]], ['Lux', 'AP', 'L'], ['Thresh', 'TANK', 'EL'],
+        ['Karma', 'AP', 'L'], ['Leona', 'TANK', 'FE'], ['Zyra', 'AP', ''], ['Morgana', 'AP', 'L'], ['Alistar', 'TANK', 'FEL'],
+        ['Braum', 'TANK', 'FL'], ['Lulu', 'AP', 'L'], ['Pyke', 'AD', ''], ['Blitzcrank', 'TANK', 'E'], ['Soraka', 'AP', 'L'],
+        ['Nami', 'AP', 'L'], ['Rakan', 'AP', 'EL']
+      ]
+    };
+    const CAT = {};
+    const META = {};
+    ROLES.forEach((role) => {
+      CAT[role] = RAW[role].map((a) => {
+        const m = {
+          name: a[0],
+          code: codeOf(a[0]),
+          role: role,
+          dmg: a[1],
+          gives: a[2].split('').filter((k) => k).map((k) => GV[k]).concat(a[1] === 'AD' ? ['Physique'] : []),
+          scal: a[3] || [3, 4, 3]
+        };
+        if (!META[m.name]) META[m.name] = m;
+        return m;
+      });
+    });
+    const allNames = [];
+    ROLES.forEach((role) => CAT[role].forEach((c) => { if (allNames.indexOf(c.name) < 0) allNames.push(c.name); }));
+
+    // Pools d'exemple des joueurs : [champion, maîtrise sur 10]
+    const POOLS = {
+      Alex: { Top: [['Aurora', 8], ['Malphite', 7], ['Jax', 6], ['Gnar', 5]] },
+      Sam: { Jungle: [['Fiddlesticks', 8], ['Viego', 7], ['Sejuani', 6], ['Lee Sin', 5]] },
+      Noa: { Mid: [['Lux', 9], ['Orianna', 8], ['Syndra', 8], ['Talon', 7], ['Viktor', 7], ['Ahri', 6]], Support: [['Lux', 6], ['Karma', 5]] },
+      Lou: { Top: [['Jax', 7], ['Gnar', 6]] },
+      Max: { Support: [['Brand', 8], ['Nautilus', 7], ['Lux', 6], ['Thresh', 6], ['Karma', 5]] }
+    };
+    const PLAYERS = Object.keys(POOLS);
+    const ROWMETA = {};
+    ROLES.forEach((role) => {
+      const player = st.assign[role];
+      const list = (POOLS[player] && POOLS[player][role]) || [];
+      ROWMETA[role] = { player: player, hasPool: list.length > 0, list: list };
+    });
+
+    // Données détaillées des champions recommandables (rôles ouverts). n = nombre de parties de l'échantillon.
+    const RBASE = {
+      Top: [
+        { name: 'Aurora', n: 5400, base: 55, lane: 47.5, game: 50.5, scal: [4, 4, 3], gives: [], dmg: 'AP', extra: [] }
+      ],
+      Support: [
+        { name: 'Brand', n: 7600, base: 55, lane: 48.0, game: 51.0, scal: [3, 4, 3], gives: [], dmg: 'AP', extra: [] }
+      ],
+      Jungle: [
+        { name: 'Sejuani', n: 14200, base: 68, lane: 50.5, game: 52.5, scal: [3, 4, 3], gives: ['Frontline', 'Engage'], dmg: 'TANK', extra: [pos('Combo de CC avec Brand')] },
+        { name: 'Fiddlesticks', n: 6800, base: 68, lane: 49.5, game: 52.0, scal: [3, 4, 4], gives: ['Engage'], dmg: 'AP', extra: [pos('Ultimate de teamfight')] },
+        { name: 'Viego', n: 11050, base: 56, lane: 51.0, game: 51.0, scal: [3, 4, 4], gives: ['Physique'], dmg: 'AD', extra: [] },
+        { name: 'Lee Sin', n: 16320, base: 50, lane: 52.5, game: 48.5, scal: [5, 4, 2], gives: ['Physique'], dmg: 'AD', extra: [pos('Mobilité et picks')] },
+        { name: 'Zac', n: 480, base: 70, lane: 50.5, game: 52.5, scal: [3, 4, 4], gives: ['Frontline', 'Engage'], dmg: 'TANK', extra: [pos('Combo de CC avec Brand')] }
+      ],
+      Mid: [
+        { name: 'Orianna', n: 9300, base: 66, lane: 49.8, game: 54.0, scal: [3, 4, 4], gives: ['Engage', 'Peel'], dmg: 'AP', extra: [pos('Zone de contrôle avec Brand')] },
+        { name: 'Talon', n: 4100, base: 60, lane: 54.5, game: 49.0, scal: [4, 4, 2], gives: ['Physique'], dmg: 'AD', extra: [pos('Burst pour punir Ahri en lane')] },
+        { name: 'Viktor', n: 7200, base: 64, lane: 48.5, game: 54.5, scal: [2, 3, 5], gives: [], dmg: 'AP', extra: [pos('Scaling en fin de partie')] },
+        { name: 'Galio', n: 3600, base: 74, lane: 51.0, game: 53.0, scal: [3, 4, 4], gives: ['Frontline', 'Engage'], dmg: 'AP', extra: [pos('Résistance magique')] },
+        { name: 'Lux', n: 420, base: 46, lane: 50.0, game: 50.5, scal: [3, 4, 4], gives: ['Peel'], dmg: 'AP', extra: [neg("Beaucoup de poke, peu d'engage")] }
+      ],
+      ADC: [
+        { name: 'Ashe', n: 8800, base: 62, lane: 51.5, game: 52.0, scal: [4, 4, 4], gives: ['Physique', 'Engage'], dmg: 'AD', extra: [pos('Slow pour verrouiller les cibles')] },
+        { name: 'Miss Fortune', n: 18500, base: 68, lane: 52.0, game: 50.5, scal: [4, 4, 3], gives: ['Physique'], dmg: 'AD', extra: [pos('Dégâts de zone en teamfight'), neg('Fragile face aux engages')] },
+        { name: "Kai'Sa", n: 21000, base: 50, lane: 50.0, game: 51.5, scal: [3, 4, 5], gives: ['Physique'], dmg: 'AD', extra: [pos("Burst si l'ennemi plonge")] },
+        { name: 'Vayne', n: 12400, base: 60, lane: 47.5, game: 52.5, scal: [2, 4, 5], gives: ['Physique'], dmg: 'AD', extra: [neg('Vulnérable aux CC de Nautilus')] },
+        { name: 'Jinx', n: 23000, base: 54, lane: 49.0, game: 52.0, scal: [2, 3, 5], gives: ['Physique'], dmg: 'AD', extra: [pos('Dégâts de zone en fin de partie'), neg('Très fragile sans peel')] }
+      ]
+    };
+    // Le statut pool / hors pool / sans pool dépend du joueur placé sur le rôle
+    const candidates = (role) => (RBASE[role] || []).map((c) => {
+      const m = ROWMETA[role];
+      const f = m.list.filter((x) => x[0] === c.name)[0];
+      const pool = !m.hasPool ? { pool: 'all', mas: null } : (f ? { pool: 'in', mas: f[1] * 10 } : { pool: 'out', mas: 0 });
+      return Object.assign({ code: codeOf(c.name) }, c, pool);
+    });
+
+    const MATCH = {
+      'Aurora|Ornn': [neg('Peu de dégâts sur une cible tanky'), pos("Plus mobile qu'Ornn")],
+      'Brand|Nautilus': [neg('Vulnérable au hook de Nautilus'), pos('Dégâts de zone dans la durée')]
+    };
+    const INFO = {
+      Aurora: [pos('Burst et mobilité en lane'), neg('Aucun frontline pour la compo'), neg('Puissance en baisse en fin de partie')],
+      Brand: [pos('Contrôle de zone et dégâts dans la durée'), neg('Peu de protection pour ses carry')]
+    };
+
+    // Qui est pris, qui est banni
+    const allyTakenBy = {};
+    ROLES.forEach((r) => {
+      const n = (r === 'Top' || r === 'Support') ? st.fix[r] : st.picks[r];
+      if (n) allyTakenBy[n] = r;
+    });
+    const enemyTakenBy = {};
+    ROLES.forEach((r) => { if (st.enemy[r]) enemyTakenBy[st.enemy[r]] = r; });
+    const allBans = st.allyBans.concat(st.enemyBans);
+
+    const goneReason = (name, role) => {
+      if (st.allyBans.indexOf(name) >= 0) return 'Banni par ton équipe';
+      if (st.enemyBans.indexOf(name) >= 0) return "Banni par l'ennemi";
+      if (enemyTakenBy[name]) return "Pris par l'ennemi";
+      if (allyTakenBy[name] && allyTakenBy[name] !== role) return 'Pris par ton équipe';
+      return '';
+    };
+    const blocked = (name, side, role) => {
+      if (allBans.indexOf(name) >= 0) return 'Banni';
+      if (allyTakenBy[name] && !(side === 'ally' && allyTakenBy[name] === role)) return side === 'ally' ? 'Déjà pris' : 'Pris (allié)';
+      if (enemyTakenBy[name] && !(side === 'enemy' && enemyTakenBy[name] === role)) return side === 'ally' ? 'Pris (ennemi)' : 'Déjà pris';
+      return '';
+    };
+    const banBlocked = (name) => (allBans.indexOf(name) >= 0 ? 'Déjà banni' : ((allyTakenBy[name] || enemyTakenBy[name]) ? 'Déjà pris' : ''));
+
+    // Compositions connues
+    const enemyKnown = ROLES.map((r) => st.enemy[r]).filter((n) => n).map((n) => META[n]).filter((m) => m);
+    const avgScal = (list) => (list.length ? [0, 1, 2].map((i) => list.reduce((s, x) => s + x.scal[i], 0) / list.length) : [3, 3, 3]);
+    const scalDiff = (allyList) => {
+      const a = avgScal(allyList);
+      const e = avgScal(enemyKnown);
+      return a.map((v, i) => v - e[i]);
+    };
+
+    const PART_TIP = {
+      'Frontline': 'Au moins un champion qui encaisse les dégâts pour l\'équipe.',
+      'Engage': 'Un moyen d\'initier le combat.',
+      'Peel': 'De quoi protéger tes carry des plongées.',
+      'Mix de dégâts': 'Des dégâts magiques et des dégâts physiques.',
+      'Scaling': 'Puissance de ta compo face à l\'ennemi sur les trois phases de la partie.'
+    };
+    const compScore = (list, opp) => {
+      const metG = {};
+      list.forEach((x) => (x.gives || []).forEach((g) => { metG[g] = true; }));
+      const ap = list.filter((x) => x.dmg === 'AP').length;
+      const ad = list.filter((x) => x.dmg === 'AD').length;
+      const a = avgScal(list);
+      const o = avgScal(opp);
+      const minD = Math.min(a[0] - o[0], a[1] - o[1], a[2] - o[2]);
+      const parts = [
+        { label: 'Frontline', v: metG.Frontline ? 100 : 20, w: 25 },
+        { label: 'Engage', v: metG.Engage ? 100 : 25, w: 25 },
+        { label: 'Peel', v: metG.Peel ? 100 : 30, w: 15 },
+        { label: 'Mix de dégâts', v: ap > 0 && ad > 0 ? 100 : 35, w: 15 },
+        { label: 'Scaling', v: clamp(Math.round(60 + 20 * minD)), w: 20 }
+      ];
+      const total = Math.round(parts.reduce((s, p) => s + p.v * p.w, 0) / 100);
+      return { total: total, parts: parts };
+    };
+
+    const champFor = (role, name) => {
+      const f = candidates(role).filter((c) => c.name === name)[0];
+      if (f) return f;
+      const m = META[name] || { dmg: 'AD', gives: [], scal: [3, 3, 3] };
+      const rm = ROWMETA[role];
+      const inPool = rm.list.filter((x) => x[0] === name)[0];
+      const pool = !rm.hasPool ? { pool: 'all', mas: null } : (inPool ? { pool: 'in', mas: inPool[1] * 10 } : { pool: 'out', mas: 0 });
+      return Object.assign({ name: name, code: codeOf(name), n: 3000, base: 55, lane: 50, game: 50, scal: m.scal, gives: m.gives, dmg: m.dmg, extra: [] }, pool);
+    };
+
+    const ctxFor = (role) => {
+      const list = [];
+      ['Top', 'Support'].forEach((r) => { if (r !== role && st.fix[r]) list.push(META[st.fix[r]]); });
+      OPEN.forEach((r) => {
+        if (r !== role && st.picks[r]) list.push(champFor(r, st.picks[r]));
+      });
+      return list;
+    };
+
+    const evalChamp = (c, ctx, player) => {
+      const met = {};
+      ctx.forEach((x) => (x.gives || []).forEach((g) => { if (!met[g]) met[g] = x.name; }));
+      const apCount = ctx.filter((x) => x.dmg === 'AP').length;
+      const diff = scalDiff(ctx);
+      let wi = 0;
+      diff.forEach((d, i) => { if (d < diff[wi]) wi = i; });
+      const needScal = diff[wi] <= -0.5 ? wi : -1;
+      let syn = c.base;
+      const goods = [];
+      const bads = [];
+      c.gives.forEach((g) => {
+        if (met[g]) { syn -= 3; bads.push(neg(LBL[g] + ' déjà couvert par ' + met[g])); }
+        else { syn += W[g]; goods.push(pos(LBL[g])); }
+      });
+      if (c.dmg === 'AP' && apCount >= 2) { syn -= 4; bads.push(neg((apCount + 1) + 'e source de dégâts magiques')); }
+      if (needScal >= 0) {
+        const v = c.scal[needScal];
+        syn += (v - 3) * 4;
+        if (v >= 4) goods.push(pos('Scaling ' + PH[needScal]));
+        else if (v <= 2) bads.push(neg('Faible ' + PH[needScal]));
+      }
+      c.extra.forEach((e) => (e.text.charAt(0) === '+' ? goods : bads).push(e));
+      if (c.lane - c.game >= 3) bads.push(neg('Fort en lane mais se fait outscale'));
+      if (c.game - c.lane >= 3) goods.push(pos("Meilleur en partie qu'en lane (scaling)"));
+      if (c.pool === 'in') {
+        if (c.mas >= 80) goods.push(pos('Maîtrise élevée'));
+        else if (c.mas <= 50) bads.push(neg('Maîtrise faible'));
+      }
+      if (c.pool === 'out') bads.push(neg('Hors du pool de ' + player));
+      if (c.n < 500) bads.push(neg('Échantillon faible : ' + c.n + ' parties'));
+      syn = clamp(syn);
+      const ctr = Math.round(wrScore(c.lane) * 0.4 + wrScore(c.game) * 0.6);
+      const total = c.mas == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + c.mas * 0.25);
+      const delta = compScore(ctx.concat([c]), enemyKnown).total - compScore(ctx, enemyKnown).total;
+      return { c: c, syn: syn, ctr: ctr, total: total, delta: delta, reasons: goods.concat(bads) };
+    };
+
+    const tagOf = (c) => (c.pool === 'in' ? 'Pool' : (c.pool === 'out' ? 'Hors pool' : 'Tous les champions'));
+    const nFmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+    const scalBars = (scal) => scal.map((v, i) => ({
+      label: ['D', 'M', 'F'][i],
+      tip: ['Début de partie', 'Milieu de partie', 'Fin de partie'][i] + ' : ' + v + ' sur 5',
+      h: (v * 4) + 'px',
+      bg: v >= 4 ? '#3DD6C3' : (v === 3 ? '#6AA8FF' : '#4A5266')
+    }));
+
+    const statsOf = (e) => [
+      { label: 'Synergie', v: e.syn, w: e.syn + '%', color: '#3DD6C3', tip: 'Synergie : ' + e.syn + ' sur 100' },
+      { label: 'Counter', v: e.ctr, w: e.ctr + '%', color: '#6AA8FF', tip: 'Counter : ' + e.ctr + ' sur 100' },
+      e.c.mas == null
+        ? { label: 'Maîtrise', v: 'n/a', w: '0%', color: '#4A5266', tip: 'Pas de pool pour ce rôle, la maîtrise n\'entre pas dans le score' }
+        : { label: 'Maîtrise', v: e.c.mas, w: e.c.mas + '%', color: '#FFD27A', tip: 'Maîtrise : ' + e.c.mas + ' sur 100' }
+    ];
+
+    const detailOf = (e, i, role, top) => {
+      const low = e.c.n < 500;
+      return {
+        rank: i + 1,
+        name: e.c.name,
+        code: face(e.c.name).code,
+        bg: face(e.c.name).bg,
+        total: e.total,
+        delta: (e.delta >= 0 ? '+' : '') + e.delta,
+        lane: fmt(e.c.lane) + ' %',
+        game: fmt(e.c.game) + ' %',
+        stats: statsOf(e),
+        scal: scalBars(e.c.scal),
+        reasons: e.reasons.slice(0, 3),
+        tag: tagOf(e.c),
+        tagBg: e.c.pool === 'out' ? '#3A3016' : '#1E2430',
+        tagFg: e.c.pool === 'out' ? '#FFD27A' : '#C9D0DF',
+        border: st.sel[role] === e.c.name ? '1px solid #3DD6C3' : '1px solid #2B3242',
+        scoreColor: top ? '#3DD6C3' : '#E9ECF3',
+        sampleText: nFmt(e.c.n) + ' parties' + (low ? ' : peu fiable' : ''),
+        sampleColor: low ? '#FFD27A' : '#A3ABBD',
+        sampleTip: 'Échantillon de ' + nFmt(e.c.n) + ' parties : sous 500 parties, le win rate est peu fiable',
+        low: low,
+        showHead: false,
+        head: '',
+        headColor: '#A3ABBD',
+        lockLabel: 'Verrouiller ' + e.c.name + ' en ' + role,
+        lock: () => this.lockPick(role, e.c.name),
+        select: () => this.selectRec(role, e.c.name)
+      };
+    };
+
+    // Sélecteur manuel d'une ligne
+    const q = st.q.trim().toLowerCase();
+    const pickerItemsFor = (role, side, current) => CAT[role]
+      .filter((c) => !q || c.name.toLowerCase().indexOf(q) >= 0)
+      .map((c) => {
+        const why = blocked(c.name, side, role);
+        const sel = c.name === current;
+        return {
+          name: c.name,
+          code: face(c.name).code,
+          bg: face(c.name).bg,
+          note: sel ? 'Actuel' : why,
+          disabled: !!why,
+          cursor: why ? 'not-allowed' : 'pointer',
+          opacity: why ? '0.55' : '1',
+          border: sel ? '1px solid #3DD6C3' : '1px solid #2B3242',
+          label: why ? c.name + ', indisponible : ' + why : (side === 'ally' ? 'Choisir ' : 'Saisir ') + c.name + ' en ' + role,
+          choose: () => this.chooseManual(side, role, c.name)
+        };
+      });
+
+    const rows = ROLES.map((role) => {
+      const m = ROWMETA[role];
+      const isFixed = role === 'Top' || role === 'Support';
+      const fixName = isFixed ? st.fix[role] : null;
+      const pickName = isFixed ? null : st.picks[role];
+      const chosen = !!pickName;
+      const isActive = !isFixed && !chosen;
+      const enemyName = st.enemy[role];
+      const pkHere = !!st.pk && st.pk.role === role;
+      const allyPk = pkHere && st.pk.side === 'ally';
+      const enemyPk = pkHere && st.pk.side === 'enemy';
+      const ctx = ctxFor(role);
+      const expanded = !!st.exp[role];
+      let recs = [];
+      let details = [];
+      let recNote = '';
+      let noRecs = false;
+      if (isActive) {
+        const evals = candidates(role).filter((c) => !goneReason(c.name, role)).map((c) => evalChamp(c, ctx, m.player));
+        evals.sort((a, b) => b.total - a.total);
+        const inEv = evals.filter((e) => e.c.pool !== 'out');
+        const outEv = evals.filter((e) => e.c.pool === 'out');
+        const inDet = inEv.map((e, i) => detailOf(e, i, role, i === 0));
+        const outDet = outEv.map((e, i) => detailOf(e, i, role, false));
+        if (inDet.length) {
+          inDet[0].showHead = true;
+          inDet[0].head = m.hasPool ? 'Pool' : 'Tous les champions ' + role + ' (aucun pool)';
+          inDet[0].headColor = '#3DD6C3';
+        }
+        if (outDet.length) {
+          outDet[0].showHead = true;
+          outDet[0].head = 'Hors pool';
+          outDet[0].headColor = '#FFD27A';
+        }
+        details = inDet.concat(outDet);
+        const shown = inDet.length ? inDet : outDet;
+        noRecs = shown.length === 0;
+        recNote = inDet.length
+          ? (m.hasPool ? 'Les 3 meilleurs du pool de ' + m.player + ', classés par score.' : m.player + ' n\'a pas de pool ' + role + ' : tous les champions sont classés.')
+          : 'Aucun champion du pool de ' + m.player + ' n\'est disponible : propositions hors pool.';
+        recs = shown.slice(0, 3).map((d, i) => {
+          const sel = st.sel[role] === d.name;
+          return {
+            name: d.name,
+            code: d.code,
+            bg: d.bg,
+            total: d.total,
+            delta: d.delta,
+            rank: i + 1,
+            selected: sel,
+            border: sel ? '2px solid #3DD6C3' : '1px solid #2B3242',
+            cardBg: sel ? '#16262B' : '#12161E',
+            selectLabel: d.name + ', score ' + d.total + ' sur 100. ' + (sel ? 'Sélectionné.' : 'Sélectionner.'),
+            tip: d.name + ' : ' + d.stats.map((s) => s.label + ' ' + s.v).join(', '),
+            badgeBg: i === 0 ? '#3DD6C3' : '#252B3A',
+            badgeFg: i === 0 ? '#06201C' : '#E9ECF3',
+            scoreColor: d.scoreColor,
+            stats: d.stats,
+            lane: d.lane,
+            game: d.game,
+            low: d.low,
+            sampleTip: d.sampleTip,
+            lockLabel: d.lockLabel,
+            select: d.select,
+            lock: d.lock
+          };
+        });
+      }
+      let sum = null;
+      const sumName = isFixed ? fixName : pickName;
+      if (sumName) {
+        const d = detailOf(evalChamp(champFor(role, sumName), ctx, m.player), 0, role, true);
+        sum = {
+          total: d.total,
+          delta: d.delta,
+          tag: d.tag,
+          tagBg: d.tagBg,
+          tagFg: d.tagFg,
+          lane: d.lane,
+          game: d.game,
+          sampleText: d.sampleText,
+          sampleColor: d.sampleColor,
+          sampleTip: d.sampleTip,
+          stats: d.stats,
+          scal: d.scal,
+          chips: d.reasons
+        };
+      }
+      const waiting = !enemyName;
+      const allyName = isFixed ? fixName : pickName;
+
+      let matchup = [];
+      let fixedInfo = [];
+      if (isFixed) {
+        matchup = MATCH[fixName + '|' + enemyName] || [{ text: waiting ? 'Adversaire direct inconnu' : 'Pas de données de matchup pour cette paire (exemple)', bg: '#252B3A', fg: '#C9D0DF' }];
+        const meta = META[fixName];
+        fixedInfo = INFO[fixName] || ((meta && meta.gives.length)
+          ? meta.gives.map((g) => pos(LBL[g] + ' pour la compo'))
+          : [neg('Aucun frontline, engage ni peel')]);
+      }
+      if (sum && isFixed) sum.chips = matchup.concat(fixedInfo);
+      const dup = ROLES.filter((x) => st.assign[x] === m.player).length > 1;
+
+      let stateText = 'En attente';
+      let stateBg = '#252B3A';
+      let stateFg = '#C9D0DF';
+      let stateIcon = ICON.circle;
+      if (isFixed || chosen) { stateText = 'Verrouillé'; stateBg = isFixed ? '#1E2A44' : '#12332E'; stateFg = isFixed ? '#A9C9FF' : '#8FE8D3'; stateIcon = ICON.lock; }
+      else if (isActive) { stateText = 'À choisir'; stateBg = '#252B3A'; stateFg = '#E9ECF3'; stateIcon = ICON.circle; }
+
+      return {
+        role: role,
+        selId: 'player-' + role,
+        playerId: m.player,
+        onPlayer: (e) => this.assignPlayer(role, e.target.value),
+        noPool: !m.hasPool,
+        dup: dup,
+        name: allyName || 'À choisir',
+        code: allyName ? face(allyName).code : '?',
+        bg: allyName ? face(allyName).bg : '#252B3A',
+        allyLabel: allyName ? 'Saisie manuelle : changer le champion de ' + m.player + ' en ' + role : 'Saisie manuelle : choisir le champion de ' + m.player + ' en ' + role,
+        allyTitle: allyName ? 'Changer à la main' : 'Choisir à la main',
+        allyBorder: isFixed ? '1px solid #6AA8FF' : (chosen ? '2px solid #3DD6C3' : '2px dashed #3DD6C3'),
+        allyPickerOpen: allyPk,
+        openAlly: () => this.openPicker('ally', role),
+        vs: waiting ? 'En attente' : enemyName,
+        vsCode: waiting ? '?' : face(enemyName).code,
+        vsBg: waiting ? '#252B3A' : face(enemyName).bg,
+        vsColor: waiting ? '#A3ABBD' : '#E9ECF3',
+        vsBorder: waiting ? '1px dashed #A3ABBD' : '1px solid #FF9F5A',
+        enemyLabel: (waiting ? 'Saisie manuelle : pick ennemi en ' : 'Saisie manuelle : changer le pick ennemi en ') + role,
+        enemyTitle: waiting ? 'Saisir à la main' : 'Changer à la main',
+        enemyPickerOpen: enemyPk,
+        openEnemy: () => this.openPicker('enemy', role),
+        border: '1px solid #2B3242',
+        shadow: 'none',
+        stateText: stateText,
+        stateBg: stateBg,
+        stateFg: stateFg,
+        stateIcon: stateIcon,
+        showRecs: isActive,
+        showSum: !!sum,
+        sum: sum || { total: '', delta: '', tag: '', tagBg: '#1E2430', tagFg: '#C9D0DF', lane: '', game: '', sampleText: '', sampleColor: '#A3ABBD', sampleTip: '', stats: [], scal: [], chips: [] },
+        recs: recs,
+        recNote: recNote,
+        noRecs: noRecs,
+        isExpanded: expanded,
+        toggleText: expanded ? 'Réduire' : 'Plus de détails',
+        chevRot: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+        toggle: () => this.toggleRow(role),
+        showDetails: isActive && expanded,
+        details: details,
+        canRemove: chosen,
+        removeLabel: 'Retirer ' + (allyName || '') + ' et rouvrir les suggestions en ' + role,
+        unlock: () => this.unlockPick(role),
+        showPicker: pkHere,
+        pickerTitle: allyPk ? 'Champion de ' + m.player + ' en ' + role : 'Pick ennemi en ' + role,
+        pickerAccent: allyPk ? '#6AA8FF' : '#FF9F5A',
+        pickerItems: pkHere ? pickerItemsFor(role, st.pk.side, allyPk ? allyName : enemyName) : [],
+        pickerEmpty: pkHere && pickerItemsFor(role, st.pk.side, null).length === 0,
+        canClear: enemyPk && !!enemyName,
+        clearEnemy: () => this.clearEnemy(role),
+        closePicker: () => this.setState({ pk: null, q: '' }),
+        q: st.q,
+        onQ: (e) => this.setState({ q: e.target.value })
+      };
+    });
+
+    // Lecture de la compo alliée
+    const full = ctxFor('none');
+    const met = {};
+    full.forEach((x) => (x.gives || []).forEach((g) => { if (!met[g]) met[g] = x.name; }));
+    const apCount = full.filter((x) => x.dmg === 'AP').length;
+    const NEEDS = [
+      { k: 'Frontline', no: 'Pas de frontline' },
+      { k: 'Engage', no: "Pas d'engage de teamfight" },
+      { k: 'Physique', no: 'Aucun dégât physique' },
+      { k: 'Peel', no: 'Peu de peel pour protéger ton ADC' }
+    ];
+    const rd = (ok, label) => ({ sign: ok ? '+' : '-', fg: ok ? '#8FE8D3' : '#FFB98A', label: label });
+    const allyRead = [];
+    NEEDS.forEach((n) => {
+      allyRead.push(met[n.k] ? rd(true, LBL[n.k] + ' avec ' + met[n.k]) : rd(false, n.no));
+    });
+    allyRead.push(apCount / full.length >= 0.75 ? rd(false, 'Dégâts magiques : ' + apCount + ' picks sur ' + full.length) : rd(true, 'Dégâts mixtes : ' + apCount + ' magiques sur ' + full.length + ' picks'));
+
+    const aAvg = avgScal(full);
+    const eAvg = avgScal(enemyKnown);
+    const diff = aAvg.map((v, i) => v - eAvg[i]);
+    const phases = PHL.map((p, i) => {
+      const d = diff[i];
+      let verdict = 'Équilibre';
+      let bg = '#252B3A';
+      let fg = '#E9ECF3';
+      if (d >= 0.5) { verdict = 'Avantage'; bg = '#12332E'; fg = '#8FE8D3'; allyRead.push(rd(true, 'Avantage de scaling ' + PH[i])); }
+      else if (d <= -0.5) { verdict = 'Désavantage'; bg = '#3A2618'; fg = '#FFB98A'; allyRead.push(rd(false, 'Désavantage de scaling ' + PH[i])); }
+      return {
+        label: p.label + ' (' + p.range + ')',
+        ally: fmt(aAvg[i]),
+        enemy: fmt(eAvg[i]),
+        allyW: (aAvg[i] / 5 * 100) + '%',
+        enemyW: (eAvg[i] / 5 * 100) + '%',
+        verdict: verdict,
+        bg: bg,
+        fg: fg
+      };
+    });
+
+    // Lecture de la compo ennemie
+    const enemyRead = [];
+    const ef = enemyKnown.filter((x) => x.gives.indexOf('Frontline') >= 0).map((x) => x.name);
+    const ee = enemyKnown.filter((x) => x.gives.indexOf('Engage') >= 0).map((x) => x.name);
+    const eap = enemyKnown.filter((x) => x.dmg === 'AP').map((x) => x.name);
+    const ead = enemyKnown.filter((x) => x.dmg === 'AD').map((x) => x.name);
+    if (ef.length) enemyRead.push('Frontline solide (' + ef.join(', ') + ')');
+    if (ee.length) enemyRead.push('Engage de teamfight (' + ee.join(', ') + ')');
+    if (eap.length) enemyRead.push('Dégâts magiques : ' + eap.join(', '));
+    if (ead.length) enemyRead.push('Dégâts physiques : ' + ead.join(', '));
+    if (enemyKnown.length && eAvg[2] >= 4) enemyRead.push('Fort en fin de partie');
+    if (enemyKnown.length && eAvg[0] >= 3.5) enemyRead.push('Fort en début de partie');
+    const unknownRoles = ROLES.filter((r) => !st.enemy[r]);
+    if (unknownRoles.length) enemyRead.push('Encore inconnus : ' + unknownRoles.join(', '));
+
+    // Note globale
+    const verdictOf = (n) => (n >= 75
+      ? { t: 'Solide', bg: '#12332E', fg: '#8FE8D3' }
+      : n >= 55 ? { t: 'Correcte', bg: '#1E2A44', fg: '#A9C9FF' }
+      : n >= 35 ? { t: 'Fragile', bg: '#3A3016', fg: '#FFD27A' }
+      : { t: 'À corriger', bg: '#3A2618', fg: '#FFB98A' });
+    const nowC = compScore(full, enemyKnown);
+    const enemyC = compScore(enemyKnown.length ? enemyKnown : [{ gives: [], dmg: 'TANK', scal: [3, 3, 3] }], full);
+    const vNow = verdictOf(nowC.total);
+    const vEnemy = verdictOf(enemyC.total);
+    const comp = {
+      now: nowC.total,
+      color: vNow.fg,
+      verdict: vNow.t,
+      vbg: vNow.bg,
+      vfg: vNow.fg,
+      parts: nowC.parts.map((p) => ({ label: p.label, v: p.v, tip: PART_TIP[p.label], w: p.v + '%', color: p.v >= 75 ? '#3DD6C3' : (p.v >= 50 ? '#6AA8FF' : '#FFB98A') })),
+      enemy: enemyC.total,
+      enemyColor: vEnemy.fg,
+      enemyVerdict: vEnemy.t
+    };
+
+    // Équipe : points d'attention
+    const teamNotes = [];
+    ROLES.forEach((r) => {
+      if (!ROWMETA[r].hasPool) teamNotes.push(ROWMETA[r].player + ' n\'a pas de pool ' + r + ' : tous les champions du rôle sont proposés, sans note de maîtrise.');
+    });
+    PLAYERS.forEach((p) => {
+      const rs = ROLES.filter((r) => st.assign[r] === p);
+      if (rs.length > 1) teamNotes.push(p + ' est placé sur plusieurs rôles : ' + rs.join(', ') + '.');
+    });
+
+    // Bans
+    const slotsOf = (side) => {
+      const list = side === 'ally' ? st.allyBans : st.enemyBans;
+      const col = side === 'ally' ? '#6AA8FF' : '#FF9F5A';
+      return [0, 1, 2, 3, 4].map((i) => {
+        const n = list[i];
+        return n
+          ? { name: n, code: face(n).code, bg: face(n).bg, border: '1px solid ' + col, strike: 0.75, label: 'Retirer le ban de ' + n, act: () => this.removeBan(side, n) }
+          : { name: '', code: '+', bg: '#252B3A', border: '1px dashed #A3ABBD', strike: 0, label: side === 'ally' ? 'Ajouter un ban de ton équipe' : "Saisir un ban de l'équipe ennemie", act: () => this.openBan(side) };
+      });
+    };
+
+    const BANC = [
+      { name: 'Zed', role: 'Mid', threat: 90, tr: 'Burst sur tes mages fragiles' },
+      { name: 'Jhin', role: 'ADC', threat: 78, tr: 'Combo de CC avec un support engage' },
+      { name: 'Yone', role: 'Mid', threat: 82, tr: 'Fort contre les mages peu mobiles' },
+      { name: 'Caitlyn', role: 'ADC', threat: 70, tr: 'Poke de lane difficile à gérer' },
+      { name: 'Kayn', role: 'Jungle', threat: 74, tr: 'Dive sur ta backline fragile' },
+      { name: 'Malphite', role: 'Top', threat: 66, tr: 'Engage dur sur ta backline' },
+      { name: 'Lissandra', role: 'Mid', threat: 64, tr: 'CC en chaîne sur ta backline' },
+      { name: 'Leona', role: 'Support', threat: 62, tr: 'Engage dur contre un ADC sans peel' },
+      { name: 'Pyke', role: 'Support', threat: 58, tr: 'Hook et exécution sur ta backline' }
+    ];
+    const allyFull = st.allyBans.length >= 5;
+    const banCards = BANC
+      .filter((c) => allBans.indexOf(c.name) < 0 && !allyTakenBy[c.name] && !enemyTakenBy[c.name])
+      .sort((a, b) => b.threat - a.threat)
+      .slice(0, 6)
+      .map((c) => ({
+        name: c.name,
+        code: face(c.name).code,
+        bg: face(c.name).bg,
+        role: c.role,
+        reason: c.tr,
+        score: c.threat,
+        label: 'Bannir ' + c.name,
+        disabled: allyFull,
+        cursor: allyFull ? 'not-allowed' : 'pointer',
+        btnBg: allyFull ? '#171B24' : '#3DD6C3',
+        btnFg: allyFull ? '#8A93A6' : '#06201C',
+        btnBorder: allyFull ? '1px solid #2B3242' : '1px solid #3DD6C3',
+        ban: () => this.addBan('ally', c.name)
+      }));
+
+    const bkOpen = !!st.bk;
+    const bkSide = bkOpen ? st.bk.side : 'ally';
+    const bkFull = (bkSide === 'ally' ? st.allyBans : st.enemyBans).length >= 5;
+    const bq = st.bq.trim().toLowerCase();
+    let bkItems = [];
+    if (bkOpen) {
+      const names = st.bkRole === 'Tous'
+        ? allNames.slice().sort((a, b) => a.localeCompare(b, 'fr'))
+        : CAT[st.bkRole].map((c) => c.name);
+      bkItems = names
+        .filter((n) => !bq || n.toLowerCase().indexOf(bq) >= 0)
+        .map((n) => {
+          const why = banBlocked(n);
+          const dis = !!why || bkFull;
+          return {
+            name: n,
+            code: face(n).code,
+            bg: face(n).bg,
+            note: why || META[n].role,
+            disabled: dis,
+            cursor: dis ? 'not-allowed' : 'pointer',
+            opacity: dis ? '0.55' : '1',
+            border: '1px solid #2B3242',
+            label: dis ? n + ', indisponible' : 'Bannir ' + n,
+            choose: () => this.addBan(bkSide, n)
+          };
+        });
+    }
+    const ban = {
+      allyCount: st.allyBans.length + '/5',
+      enemyCount: st.enemyBans.length + '/5',
+      open: st.banOpen,
+      chevRot: st.banOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+      toggleOpen: () => this.setState({ banOpen: !this.state.banOpen }),
+      showSuggest: !allyFull && banCards.length > 0,
+      full: allyFull,
+      cards: banCards,
+      pickerOpen: bkOpen,
+      pickerTitle: bkSide === 'ally' ? 'Ban de ton équipe' : "Ban de l'équipe ennemie",
+      pickerAccent: bkSide === 'ally' ? '#6AA8FF' : '#FF9F5A',
+      closePicker: () => this.setState({ bk: null, bq: '' }),
+      q: st.bq,
+      onQ: (e) => this.setState({ bq: e.target.value }),
+      roleChips: ['Tous'].concat(ROLES).map((r) => ({
+        label: r,
+        selected: st.bkRole === r,
+        bg: st.bkRole === r ? '#1E2430' : '#171B24',
+        border: st.bkRole === r ? '1px solid #3DD6C3' : '1px solid #2B3242',
+        select: () => this.setState({ bkRole: r })
+      })),
+      pickerItems: bkItems,
+      pickerEmpty: bkOpen && bkItems.length === 0,
+      pickerFull: bkOpen && bkFull
+    };
+
+    const help = {
+      open: st.helpOpen,
+      chevRot: st.helpOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+      toggle: () => this.setState({ helpOpen: !this.state.helpOpen }),
+      items: [
+        { t: 'Score sur 100', d: 'Combine synergie avec ta compo, counter face à l\'ennemi et maîtrise du joueur. Sans pool, la maîtrise est ignorée.' },
+        { t: 'Compo +N', d: 'Points que ce pick ajoute à la note globale de ta compo.' },
+        { t: 'Lane et Partie', d: 'Win rate du champion dans ce matchup en lane, et sur la partie entière.' },
+        { t: 'Peu fiable', d: 'Moins de 500 parties derrière le win rate : la valeur peut changer fortement.' },
+        { t: 'Scaling D, M, F', d: 'Puissance au début, au milieu et en fin de partie, de 1 à 5.' },
+        { t: 'Données', d: 'Patch 26.21, rang Emerald+. Valeurs d\'exemple dans cette maquette.' }
+      ]
+    };
+
+    const t = st.toast;
+    return {
+      rows: rows,
+      comp: comp,
+      ban: ban,
+      help: help,
+      phases: phases,
+      allyRead: allyRead,
+      enemyRead: enemyRead,
+      team: { show: teamNotes.length > 0, notes: teamNotes },
+      playerOptions: PLAYERS.map((n) => ({ value: n, label: n })),
+      allyBans: slotsOf('ally'),
+      enemyBans: slotsOf('enemy'),
+      reset: {
+        asking: st.confirmReset,
+        idle: !st.confirmReset,
+        ask: () => this.setState({ confirmReset: true }),
+        cancel: () => this.setState({ confirmReset: false }),
+        confirm: () => this.commit('Draft réinitialisée', { picks: { Jungle: null, Mid: null, ADC: null }, sel: {}, confirmReset: false, pk: null, q: '' })
+      },
+      toast: {
+        show: !!t,
+        msg: t ? t.msg : '',
+        undo: () => this.undo(),
+        close: () => this.setState({ toast: null })
+      }
+    };
+  }
+
+  // Enregistre l'état précédent pour permettre d'annuler la dernière action
+  commit(msg, patch) {
+    const s = this.state;
+    const snap = { picks: s.picks, fix: s.fix, enemy: s.enemy, allyBans: s.allyBans, enemyBans: s.enemyBans, sel: s.sel };
+    this.setState(Object.assign({}, patch, { toast: { msg: msg, snap: snap } }));
+  }
+
+  undo() {
+    const t = this.state.toast;
+    if (!t) return;
+    this.setState(Object.assign({}, t.snap, { toast: null, pk: null, bk: null, q: '', bq: '', confirmReset: false }));
+  }
+
+  assignPlayer(role, player) {
+    const a = Object.assign({}, this.state.assign);
+    a[role] = player;
+    this.setState({ assign: a, sel: {} });
+  }
+
+  selectRec(role, name) {
+    const sel = Object.assign({}, this.state.sel);
+    sel[role] = sel[role] === name ? null : name;
+    this.setState({ sel: sel });
+  }
+
+  lockPick(role, name) {
+    const picks = Object.assign({}, this.state.picks);
+    picks[role] = name;
+    const sel = Object.assign({}, this.state.sel);
+    sel[role] = null;
+    this.commit(name + ' verrouillé en ' + role, { picks: picks, sel: sel, pk: null, q: '' });
+  }
+
+  unlockPick(role) {
+    const picks = Object.assign({}, this.state.picks);
+    const was = picks[role];
+    picks[role] = null;
+    this.commit(role + ' déverrouillé (' + was + ')', { picks: picks });
+  }
+
+  toggleRow(role) {
+    const exp = Object.assign({}, this.state.exp);
+    exp[role] = !exp[role];
+    this.setState({ exp: exp });
+  }
+
+  openPicker(side, role) {
+    const cur = this.state.pk;
+    if (cur && cur.side === side && cur.role === role) {
+      this.setState({ pk: null, q: '' });
+    } else {
+      this.setState({ pk: { side: side, role: role }, q: '' });
+    }
+  }
+
+  chooseManual(side, role, name) {
+    if (side === 'enemy') {
+      const e = Object.assign({}, this.state.enemy);
+      e[role] = name;
+      this.commit('Pick ennemi en ' + role + ' : ' + name, { enemy: e, pk: null, q: '' });
+      return;
+    }
+    if (role === 'Top' || role === 'Support') {
+      const f = Object.assign({}, this.state.fix);
+      f[role] = name;
+      this.commit(name + ' verrouillé en ' + role, { fix: f, pk: null, q: '' });
+      return;
+    }
+    this.lockPick(role, name);
+  }
+
+  clearEnemy(role) {
+    const e = Object.assign({}, this.state.enemy);
+    e[role] = null;
+    this.commit('Pick ennemi effacé en ' + role, { enemy: e, pk: null, q: '' });
+  }
+
+  openBan(side) {
+    this.setState({ bk: { side: side }, bq: '', bkRole: 'Tous' });
+  }
+
+  addBan(side, name) {
+    const key = side === 'ally' ? 'allyBans' : 'enemyBans';
+    const cur = this.state[key];
+    if (cur.length >= 5 || cur.indexOf(name) >= 0) return;
+    const next = {};
+    next[key] = cur.concat([name]);
+    this.commit(name + ' banni', next);
+  }
+
+  removeBan(side, name) {
+    const key = side === 'ally' ? 'allyBans' : 'enemyBans';
+    const next = {};
+    next[key] = this.state[key].filter((n) => n !== name);
+    this.commit('Ban de ' + name + ' retiré', next);
+  }
+}
+</script>
+</body>
+</html>

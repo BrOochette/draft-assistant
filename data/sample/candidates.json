@@ -1,0 +1,378 @@
+{
+  "Top": [
+    {
+      "name": "Aurora",
+      "games": 5400,
+      "synergyBase": 55,
+      "laneWinRate": 47.5,
+      "gameWinRate": 50.5,
+      "scaling": [
+        4,
+        4,
+        3
+      ],
+      "provides": [],
+      "damage": "AP",
+      "notes": []
+    }
+  ],
+  "Support": [
+    {
+      "name": "Brand",
+      "games": 7600,
+      "synergyBase": 55,
+      "laneWinRate": 48,
+      "gameWinRate": 51,
+      "scaling": [
+        3,
+        4,
+        3
+      ],
+      "provides": [],
+      "damage": "AP",
+      "notes": []
+    }
+  ],
+  "Jungle": [
+    {
+      "name": "Sejuani",
+      "games": 14200,
+      "synergyBase": 68,
+      "laneWinRate": 50.5,
+      "gameWinRate": 52.5,
+      "scaling": [
+        3,
+        4,
+        3
+      ],
+      "provides": [
+        "Frontline",
+        "Engage"
+      ],
+      "damage": "TANK",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Combo de CC avec Brand"
+        }
+      ]
+    },
+    {
+      "name": "Fiddlesticks",
+      "games": 6800,
+      "synergyBase": 68,
+      "laneWinRate": 49.5,
+      "gameWinRate": 52,
+      "scaling": [
+        3,
+        4,
+        4
+      ],
+      "provides": [
+        "Engage"
+      ],
+      "damage": "AP",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Ultimate de teamfight"
+        }
+      ]
+    },
+    {
+      "name": "Viego",
+      "games": 11050,
+      "synergyBase": 56,
+      "laneWinRate": 51,
+      "gameWinRate": 51,
+      "scaling": [
+        3,
+        4,
+        4
+      ],
+      "provides": [
+        "Physique"
+      ],
+      "damage": "AD",
+      "notes": []
+    },
+    {
+      "name": "Lee Sin",
+      "games": 16320,
+      "synergyBase": 50,
+      "laneWinRate": 52.5,
+      "gameWinRate": 48.5,
+      "scaling": [
+        5,
+        4,
+        2
+      ],
+      "provides": [
+        "Physique"
+      ],
+      "damage": "AD",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Mobilité et picks"
+        }
+      ]
+    },
+    {
+      "name": "Zac",
+      "games": 480,
+      "synergyBase": 70,
+      "laneWinRate": 50.5,
+      "gameWinRate": 52.5,
+      "scaling": [
+        3,
+        4,
+        4
+      ],
+      "provides": [
+        "Frontline",
+        "Engage"
+      ],
+      "damage": "TANK",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Combo de CC avec Brand"
+        }
+      ]
+    }
+  ],
+  "Mid": [
+    {
+      "name": "Orianna",
+      "games": 9300,
+      "synergyBase": 66,
+      "laneWinRate": 49.8,
+      "gameWinRate": 54,
+      "scaling": [
+        3,
+        4,
+        4
+      ],
+      "provides": [
+        "Engage",
+        "Peel"
+      ],
+      "damage": "AP",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Zone de contrôle avec Brand"
+        }
+      ]
+    },
+    {
+      "name": "Talon",
+      "games": 4100,
+      "synergyBase": 60,
+      "laneWinRate": 54.5,
+      "gameWinRate": 49,
+      "scaling": [
+        4,
+        4,
+        2
+      ],
+      "provides": [
+        "Physique"
+      ],
+      "damage": "AD",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Burst pour punir Ahri en lane"
+        }
+      ]
+    },
+    {
+      "name": "Viktor",
+      "games": 7200,
+      "synergyBase": 64,
+      "laneWinRate": 48.5,
+      "gameWinRate": 54.5,
+      "scaling": [
+        2,
+        3,
+        5
+      ],
+      "provides": [],
+      "damage": "AP",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Scaling en fin de partie"
+        }
+      ]
+    },
+    {
+      "name": "Galio",
+      "games": 3600,
+      "synergyBase": 74,
+      "laneWinRate": 51,
+      "gameWinRate": 53,
+      "scaling": [
+        3,
+        4,
+        4
+      ],
+      "provides": [
+        "Frontline",
+        "Engage"
+      ],
+      "damage": "AP",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Résistance magique"
+        }
+      ]
+    },
+    {
+      "name": "Lux",
+      "games": 420,
+      "synergyBase": 46,
+      "laneWinRate": 50,
+      "gameWinRate": 50.5,
+      "scaling": [
+        3,
+        4,
+        4
+      ],
+      "provides": [
+        "Peel"
+      ],
+      "damage": "AP",
+      "notes": [
+        {
+          "sign": "-",
+          "text": "Beaucoup de poke, peu d'engage"
+        }
+      ]
+    }
+  ],
+  "ADC": [
+    {
+      "name": "Ashe",
+      "games": 8800,
+      "synergyBase": 62,
+      "laneWinRate": 51.5,
+      "gameWinRate": 52,
+      "scaling": [
+        4,
+        4,
+        4
+      ],
+      "provides": [
+        "Physique",
+        "Engage"
+      ],
+      "damage": "AD",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Slow pour verrouiller les cibles"
+        }
+      ]
+    },
+    {
+      "name": "Miss Fortune",
+      "games": 18500,
+      "synergyBase": 68,
+      "laneWinRate": 52,
+      "gameWinRate": 50.5,
+      "scaling": [
+        4,
+        4,
+        3
+      ],
+      "provides": [
+        "Physique"
+      ],
+      "damage": "AD",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Dégâts de zone en teamfight"
+        },
+        {
+          "sign": "-",
+          "text": "Fragile face aux engages"
+        }
+      ]
+    },
+    {
+      "name": "Kai'Sa",
+      "games": 21000,
+      "synergyBase": 50,
+      "laneWinRate": 50,
+      "gameWinRate": 51.5,
+      "scaling": [
+        3,
+        4,
+        5
+      ],
+      "provides": [
+        "Physique"
+      ],
+      "damage": "AD",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Burst si l'ennemi plonge"
+        }
+      ]
+    },
+    {
+      "name": "Vayne",
+      "games": 12400,
+      "synergyBase": 60,
+      "laneWinRate": 47.5,
+      "gameWinRate": 52.5,
+      "scaling": [
+        2,
+        4,
+        5
+      ],
+      "provides": [
+        "Physique"
+      ],
+      "damage": "AD",
+      "notes": [
+        {
+          "sign": "-",
+          "text": "Vulnérable aux CC de Nautilus"
+        }
+      ]
+    },
+    {
+      "name": "Jinx",
+      "games": 23000,
+      "synergyBase": 54,
+      "laneWinRate": 49,
+      "gameWinRate": 52,
+      "scaling": [
+        2,
+        3,
+        5
+      ],
+      "provides": [
+        "Physique"
+      ],
+      "damage": "AD",
+      "notes": [
+        {
+          "sign": "+",
+          "text": "Dégâts de zone en fin de partie"
+        },
+        {
+          "sign": "-",
+          "text": "Très fragile sans peel"
+        }
+      ]
+    }
+  ]
+}

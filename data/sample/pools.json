@@ -1,0 +1,116 @@
+{
+  "Alex": {
+    "Top": [
+      {
+        "champion": "Aurora",
+        "mastery": 8
+      },
+      {
+        "champion": "Malphite",
+        "mastery": 7
+      },
+      {
+        "champion": "Jax",
+        "mastery": 6
+      },
+      {
+        "champion": "Gnar",
+        "mastery": 5
+      }
+    ]
+  },
+  "Sam": {
+    "Jungle": [
+      {
+        "champion": "Fiddlesticks",
+        "mastery": 8
+      },
+      {
+        "champion": "Viego",
+        "mastery": 7
+      },
+      {
+        "champion": "Sejuani",
+        "mastery": 6
+      },
+      {
+        "champion": "Lee Sin",
+        "mastery": 5
+      }
+    ]
+  },
+  "Noa": {
+    "Mid": [
+      {
+        "champion": "Lux",
+        "mastery": 9
+      },
+      {
+        "champion": "Orianna",
+        "mastery": 8
+      },
+      {
+        "champion": "Syndra",
+        "mastery": 8
+      },
+      {
+        "champion": "Talon",
+        "mastery": 7
+      },
+      {
+        "champion": "Viktor",
+        "mastery": 7
+      },
+      {
+        "champion": "Ahri",
+        "mastery": 6
+      }
+    ],
+    "Support": [
+      {
+        "champion": "Lux",
+        "mastery": 6
+      },
+      {
+        "champion": "Karma",
+        "mastery": 5
+      }
+    ]
+  },
+  "Lou": {
+    "Top": [
+      {
+        "champion": "Jax",
+        "mastery": 7
+      },
+      {
+        "champion": "Gnar",
+        "mastery": 6
+      }
+    ]
+  },
+  "Max": {
+    "Support": [
+      {
+        "champion": "Brand",
+        "mastery": 8
+      },
+      {
+        "champion": "Nautilus",
+        "mastery": 7
+      },
+      {
+        "champion": "Lux",
+        "mastery": 6
+      },
+      {
+        "champion": "Thresh",
+        "mastery": 6
+      },
+      {
+        "champion": "Karma",
+        "mastery": 5
+      }
+    ]
+  }
+}

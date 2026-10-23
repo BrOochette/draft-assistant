@@ -1,0 +1,50 @@
+{
+  "matchups": {
+    "Aurora|Ornn": [
+      {
+        "sign": "-",
+        "text": "Peu de dégâts sur une cible tanky"
+      },
+      {
+        "sign": "+",
+        "text": "Plus mobile qu'Ornn"
+      }
+    ],
+    "Brand|Nautilus": [
+      {
+        "sign": "-",
+        "text": "Vulnérable au hook de Nautilus"
+      },
+      {
+        "sign": "+",
+        "text": "Dégâts de zone dans la durée"
+      }
+    ]
+  },
+  "fixedInfo": {
+    "Aurora": [
+      {
+        "sign": "+",
+        "text": "Burst et mobilité en lane"
+      },
+      {
+        "sign": "-",
+        "text": "Aucun frontline pour la compo"
+      },
+      {
+        "sign": "-",
+        "text": "Puissance en baisse en fin de partie"
+      }
+    ],
+    "Brand": [
+      {
+        "sign": "+",
+        "text": "Contrôle de zone et dégâts dans la durée"
+      },
+      {
+        "sign": "-",
+        "text": "Peu de protection pour ses carry"
+      }
+    ]
+  }
+}

@@ -1,0 +1,1224 @@
+[
+  {
+    "name": "Aurora",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      4,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Aurora"
+  },
+  {
+    "name": "Malphite",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Malphite"
+  },
+  {
+    "name": "Ornn",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      2,
+      3,
+      5
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Ornn"
+  },
+  {
+    "name": "Jax",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Jax"
+  },
+  {
+    "name": "Gnar",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Gnar"
+  },
+  {
+    "name": "Camille",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Camille"
+  },
+  {
+    "name": "Fiora",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Fiora"
+  },
+  {
+    "name": "Darius",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Darius"
+  },
+  {
+    "name": "Garen",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Garen"
+  },
+  {
+    "name": "Sion",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Sion"
+  },
+  {
+    "name": "Shen",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Shen"
+  },
+  {
+    "name": "Renekton",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Renekton"
+  },
+  {
+    "name": "K'Sante",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "KSante"
+  },
+  {
+    "name": "Mordekaiser",
+    "damage": "AP",
+    "provides": [
+      "Frontline"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Mordekaiser"
+  },
+  {
+    "name": "Gwen",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Gwen"
+  },
+  {
+    "name": "Gragas",
+    "damage": "AP",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Top"
+    ],
+    "ddragonId": "Gragas"
+  },
+  {
+    "name": "Sejuani",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Sejuani"
+  },
+  {
+    "name": "Fiddlesticks",
+    "damage": "AP",
+    "provides": [
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      4
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Fiddlesticks"
+  },
+  {
+    "name": "Viego",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      4
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Viego"
+  },
+  {
+    "name": "Lee Sin",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      5,
+      4,
+      2
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "LeeSin"
+  },
+  {
+    "name": "Zac",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      4
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Zac"
+  },
+  {
+    "name": "Kayn",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Kayn"
+  },
+  {
+    "name": "Jarvan IV",
+    "damage": "AD",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "JarvanIV"
+  },
+  {
+    "name": "Amumu",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Amumu"
+  },
+  {
+    "name": "Elise",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Elise"
+  },
+  {
+    "name": "Nocturne",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Nocturne"
+  },
+  {
+    "name": "Vi",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Vi"
+  },
+  {
+    "name": "Hecarim",
+    "damage": "AD",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Hecarim"
+  },
+  {
+    "name": "Graves",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Graves"
+  },
+  {
+    "name": "Kha'Zix",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Khazix"
+  },
+  {
+    "name": "Lillia",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Lillia"
+  },
+  {
+    "name": "Rammus",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "ddragonId": "Rammus"
+  },
+  {
+    "name": "Orianna",
+    "damage": "AP",
+    "provides": [
+      "Engage",
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      4
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Orianna"
+  },
+  {
+    "name": "Talon",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      4,
+      4,
+      2
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Talon"
+  },
+  {
+    "name": "Viktor",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      2,
+      3,
+      5
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Viktor"
+  },
+  {
+    "name": "Galio",
+    "damage": "AP",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      4
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Galio"
+  },
+  {
+    "name": "Lux",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "ddragonId": "Lux"
+  },
+  {
+    "name": "Ahri",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      4
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Ahri"
+  },
+  {
+    "name": "Syndra",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Syndra"
+  },
+  {
+    "name": "Zed",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      4,
+      4,
+      2
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Zed"
+  },
+  {
+    "name": "Yone",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Yone"
+  },
+  {
+    "name": "Sylas",
+    "damage": "AP",
+    "provides": [
+      "Frontline"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Sylas"
+  },
+  {
+    "name": "Veigar",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      2,
+      3,
+      5
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Veigar"
+  },
+  {
+    "name": "Xerath",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Xerath"
+  },
+  {
+    "name": "Akali",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Akali"
+  },
+  {
+    "name": "Lissandra",
+    "damage": "AP",
+    "provides": [
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Lissandra"
+  },
+  {
+    "name": "Vex",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Vex"
+  },
+  {
+    "name": "Katarina",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Katarina"
+  },
+  {
+    "name": "Azir",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Mid"
+    ],
+    "ddragonId": "Azir"
+  },
+  {
+    "name": "Ashe",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "scaling": [
+      4,
+      4,
+      4
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Ashe"
+  },
+  {
+    "name": "Miss Fortune",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      4,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "MissFortune"
+  },
+  {
+    "name": "Kai'Sa",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      5
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Kaisa"
+  },
+  {
+    "name": "Vayne",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      2,
+      4,
+      5
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Vayne"
+  },
+  {
+    "name": "Jinx",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      2,
+      3,
+      5
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Jinx"
+  },
+  {
+    "name": "Jhin",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Jhin"
+  },
+  {
+    "name": "Caitlyn",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      4,
+      3,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Caitlyn"
+  },
+  {
+    "name": "Ezreal",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Ezreal"
+  },
+  {
+    "name": "Draven",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      5,
+      3,
+      2
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Draven"
+  },
+  {
+    "name": "Lucian",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Lucian"
+  },
+  {
+    "name": "Tristana",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Tristana"
+  },
+  {
+    "name": "Xayah",
+    "damage": "AD",
+    "provides": [
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Xayah"
+  },
+  {
+    "name": "Samira",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Samira"
+  },
+  {
+    "name": "Aphelios",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Aphelios"
+  },
+  {
+    "name": "Varus",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Varus"
+  },
+  {
+    "name": "Sivir",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "ddragonId": "Sivir"
+  },
+  {
+    "name": "Brand",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Brand"
+  },
+  {
+    "name": "Nautilus",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      4,
+      3,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Nautilus"
+  },
+  {
+    "name": "Thresh",
+    "damage": "TANK",
+    "provides": [
+      "Engage",
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Thresh"
+  },
+  {
+    "name": "Karma",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Karma"
+  },
+  {
+    "name": "Leona",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Leona"
+  },
+  {
+    "name": "Zyra",
+    "damage": "AP",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Zyra"
+  },
+  {
+    "name": "Morgana",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Morgana"
+  },
+  {
+    "name": "Alistar",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage",
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Alistar"
+  },
+  {
+    "name": "Braum",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Braum"
+  },
+  {
+    "name": "Lulu",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Lulu"
+  },
+  {
+    "name": "Pyke",
+    "damage": "AD",
+    "provides": [],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Pyke"
+  },
+  {
+    "name": "Blitzcrank",
+    "damage": "TANK",
+    "provides": [
+      "Engage"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Blitzcrank"
+  },
+  {
+    "name": "Soraka",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Soraka"
+  },
+  {
+    "name": "Nami",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Nami"
+  },
+  {
+    "name": "Rakan",
+    "damage": "AP",
+    "provides": [
+      "Engage",
+      "Peel"
+    ],
+    "scaling": [
+      3,
+      4,
+      3
+    ],
+    "roles": [
+      "Support"
+    ],
+    "ddragonId": "Rakan"
+  }
+]

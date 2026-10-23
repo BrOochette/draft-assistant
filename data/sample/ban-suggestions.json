@@ -1,0 +1,56 @@
+[
+  {
+    "champion": "Zed",
+    "role": "Mid",
+    "threat": 90,
+    "reason": "Burst sur tes mages fragiles"
+  },
+  {
+    "champion": "Jhin",
+    "role": "ADC",
+    "threat": 78,
+    "reason": "Combo de CC avec un support engage"
+  },
+  {
+    "champion": "Yone",
+    "role": "Mid",
+    "threat": 82,
+    "reason": "Fort contre les mages peu mobiles"
+  },
+  {
+    "champion": "Caitlyn",
+    "role": "ADC",
+    "threat": 70,
+    "reason": "Poke de lane difficile à gérer"
+  },
+  {
+    "champion": "Kayn",
+    "role": "Jungle",
+    "threat": 74,
+    "reason": "Dive sur ta backline fragile"
+  },
+  {
+    "champion": "Malphite",
+    "role": "Top",
+    "threat": 66,
+    "reason": "Engage dur sur ta backline"
+  },
+  {
+    "champion": "Lissandra",
+    "role": "Mid",
+    "threat": 64,
+    "reason": "CC en chaîne sur ta backline"
+  },
+  {
+    "champion": "Leona",
+    "role": "Support",
+    "threat": 62,
+    "reason": "Engage dur contre un ADC sans peel"
+  },
+  {
+    "champion": "Pyke",
+    "role": "Support",
+    "threat": 58,
+    "reason": "Hook et exécution sur ta backline"
+  }
+]

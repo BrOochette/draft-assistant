@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Composition de l'équipe</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0F1218}
+button,select{font-family:inherit}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid #3DD6C3;outline-offset:2px}
+</style>
+</helmet>
+<div style="background:#0F1218;color:#E9ECF3;font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.45;box-sizing:border-box">
+
+<header style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 32px;padding:16px 40px;border-bottom:1px solid #2B3242;background:#12161E">
+<div style="display:flex;align-items:center;gap:12px">
+<svg aria-hidden="true" width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="1" y="1" width="26" height="26" rx="6" stroke="#3DD6C3" stroke-width="2"></rect><path d="M8 19l6-11 6 11" stroke="#3DD6C3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;letter-spacing:.02em">Draft Assistant</span>
+</div>
+<nav aria-label="Navigation principale" style="display:flex;flex-wrap:wrap;gap:8px">
+<a href="Players.dc.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;color:#A3ABBD;text-decoration:none;font-weight:600;border:1px solid transparent">Joueurs</a>
+<a href="Setup.dc.html" aria-current="page" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;background:#1E2430;color:#E9ECF3;text-decoration:none;font-weight:600;border:1px solid #3DD6C3">Composition</a>
+<a href="Main.dc.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;color:#A3ABBD;text-decoration:none;font-weight:600;border:1px solid transparent">Draft</a>
+</nav>
+<div style="flex-grow:1"></div>
+<span style="display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:16px;background:#3A3016;color:#FFD27A;font-size:12px;font-weight:600">Maquette, données d'exemple</span>
+</header>
+
+<main style="display:flex;flex-direction:column;gap:24px;padding:32px 40px 56px">
+
+<div style="display:flex;flex-direction:column;gap:6px;max-width:820px">
+<h1 style="margin:0;font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;letter-spacing:.01em">Composition de l'équipe</h1>
+<p style="margin:0;color:#A3ABBD">Avant la draft, place un joueur sur chaque rôle. L'application utilise le champion pool de ce joueur pour ce rôle précis. Si le joueur n'a pas de pool pour le rôle, elle propose tous les champions du rôle.</p>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+
+<section style="flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;padding:16px 20px;border-radius:12px;background:#171B24;border:{{r.border}}">
+<div style="flex:0 0 96px;display:flex;flex-direction:column;gap:2px">
+<span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#A3ABBD">Rôle</span>
+<span style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;line-height:1.1">{{r.role}}</span>
+</div>
+<div style="flex:0 1 220px;min-width:180px;display:flex;flex-direction:column;gap:6px">
+<label for="{{r.selectId}}" style="font-size:13px;color:#A3ABBD">Joueur placé</label>
+<select id="{{r.selectId}}" value="{{r.player}}" onChange="{{r.onPick}}" style="min-height:44px;box-sizing:border-box;padding:0 12px;border-radius:10px;border:1px solid #2B3242;background:#0F1218;color:#E9ECF3;font-size:15px;font-weight:600">
+<sc-for list="{{playerOptions}}" as="o" hint-placeholder-count="5">
+<option value="{{o.value}}">{{o.label}}</option>
+</sc-for>
+</select>
+</div>
+<div style="flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+<span style="display:inline-flex;align-items:center;min-height:26px;padding:0 12px;border-radius:13px;font-size:13px;font-weight:600;background:{{r.chipBg}};color:{{r.chipFg}}">{{r.status}}</span>
+<sc-if value="{{r.dup}}" hint-placeholder-val="{{ false }}">
+<span style="display:inline-flex;align-items:center;min-height:26px;padding:0 12px;border-radius:13px;font-size:13px;font-weight:600;background:#3A2618;color:#FFB98A">Déjà placé sur un autre rôle</span>
+</sc-if>
+</div>
+<span style="font-size:13px;color:#C9D0DF">{{r.note}}</span>
+</div>
+</div>
+</sc-for>
+</section>
+
+<aside style="flex:0 1 320px;min-width:280px;display:flex;flex-direction:column;gap:16px">
+<section style="display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:12px;background:#171B24;border:1px solid #2B3242">
+<h2 style="margin:0;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600">Prêt pour la draft</h2>
+<div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
+<div style="display:flex;justify-content:space-between"><span style="color:#A3ABBD">Rôles avec pool</span><span style="font-weight:600;color:#8FE8D3">{{withPool}} sur 5</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:#A3ABBD">Rôles sans pool</span><span style="font-weight:600;color:#FFD27A">{{withoutPool}} sur 5</span></div>
+</div>
+<p style="margin:0;font-size:13px;color:#A3ABBD">Les rôles sans pool seront calculés sur tous les champions, avec les poids synergie et counter seulement.</p>
+<a href="Main.dc.html" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;border-radius:10px;background:#3DD6C3;color:#06201C;font-weight:600;font-size:15px;text-decoration:none">Passer à la draft</a>
+<a href="Players.dc.html" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:10px;border:1px solid #2B3242;color:#E9ECF3;font-weight:600;font-size:14px;text-decoration:none">Gérer les joueurs et leurs pools</a>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:12px;background:#171B24;border:1px solid #2B3242">
+<h2 style="margin:0;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600">Exemple de changement de rôle</h2>
+<p style="margin:0;font-size:13px;color:#A3ABBD">Lou joue d'habitude Top. Placé ADC aujourd'hui, il n'a pas de pool ADC : tu n'as rien à reconfigurer, l'application ouvre simplement la liste complète des ADC.</p>
+</section>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":880}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      assign: { Top: 'Alex', Jungle: 'Sam', Mid: 'Noa', ADC: 'Lou', Support: 'Max' }
+    };
+  }
+
+  renderVals() {
+    const roles = ['Top', 'Jungle', 'Mid', 'ADC', 'Support'];
+    const pools = {
+      Alex: { Top: [['Aurora', 8], ['Malphite', 7], ['Jax', 6], ['Gnar', 5]] },
+      Sam: { Jungle: [['Fiddlesticks', 8], ['Viego', 7], ['Sejuani', 6], ['Lee Sin', 5]] },
+      Noa: { Mid: [['Lux', 9], ['Orianna', 8], ['Syndra', 8], ['Talon', 7], ['Viktor', 7], ['Ahri', 6]], Support: [['Lux', 6], ['Karma', 5]] },
+      Lou: { Top: [['Jax', 7], ['Gnar', 6]] },
+      Max: { Support: [['Brand', 8], ['Nautilus', 7], ['Lux', 6], ['Thresh', 6], ['Karma', 5]] }
+    };
+    const names = Object.keys(pools);
+    const assign = this.state.assign;
+    let withPool = 0;
+    const rows = roles.map((r) => {
+      const who = assign[r];
+      const list = (pools[who] && pools[who][r]) || [];
+      const has = list.length > 0;
+      if (has) withPool += 1;
+      const best = list.slice().sort((a, b) => b[1] - a[1]).slice(0, 3).map((c) => c[0] + ' ' + c[1]).join(', ');
+      const dup = roles.filter((x) => assign[x] === who).length > 1;
+      return {
+        role: r,
+        selectId: 'sel-' + r,
+        player: who,
+        border: has ? '1px solid #2B3242' : '1px solid #5A4A1C',
+        chipBg: has ? '#12332E' : '#3A3016',
+        chipFg: has ? '#8FE8D3' : '#FFD27A',
+        status: has ? 'Pool ' + r + ' : ' + list.length + (list.length > 1 ? ' champions' : ' champion') : 'Aucun pool ' + r,
+        note: has ? 'Meilleures notes : ' + best : 'Tous les champions ' + r + ' seront proposés, sans note de maîtrise.',
+        dup: dup,
+        onPick: (e) => {
+          const next = Object.assign({}, this.state.assign);
+          next[r] = e.target.value;
+          this.setState({ assign: next });
+        }
+      };
+    });
+    return {
+      rows: rows,
+      playerOptions: names.map((n) => ({ value: n, label: n })),
+      withPool: withPool,
+      withoutPool: 5 - withPool
+    };
+  }
+}
+</script>
+</body>
+</html>

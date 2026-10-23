@@ -1,0 +1,741 @@
+[
+  {
+    "scenario": "État initial de la maquette",
+    "composition": {
+      "ally": 29,
+      "verdict": "À corriger",
+      "criteria": [
+        {
+          "label": "Frontline",
+          "value": 20
+        },
+        {
+          "label": "Engage",
+          "value": 25
+        },
+        {
+          "label": "Peel",
+          "value": 30
+        },
+        {
+          "label": "Mix de dégâts",
+          "value": 35
+        },
+        {
+          "label": "Scaling",
+          "value": 40
+        }
+      ],
+      "enemy": 69,
+      "enemyVerdict": "Correcte"
+    },
+    "roles": [
+      {
+        "role": "Top",
+        "player": "Alex",
+        "locked": {
+          "champion": "Aurora",
+          "score": 57,
+          "compoDelta": "+0"
+        },
+        "recommendations": [],
+        "details": []
+      },
+      {
+        "role": "Jungle",
+        "player": "Sam",
+        "locked": null,
+        "recommendations": [
+          {
+            "rank": 1,
+            "champion": "Sejuani",
+            "score": 74,
+            "compoDelta": "+39",
+            "synergy": 90,
+            "counter": 67,
+            "mastery": 60,
+            "lowSample": false
+          },
+          {
+            "rank": 2,
+            "champion": "Fiddlesticks",
+            "score": 72,
+            "compoDelta": "+20",
+            "synergy": 78,
+            "counter": 60,
+            "mastery": 80,
+            "lowSample": false
+          },
+          {
+            "rank": 3,
+            "champion": "Viego",
+            "score": 67,
+            "compoDelta": "+11",
+            "synergy": 70,
+            "counter": 60,
+            "mastery": 70,
+            "lowSample": false
+          }
+        ],
+        "details": [
+          {
+            "champion": "Sejuani",
+            "tag": "Pool",
+            "score": 74,
+            "reasons": [
+              "+ Frontline",
+              "+ Engage de teamfight",
+              "+ Combo de CC avec Brand"
+            ]
+          },
+          {
+            "champion": "Fiddlesticks",
+            "tag": "Pool",
+            "score": 72,
+            "reasons": [
+              "+ Engage de teamfight",
+              "+ Scaling en fin de partie",
+              "+ Ultimate de teamfight"
+            ]
+          },
+          {
+            "champion": "Viego",
+            "tag": "Pool",
+            "score": 67,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Scaling en fin de partie"
+            ]
+          },
+          {
+            "champion": "Lee Sin",
+            "tag": "Pool",
+            "score": 53,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Mobilité et picks",
+              "- Faible en fin de partie"
+            ]
+          },
+          {
+            "champion": "Zac",
+            "tag": "Hors pool",
+            "score": 62,
+            "reasons": [
+              "+ Frontline",
+              "+ Engage de teamfight",
+              "+ Scaling en fin de partie"
+            ]
+          }
+        ]
+      },
+      {
+        "role": "Mid",
+        "player": "Noa",
+        "locked": null,
+        "recommendations": [
+          {
+            "rank": 1,
+            "champion": "Orianna",
+            "score": 78,
+            "compoDelta": "+31",
+            "synergy": 82,
+            "counter": 73,
+            "mastery": 80,
+            "lowSample": false
+          },
+          {
+            "rank": 2,
+            "champion": "Viktor",
+            "score": 70,
+            "compoDelta": "+3",
+            "synergy": 68,
+            "counter": 71,
+            "mastery": 70,
+            "lowSample": false
+          },
+          {
+            "rank": 3,
+            "champion": "Talon",
+            "score": 66,
+            "compoDelta": "+8",
+            "synergy": 66,
+            "counter": 62,
+            "mastery": 70,
+            "lowSample": false
+          }
+        ],
+        "details": [
+          {
+            "champion": "Orianna",
+            "tag": "Pool",
+            "score": 78,
+            "reasons": [
+              "+ Engage de teamfight",
+              "+ Peel",
+              "+ Scaling en fin de partie"
+            ]
+          },
+          {
+            "champion": "Viktor",
+            "tag": "Pool",
+            "score": 70,
+            "reasons": [
+              "+ Scaling en fin de partie",
+              "+ Scaling en fin de partie",
+              "+ Meilleur en partie qu'en lane (scaling)"
+            ]
+          },
+          {
+            "champion": "Talon",
+            "tag": "Pool",
+            "score": 66,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Burst pour punir Ahri en lane",
+              "- Faible en fin de partie"
+            ]
+          },
+          {
+            "champion": "Lux",
+            "tag": "Pool",
+            "score": 62,
+            "reasons": [
+              "+ Peel",
+              "+ Scaling en fin de partie",
+              "+ Maîtrise élevée"
+            ]
+          },
+          {
+            "champion": "Galio",
+            "tag": "Hors pool",
+            "score": 64,
+            "reasons": [
+              "+ Frontline",
+              "+ Engage de teamfight",
+              "+ Scaling en fin de partie"
+            ]
+          }
+        ]
+      },
+      {
+        "role": "ADC",
+        "player": "Lou",
+        "locked": null,
+        "recommendations": [
+          {
+            "rank": 1,
+            "champion": "Ashe",
+            "score": 78,
+            "compoDelta": "+30",
+            "synergy": 86,
+            "counter": 68,
+            "mastery": "n/a",
+            "lowSample": false
+          },
+          {
+            "rank": 2,
+            "champion": "Miss Fortune",
+            "score": 70,
+            "compoDelta": "+10",
+            "synergy": 78,
+            "counter": 61,
+            "mastery": "n/a",
+            "lowSample": false
+          },
+          {
+            "rank": 3,
+            "champion": "Vayne",
+            "score": 68,
+            "compoDelta": "+12",
+            "synergy": 78,
+            "counter": 55,
+            "mastery": "n/a",
+            "lowSample": false
+          }
+        ],
+        "details": [
+          {
+            "champion": "Ashe",
+            "tag": "Tous les champions",
+            "score": 78,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Engage de teamfight",
+              "+ Scaling en fin de partie"
+            ]
+          },
+          {
+            "champion": "Miss Fortune",
+            "tag": "Tous les champions",
+            "score": 70,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Dégâts de zone en teamfight",
+              "- Fragile face aux engages"
+            ]
+          },
+          {
+            "champion": "Vayne",
+            "tag": "Tous les champions",
+            "score": 68,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Scaling en fin de partie",
+              "+ Meilleur en partie qu'en lane (scaling)"
+            ]
+          },
+          {
+            "champion": "Jinx",
+            "tag": "Tous les champions",
+            "score": 66,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Scaling en fin de partie",
+              "+ Dégâts de zone en fin de partie"
+            ]
+          },
+          {
+            "champion": "Kai'Sa",
+            "tag": "Tous les champions",
+            "score": 64,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Scaling en fin de partie",
+              "+ Burst si l'ennemi plonge"
+            ]
+          }
+        ]
+      },
+      {
+        "role": "Support",
+        "player": "Max",
+        "locked": {
+          "champion": "Brand",
+          "score": 59,
+          "compoDelta": "+0"
+        },
+        "recommendations": [],
+        "details": []
+      }
+    ],
+    "scaling": [
+      {
+        "phase": "Début de partie (0 à 15 min)",
+        "ally": "3,5",
+        "enemy": "3,0",
+        "verdict": "Avantage"
+      },
+      {
+        "phase": "Milieu de partie (15 à 25 min)",
+        "ally": "4,0",
+        "enemy": "3,3",
+        "verdict": "Avantage"
+      },
+      {
+        "phase": "Fin de partie (25 min et plus)",
+        "ally": "3,0",
+        "enemy": "4,0",
+        "verdict": "Désavantage"
+      }
+    ]
+  },
+  {
+    "scenario": "Après verrouillage de Sejuani en Jungle",
+    "composition": {
+      "ally": 68,
+      "verdict": "Correcte",
+      "criteria": [
+        {
+          "label": "Frontline",
+          "value": 100
+        },
+        {
+          "label": "Engage",
+          "value": 100
+        },
+        {
+          "label": "Peel",
+          "value": 30
+        },
+        {
+          "label": "Mix de dégâts",
+          "value": 35
+        },
+        {
+          "label": "Scaling",
+          "value": 40
+        }
+      ],
+      "enemy": 69,
+      "enemyVerdict": "Correcte"
+    },
+    "roles": [
+      {
+        "role": "Top",
+        "player": "Alex",
+        "locked": {
+          "champion": "Aurora",
+          "score": 57,
+          "compoDelta": "+0"
+        },
+        "recommendations": [],
+        "details": []
+      },
+      {
+        "role": "Jungle",
+        "player": "Sam",
+        "locked": {
+          "champion": "Sejuani",
+          "score": 74,
+          "compoDelta": "+39"
+        },
+        "recommendations": [],
+        "details": []
+      },
+      {
+        "role": "Mid",
+        "player": "Noa",
+        "locked": null,
+        "recommendations": [
+          {
+            "rank": 1,
+            "champion": "Orianna",
+            "score": 73,
+            "compoDelta": "+11",
+            "synergy": 69,
+            "counter": 73,
+            "mastery": 80,
+            "lowSample": false
+          },
+          {
+            "rank": 2,
+            "champion": "Viktor",
+            "score": 70,
+            "compoDelta": "+2",
+            "synergy": 68,
+            "counter": 71,
+            "mastery": 70,
+            "lowSample": false
+          },
+          {
+            "rank": 3,
+            "champion": "Talon",
+            "score": 66,
+            "compoDelta": "+9",
+            "synergy": 66,
+            "counter": 62,
+            "mastery": 70,
+            "lowSample": false
+          }
+        ],
+        "details": [
+          {
+            "champion": "Orianna",
+            "tag": "Pool",
+            "score": 73,
+            "reasons": [
+              "+ Peel",
+              "+ Scaling en fin de partie",
+              "+ Zone de contrôle avec Brand"
+            ]
+          },
+          {
+            "champion": "Viktor",
+            "tag": "Pool",
+            "score": 70,
+            "reasons": [
+              "+ Scaling en fin de partie",
+              "+ Scaling en fin de partie",
+              "+ Meilleur en partie qu'en lane (scaling)"
+            ]
+          },
+          {
+            "champion": "Talon",
+            "tag": "Pool",
+            "score": 66,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Burst pour punir Ahri en lane",
+              "- Faible en fin de partie"
+            ]
+          },
+          {
+            "champion": "Lux",
+            "tag": "Pool",
+            "score": 62,
+            "reasons": [
+              "+ Peel",
+              "+ Scaling en fin de partie",
+              "+ Maîtrise élevée"
+            ]
+          },
+          {
+            "champion": "Galio",
+            "tag": "Hors pool",
+            "score": 52,
+            "reasons": [
+              "+ Scaling en fin de partie",
+              "+ Résistance magique",
+              "- Frontline déjà couvert par Sejuani"
+            ]
+          }
+        ]
+      },
+      {
+        "role": "ADC",
+        "player": "Lou",
+        "locked": null,
+        "recommendations": [
+          {
+            "rank": 1,
+            "champion": "Ashe",
+            "score": 71,
+            "compoDelta": "+11",
+            "synergy": 73,
+            "counter": 68,
+            "mastery": "n/a",
+            "lowSample": false
+          },
+          {
+            "rank": 2,
+            "champion": "Miss Fortune",
+            "score": 70,
+            "compoDelta": "+10",
+            "synergy": 78,
+            "counter": 61,
+            "mastery": "n/a",
+            "lowSample": false
+          },
+          {
+            "rank": 3,
+            "champion": "Vayne",
+            "score": 68,
+            "compoDelta": "+12",
+            "synergy": 78,
+            "counter": 55,
+            "mastery": "n/a",
+            "lowSample": false
+          }
+        ],
+        "details": [
+          {
+            "champion": "Ashe",
+            "tag": "Tous les champions",
+            "score": 71,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Scaling en fin de partie",
+              "+ Slow pour verrouiller les cibles"
+            ]
+          },
+          {
+            "champion": "Miss Fortune",
+            "tag": "Tous les champions",
+            "score": 70,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Dégâts de zone en teamfight",
+              "- Fragile face aux engages"
+            ]
+          },
+          {
+            "champion": "Vayne",
+            "tag": "Tous les champions",
+            "score": 68,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Scaling en fin de partie",
+              "+ Meilleur en partie qu'en lane (scaling)"
+            ]
+          },
+          {
+            "champion": "Jinx",
+            "tag": "Tous les champions",
+            "score": 66,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Scaling en fin de partie",
+              "+ Dégâts de zone en fin de partie"
+            ]
+          },
+          {
+            "champion": "Kai'Sa",
+            "tag": "Tous les champions",
+            "score": 64,
+            "reasons": [
+              "+ Dégâts physiques",
+              "+ Scaling en fin de partie",
+              "+ Burst si l'ennemi plonge"
+            ]
+          }
+        ]
+      },
+      {
+        "role": "Support",
+        "player": "Max",
+        "locked": {
+          "champion": "Brand",
+          "score": 59,
+          "compoDelta": "+0"
+        },
+        "recommendations": [],
+        "details": []
+      }
+    ],
+    "scaling": [
+      {
+        "phase": "Début de partie (0 à 15 min)",
+        "ally": "3,3",
+        "enemy": "3,0",
+        "verdict": "Équilibre"
+      },
+      {
+        "phase": "Milieu de partie (15 à 25 min)",
+        "ally": "4,0",
+        "enemy": "3,3",
+        "verdict": "Avantage"
+      },
+      {
+        "phase": "Fin de partie (25 min et plus)",
+        "ally": "3,0",
+        "enemy": "4,0",
+        "verdict": "Désavantage"
+      }
+    ]
+  },
+  {
+    "scenario": "Après Sejuani, Orianna, Ashe verrouillés",
+    "composition": {
+      "ally": 90,
+      "verdict": "Solide",
+      "criteria": [
+        {
+          "label": "Frontline",
+          "value": 100
+        },
+        {
+          "label": "Engage",
+          "value": 100
+        },
+        {
+          "label": "Peel",
+          "value": 100
+        },
+        {
+          "label": "Mix de dégâts",
+          "value": 100
+        },
+        {
+          "label": "Scaling",
+          "value": 48
+        }
+      ],
+      "enemy": 69,
+      "enemyVerdict": "Correcte"
+    },
+    "roles": [
+      {
+        "role": "Top",
+        "player": "Alex",
+        "locked": {
+          "champion": "Aurora",
+          "score": 55,
+          "compoDelta": "+0"
+        },
+        "recommendations": [],
+        "details": []
+      },
+      {
+        "role": "Jungle",
+        "player": "Sam",
+        "locked": {
+          "champion": "Sejuani",
+          "score": 69,
+          "compoDelta": "+20"
+        },
+        "recommendations": [],
+        "details": []
+      },
+      {
+        "role": "Mid",
+        "player": "Noa",
+        "locked": {
+          "champion": "Orianna",
+          "score": 73,
+          "compoDelta": "+11"
+        },
+        "recommendations": [],
+        "details": []
+      },
+      {
+        "role": "ADC",
+        "player": "Lou",
+        "locked": {
+          "champion": "Ashe",
+          "score": 71,
+          "compoDelta": "+11"
+        },
+        "recommendations": [],
+        "details": []
+      },
+      {
+        "role": "Support",
+        "player": "Max",
+        "locked": {
+          "champion": "Brand",
+          "score": 57,
+          "compoDelta": "+0"
+        },
+        "recommendations": [],
+        "details": []
+      }
+    ],
+    "scaling": [
+      {
+        "phase": "Début de partie (0 à 15 min)",
+        "ally": "3,4",
+        "enemy": "3,0",
+        "verdict": "Équilibre"
+      },
+      {
+        "phase": "Milieu de partie (15 à 25 min)",
+        "ally": "4,0",
+        "enemy": "3,3",
+        "verdict": "Avantage"
+      },
+      {
+        "phase": "Fin de partie (25 min et plus)",
+        "ally": "3,4",
+        "enemy": "4,0",
+        "verdict": "Désavantage"
+      }
+    ]
+  },
+  {
+    "scenario": "Max placé en Mid (aucun pool Mid)",
+    "roles": [
+      {
+        "role": "Mid",
+        "note": "Max n'a pas de pool Mid : tous les champions sont classés.",
+        "recommendations": [
+          {
+            "champion": "Galio",
+            "score": 85,
+            "mastery": "n/a"
+          },
+          {
+            "champion": "Orianna",
+            "score": 78,
+            "mastery": "n/a"
+          },
+          {
+            "champion": "Viktor",
+            "score": 69,
+            "mastery": "n/a"
+          }
+        ]
+      }
+    ]
+  }
+]
