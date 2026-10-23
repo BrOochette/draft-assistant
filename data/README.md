@@ -1,5 +1,16 @@
 # Données
 
+## Données réelles
+
+| Fichier | Contenu |
+|---|---|
+| `champions.json` | Attributs des champions générés depuis le wiki LoL (`npm run ingest -- wiki`) : clé Riot, identifiant Data Dragon, type de dégâts, apports, rôles, classes. Ne pas modifier à la main : il est réécrit à chaque import. |
+| `champions-overrides.json` | Corrections manuelles par champion (`damage`, `provides`, `roles`). Elles priment sur le wiki et sur la mesure. |
+| `stats/lolalytics-<patch>.json` | Stats collectées sur Lolalytics (`npm run ingest -- lolalytics`) : par champion et par lane, parties, win rate, dégâts, victoires par durée, matchups de lane et duos. |
+| `ddragon-version.txt` | Version Data Dragon des portraits téléchargés. |
+
+## Données d'exemple
+
 Toutes les valeurs de `sample/` sont **des données d'exemple** extraites de la maquette. Les win rates, les échantillons, les bases de synergie et les scores de menace sont inventés. Ils servent à porter et tester le moteur, pas à prendre de vraies décisions.
 
 | Fichier | Contenu |

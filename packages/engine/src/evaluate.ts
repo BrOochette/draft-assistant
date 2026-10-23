@@ -5,12 +5,27 @@ import type { CompMember, Entry, Evaluation, Phase, Reason } from './types';
 
 export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
 export const LOW_SAMPLE_GAMES = 500;
+/** Parties « fictives » au win rate du champion, pour lisser un matchup ou un duo peu joué. */
+const PRIOR_GAMES = 200;
+/** Points de synergie par point d'écart moyen de win rate en duo. */
+const DUO_WEIGHT = 4;
+/** Écart de duo (lissé) à partir duquel une raison est affichée. */
+const DUO_REASON_MIN = 1;
+
+const smooth = (value: number, games: number, prior: number) => (value * games + prior * PRIOR_GAMES) / (games + PRIOR_GAMES);
 
 /**
  * Évalue un candidat face au contexte allié `ctx` (les autres picks) et aux ennemis connus.
  * Portage ligne par ligne de `evalChamp` (maquette Draft v2) : ordre des opérations et arrondis identiques.
+ * Avec des stats réelles, la synergie ajoute les duos mesurés et le counter utilise le matchup de lane.
  */
-export const evaluate = (c: Entry, ctx: readonly Entry[], enemies: readonly CompMember[], player: string): Evaluation => {
+export const evaluate = (
+  c: Entry,
+  ctx: readonly Entry[],
+  enemies: readonly CompMember[],
+  player: string,
+  laneOpponent: string | null = null
+): Evaluation => {
   const met = new Map<Trait, string>();
   for (const x of ctx) for (const g of x.provides) if (!met.has(g)) met.set(g, x.name);
   const apCount = ctx.filter((x) => x.damage === 'AP').length;
@@ -33,6 +48,19 @@ export const evaluate = (c: Entry, ctx: readonly Entry[], enemies: readonly Comp
       reasons.push({ sign: '+', code: 'PROVIDES', trait: g });
     }
   }
+  if (c.duos) {
+    const duos: { ally: string; delta: number }[] = [];
+    for (const x of ctx) {
+      const d = c.duos[x.role]?.[x.name];
+      if (d) duos.push({ ally: x.name, delta: smooth(d[0], d[1], 0) });
+    }
+    if (duos.length) {
+      syn += Math.round((DUO_WEIGHT * duos.reduce((s, d) => s + d.delta, 0)) / duos.length);
+      for (const d of duos) {
+        if (Math.abs(d.delta) >= DUO_REASON_MIN) reasons.push({ sign: d.delta > 0 ? '+' : '-', code: 'DUO', ally: d.ally, delta: d.delta });
+      }
+    }
+  }
   if (c.damage === 'AP' && apCount >= 2) {
     syn -= 4;
     reasons.push({ sign: '-', code: 'EXTRA_AP', n: apCount + 1 });
@@ -44,8 +72,8 @@ export const evaluate = (c: Entry, ctx: readonly Entry[], enemies: readonly Comp
     else if (v <= 2) reasons.push({ sign: '-', code: 'SCALING_WEAK', phase: needScal });
   }
   for (const n of c.notes) reasons.push({ sign: n.sign, code: 'NOTE', text: n.text });
-  if (c.laneWinRate - c.gameWinRate >= 3) reasons.push({ sign: '-', code: 'OUTSCALED' });
-  if (c.gameWinRate - c.laneWinRate >= 3) reasons.push({ sign: '+', code: 'BETTER_IN_GAME' });
+  if (c.laneWinRate != null && c.laneWinRate - c.gameWinRate >= 3) reasons.push({ sign: '-', code: 'OUTSCALED' });
+  if (c.laneWinRate != null && c.gameWinRate - c.laneWinRate >= 3) reasons.push({ sign: '+', code: 'BETTER_IN_GAME' });
   if (c.pool === 'in' && c.mastery != null) {
     if (c.mastery >= 80) reasons.push({ sign: '+', code: 'MASTERY_HIGH' });
     else if (c.mastery <= 50) reasons.push({ sign: '-', code: 'MASTERY_LOW' });
@@ -54,7 +82,11 @@ export const evaluate = (c: Entry, ctx: readonly Entry[], enemies: readonly Comp
   if (c.games < LOW_SAMPLE_GAMES) reasons.push({ sign: '-', code: 'LOW_SAMPLE', games: c.games });
 
   syn = clamp(syn);
-  const ctr = Math.round(wrScore(c.laneWinRate) * 0.4 + wrScore(c.gameWinRate) * 0.6);
+  const m = laneOpponent ? c.matchups?.[laneOpponent] : undefined;
+  const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1] } : null;
+  const gameWr = m ? smooth(m[0], m[1], c.gameWinRate) : c.gameWinRate;
+  // Sans win rate de lane (Lolalytics), le counter repose sur le win rate de partie seul.
+  const ctr = c.laneWinRate == null ? wrScore(gameWr) : Math.round(wrScore(c.laneWinRate) * 0.4 + wrScore(gameWr) * 0.6);
   const total = c.mastery == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + c.mastery * 0.25);
   const delta = compScore([...ctx, c], enemies).total - compScore(ctx, enemies).total;
 
@@ -71,6 +103,7 @@ export const evaluate = (c: Entry, ctx: readonly Entry[], enemies: readonly Comp
     lowSample: c.games < LOW_SAMPLE_GAMES,
     laneWinRate: c.laneWinRate,
     gameWinRate: c.gameWinRate,
+    matchup,
     scaling: c.scaling
   };
 };

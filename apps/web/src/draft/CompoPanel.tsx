@@ -97,7 +97,14 @@ export const CompoPanel = ({ result }: { result: DraftResult }) => {
             <div><dt>Lane et Partie</dt><dd>Win rate du champion dans ce matchup en lane, et sur la partie entière.</dd></div>
             <div><dt>Peu fiable</dt><dd>Moins de 500 parties derrière le win rate : la valeur peut changer fortement.</dd></div>
             <div><dt>Scaling D, M, F</dt><dd>Puissance au début, au milieu et en fin de partie, de 1 à 5.</dd></div>
-            <div><dt>Données</dt><dd>Patch {snapshot.patch}, rang {snapshot.rank}. Valeurs d'exemple.</dd></div>
+            <div>
+              <dt>Données</dt>
+              <dd>
+                {snapshot.source === 'sample'
+                  ? `Patch ${snapshot.patch}, rang ${snapshot.rank}. Valeurs d'exemple.`
+                  : `Lolalytics, patch ${snapshot.patch}, rang ${snapshot.rank}, toutes régions. Win rate de lane indisponible : le counter repose sur le win rate de partie, contre l'adversaire de lane quand il est connu. La synergie inclut les win rates de duo avec les alliés verrouillés.`}
+              </dd>
+            </div>
           </dl>
         )}
       </section>

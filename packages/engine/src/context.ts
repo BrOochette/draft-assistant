@@ -25,6 +25,7 @@ export const entryFor = (data: EngineData, meta: RowMeta, role: Role, name: stri
   const s = data.stats.getRoleStats(name, role);
   return {
     name: s.name,
+    role,
     damage: s.damage,
     provides: s.provides,
     scaling: s.scaling,
@@ -33,6 +34,8 @@ export const entryFor = (data: EngineData, meta: RowMeta, role: Role, name: stri
     gameWinRate: s.gameWinRate,
     games: s.games,
     notes: s.notes,
+    ...(s.matchups && { matchups: s.matchups }),
+    ...(s.duos && { duos: s.duos }),
     ...poolStatus(meta, name)
   };
 };

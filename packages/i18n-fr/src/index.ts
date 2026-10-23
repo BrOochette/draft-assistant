@@ -22,6 +22,7 @@ export const fmt1 = (n: number): string => n.toFixed(1).replace('.', ',');
 export const fmtPct = (n: number): string => fmt1(n) + ' %';
 /** 14200 devient « 14 200 ». */
 export const fmtInt = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+export const fmtSigned = (n: number): string => (n >= 0 ? '+' : '') + fmt1(n);
 export const fmtDelta = (n: number): string => (n >= 0 ? '+' : '') + n;
 
 export const TRAIT_LABEL: Record<Trait, string> = {
@@ -45,6 +46,7 @@ export const reasonText = (r: Reason): string => {
     case 'EXTRA_AP': return r.n + 'e source de dégâts magiques';
     case 'SCALING_STRONG': return 'Scaling ' + PHASE_IN[r.phase];
     case 'SCALING_WEAK': return 'Faible ' + PHASE_IN[r.phase];
+    case 'DUO': return 'Duo avec ' + r.ally + ' : ' + fmtSigned(r.delta) + ' pts de win rate';
     case 'NOTE': return r.text;
     case 'OUTSCALED': return 'Fort en lane mais se fait outscale';
     case 'BETTER_IN_GAME': return "Meilleur en partie qu'en lane (scaling)";

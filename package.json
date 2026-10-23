@@ -7,8 +7,8 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run ingest -- sample && npm run dev -w @draft/web",
-    "build": "npm run ingest -- sample && npm run build -w @draft/web",
+    "dev": "npm run ingest -- snapshot && npm run dev -w @draft/web",
+    "build": "npm run ingest -- snapshot && npm run build -w @draft/web",
     "ingest": "npm run cli -w @draft/ingest --",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json"

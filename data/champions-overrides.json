@@ -1,0 +1,18 @@
+{
+  "Alistar": { "provides": ["Frontline", "Engage", "Peel"] },
+  "Ashe": { "provides": ["Engage"] },
+  "Blitzcrank": { "damage": "TANK" },
+  "Fiddlesticks": { "provides": ["Engage"] },
+  "Galio": { "damage": "AP", "provides": ["Frontline", "Engage"] },
+  "Gragas": { "damage": "AP" },
+  "Hecarim": { "provides": ["Frontline", "Engage"] },
+  "Jarvan IV": { "provides": ["Frontline", "Engage"] },
+  "Jhin": { "provides": [] },
+  "Lissandra": { "provides": ["Engage"] },
+  "Lux": { "provides": ["Peel"] },
+  "Nocturne": { "provides": ["Engage"] },
+  "Orianna": { "provides": ["Engage", "Peel"] },
+  "Rakan": { "provides": ["Engage", "Peel"] },
+  "Samira": { "provides": ["Engage"] },
+  "Thresh": { "damage": "TANK" }
+}

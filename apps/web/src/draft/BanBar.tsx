@@ -1,6 +1,6 @@
 import { useMemo, useState, type Dispatch } from 'react';
 import { availability, MAX_BANS, type DraftAction, type DraftResult, type Side } from '@draft/engine';
-import { BAN_BLOCKED_LABEL } from '@draft/i18n-fr';
+import { BAN_BLOCKED_LABEL, fmtPct } from '@draft/i18n-fr';
 import type { DraftState } from '@draft/schemas';
 import { Icon, Portrait, useData } from '../ui';
 import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
@@ -78,7 +78,7 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
               <Portrait name={c.champion} size={44} label={c.champion} />
               <div className="grow min0 col">
                 <span className="small muted">{c.role} · menace {c.threat}</span>
-                <span className="small soft ellipsis">{c.reason}</span>
+                <span className="small soft ellipsis">{c.reason ?? (c.winRate != null ? 'Win rate ' + fmtPct(c.winRate) + ' en ' + c.role : '')}</span>
               </div>
               <button type="button" className="btn btn-accent" aria-label={'Bannir ' + c.champion} onClick={() => dispatch({ type: 'addBan', side: 'ally', champion: c.champion })}>Bannir</button>
             </li>

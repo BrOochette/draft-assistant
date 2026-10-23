@@ -13,7 +13,7 @@ Application web personnelle d'aide à la draft sur League of Legends. Elle recom
 - **Performance** : le moteur répond en moins d'une seconde. Le budget visé est de 50 ms pour le moteur et de 100 ms entre un clic et l'écran à jour. Aucun appel réseau pendant une draft.
 - **Ton de l'interface** : informations factuelles uniquement. Pas de phrases de conseil, pas d'instructions d'usage, pas de compteurs inutiles. Interface en français.
 - **Règle de pool** : les recommandations par défaut viennent du pool du joueur placé sur le rôle. Les champions hors pool n'apparaissent que dans le détail d'une ligne.
-- **Counter** : deux win rates, de lane et de partie, plus le scaling début, milieu et fin.
+- **Counter** : win rate de partie contre l'adversaire de lane (Lolalytics), plus le scaling début, milieu et fin. Pas de win rate de lane depuis l'abandon de l'API Riot (décidé le 23/10/2026, voir `docs/recap.md`).
 - **Usage solo** : pas de comptes ni de serveur au départ.
 - **Sécurité** : la clé API Riot ne doit jamais apparaître dans le code web ni dans le dépôt. Elle passe par une variable d'environnement de l'outil d'ingestion.
 
@@ -23,7 +23,7 @@ TypeScript partout, validé avec le porteur du projet :
 - monorepo en workspaces npm : `packages/schemas`, `packages/engine` (logique pure), `packages/i18n-fr` (tous les textes d'interface), `apps/web` (React + Vite) et `apps/ingest` (CLI Node) ;
 - Vitest pour les tests.
 
-Commandes : `npm run dev`, `npm test`, `npm run typecheck`, `npm run ingest -- sample|portraits`.
+Commandes : `npm run dev`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits` (voir `README.md`).
 
 ## Première étape suggérée
 

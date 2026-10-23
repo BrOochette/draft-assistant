@@ -20,16 +20,16 @@ export const recommendRole = (
   const base = { role, player: meta.player, hasPool: meta.hasPool, multiRole, allyPick, enemyPick };
 
   if (allyPick) {
-    const ev = evaluate(entryFor(data, meta, role, allyPick), ctx, enemies, meta.player);
-    const matchup = enemyPick ? data.matchupNotes.matchups[allyPick + '|' + enemyPick] ?? null : null;
+    const ev = evaluate(entryFor(data, meta, role, allyPick), ctx, enemies, meta.player, enemyPick);
+    const matchupNotes = enemyPick ? data.matchupNotes.matchups[allyPick + '|' + enemyPick] ?? null : null;
     const info = data.matchupNotes.fixedInfo[allyPick] ?? null;
-    return { ...base, locked: { ...ev, matchup, info }, recommendations: [], inPool: [], outOfPool: [], note: null };
+    return { ...base, locked: { ...ev, matchupNotes, info }, recommendations: [], inPool: [], outOfPool: [], note: null };
   }
 
   const evals = data.stats
     .listCandidates(role)
     .filter((c) => !avail.gone(c.name, role))
-    .map((c) => evaluate(entryFor(data, meta, role, c.name), ctx, enemies, meta.player));
+    .map((c) => evaluate(entryFor(data, meta, role, c.name), ctx, enemies, meta.player, enemyPick));
   // Array.prototype.sort est stable : à égalité, l'ordre de la source est conservé.
   evals.sort((a, b) => b.total - a.total);
   const inPool = evals.filter((e) => e.pool !== 'out');

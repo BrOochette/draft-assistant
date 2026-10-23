@@ -1,6 +1,6 @@
 import { useMemo, useState, type Dispatch } from 'react';
 import { availability, type DraftAction, type Evaluation, type RoleResult, type Side } from '@draft/engine';
-import { blockedLabel, fmtDelta, fmtInt, fmtPct, formatReason, POOL_TAG, recNoteText } from '@draft/i18n-fr';
+import { blockedLabel, fmtDelta, fmtInt, formatReason, POOL_TAG, recNoteText } from '@draft/i18n-fr';
 import type { DraftState, Note } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, ScalingBars, scoreStats, useData, WinRateChips } from '../ui';
 import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
@@ -51,7 +51,7 @@ const RecCard = ({ e, rank, selected, onSelect, onLock, role }: { e: Evaluation;
           ))}
         </span>
         <span className="row-gap wrap">
-          <WinRateChips lane={fmtPct(e.laneWinRate)} game={fmtPct(e.gameWinRate)} />
+          <WinRateChips e={e} />
           {e.lowSample && <Chip tone="warn" title={sampleTip(e)}><Icon name="warn" />Peu fiable</Chip>}
         </span>
       </button>
@@ -96,7 +96,7 @@ const DetailItem = ({ e, best, selected, onLock, role }: { e: Evaluation; best: 
     </div>
     <div className="row-gap wrap center gap-lg">
       <StatLine e={e} barWidth={64} />
-      <WinRateChips lane={fmtPct(e.laneWinRate)} game={fmtPct(e.gameWinRate)} />
+      <WinRateChips e={e} />
       <span className={'small ' + (e.lowSample ? 'warn-text' : 'muted')} title={sampleTip(e)}>{sampleText(e)}</span>
     </div>
   </div>
@@ -106,12 +106,12 @@ const lockedChips = (row: RoleResult): { sign: '+' | '-' | null; text: string }[
   const l = row.locked!;
   const notes = (list: Note[]) => list.map((n) => ({ sign: n.sign, text: formatReason(n) }));
   if (l.info) {
-    const matchup = l.matchup
-      ? notes(l.matchup)
+    const matchup = l.matchupNotes
+      ? notes(l.matchupNotes)
       : [{ sign: null, text: row.enemyPick ? 'Pas de données de matchup pour cette paire' : 'Adversaire direct inconnu' }];
     return [...matchup, ...notes(l.info)];
   }
-  return [...(l.matchup ? notes(l.matchup) : []), ...l.reasons.slice(0, 3).map((r) => ({ sign: r.sign, text: formatReason(r) }))];
+  return [...(l.matchupNotes ? notes(l.matchupNotes) : []), ...l.reasons.slice(0, 3).map((r) => ({ sign: r.sign, text: formatReason(r) }))];
 };
 
 export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
@@ -256,7 +256,7 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
                 <span className="score is-best">{row.locked.total}</span>
                 <span className="delta">Compo {fmtDelta(row.locked.compoDelta)}</span>
                 <Chip tone={row.locked.pool === 'out' ? 'warn' : 'plain'}>{POOL_TAG[row.locked.pool]}</Chip>
-                <WinRateChips lane={fmtPct(row.locked.laneWinRate)} game={fmtPct(row.locked.gameWinRate)} />
+                <WinRateChips e={row.locked} />
                 <span className={'small ' + (row.locked.lowSample ? 'warn-text' : 'muted')} title={sampleTip(row.locked)}>{sampleText(row.locked)}</span>
               </div>
               <div className="row-gap wrap center gap-lg">

@@ -26,9 +26,34 @@ export const ChampionSchema = z.object({
   provides: z.array(TraitSchema),
   scaling: ScalingSchema,
   roles: z.array(RoleSchema).min(1),
-  ddragonId: z.string().min(1)
+  ddragonId: z.string().min(1),
+  /** Identifiant numérique Riot (aussi utilisé par Lolalytics). Absent des données d'exemple. */
+  key: z.number().int().positive().optional()
 });
 export type Champion = z.infer<typeof ChampionSchema>;
+
+/**
+ * Attributs maison d'un champion (`data/champions.json`), amorcés depuis le wiki puis corrigeables à la main.
+ * Le scaling n'y figure pas : il est mesuré par patch. `provides` ne contient pas l'apport implicite « Physique ».
+ */
+export const ChampionAttributesSchema = ChampionSchema.omit({ scaling: true }).extend({
+  key: z.number().int().positive(),
+  /** Classes Riot d'après le wiki (Vanguard, Enchanter…), pour référence. */
+  classes: z.array(z.string())
+});
+export type ChampionAttributes = z.infer<typeof ChampionAttributesSchema>;
+
+/** Corrections manuelles par nom de champion (`data/champions-overrides.json`). */
+export const ChampionOverridesSchema = z.record(
+  z.string(),
+  z.object({ damage: DamageSchema.optional(), provides: z.array(TraitSchema).optional(), roles: z.array(RoleSchema).min(1).optional() }).strict()
+);
+export type ChampionOverrides = z.infer<typeof ChampionOverridesSchema>;
+
+/** [win rate en %, nombre de parties]. */
+const rateSample = z.tuple([z.number().min(0).max(100), z.number().int().nonnegative()]);
+/** [écart de win rate en points, nombre de parties]. */
+const deltaSample = z.tuple([z.number(), z.number().int().nonnegative()]);
 
 /**
  * Stats d'un champion sur un rôle. Les attributs (apports, scaling, dégâts) sont ceux du candidat
@@ -38,12 +63,17 @@ export const CandidateSchema = z.object({
   name: z.string().min(1),
   games: z.number().int().nonnegative(),
   synergyBase: z.number(),
-  laneWinRate: z.number().min(0).max(100),
+  /** null : win rate de lane indisponible (source sans données de lane). */
+  laneWinRate: z.number().min(0).max(100).nullable(),
   gameWinRate: z.number().min(0).max(100),
   scaling: ScalingSchema,
   provides: z.array(TraitSchema),
   damage: DamageSchema,
-  notes: z.array(NoteSchema)
+  notes: z.array(NoteSchema),
+  /** Win rate de partie de ce champion contre chaque adversaire de la même lane. */
+  matchups: z.record(z.string(), rateSample).optional(),
+  /** Écart de win rate en duo avec chaque allié, par rôle de l'allié. */
+  duos: z.record(RoleSchema, z.record(z.string(), deltaSample)).optional()
 });
 export type Candidate = z.infer<typeof CandidateSchema>;
 
@@ -67,7 +97,9 @@ export const BanSuggestionSchema = z.object({
   champion: z.string().min(1),
   role: RoleSchema,
   threat: z.number(),
-  reason: z.string()
+  /** Raison rédigée (données d'exemple). Sinon l'interface affiche le win rate. */
+  reason: z.string().optional(),
+  winRate: z.number().optional()
 });
 export type BanSuggestion = z.infer<typeof BanSuggestionSchema>;
 
@@ -105,6 +137,8 @@ export type SampleDraftState = z.infer<typeof SampleDraftStateSchema>;
 
 export const StatsSnapshotSchema = z.object({
   version: z.literal(1),
+  /** Origine des stats : données d'exemple de la maquette ou collecte Lolalytics. */
+  source: z.enum(['sample', 'lolalytics']),
   patch: z.string(),
   rank: z.string(),
   ddragonVersion: z.string(),
@@ -124,6 +158,7 @@ export const assembleSampleSnapshot = (raw: {
 }): StatsSnapshot =>
   StatsSnapshotSchema.parse({
     version: 1,
+    source: 'sample',
     patch: '26.21',
     rank: 'Emerald+',
     ddragonVersion: '16.21.1',
@@ -133,7 +168,7 @@ export const assembleSampleSnapshot = (raw: {
     banSuggestions: raw.banSuggestions
   });
 
-export const emptySlots =(): RoleSlots => ({ Top: null, Jungle: null, Mid: null, ADC: null, Support: null });
+export const emptySlots = (): RoleSlots => ({ Top: null, Jungle: null, Mid: null, ADC: null, Support: null });
 
 /** Un champion AD apporte implicitement « Physique », ajouté en fin de liste comme dans la maquette. */
 export const normalizeChampion = (c: Champion): Champion =>

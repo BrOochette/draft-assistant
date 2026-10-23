@@ -36,6 +36,8 @@ export type DraftAction =
   | { type: 'assignPlayer'; role: Role; player: string }
   | { type: 'select'; role: Role; champion: string }
   | { type: 'reset' }
+  /** Remplace la draft sans historique (chargement de l'état de départ). */
+  | { type: 'load'; draft: DraftState }
   | { type: 'undo' }
   | { type: 'dismissToast' };
 
@@ -91,6 +93,8 @@ export const draftReducer = (s: DraftSession, a: DraftAction): DraftSession => {
       const { [a.role]: current, ...rest } = s.selected;
       return { ...s, selected: current === a.champion ? rest : { ...rest, [a.role]: a.champion } };
     }
+    case 'load':
+      return createSession(a.draft);
     case 'reset':
       return commit(s, { code: 'RESET' }, { assign: d.assign, ally: emptySlots(), enemy: emptySlots(), allyBans: [], enemyBans: [] }, {});
     case 'undo': {

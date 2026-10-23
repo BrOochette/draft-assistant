@@ -6,3 +6,4 @@ dist/
 apps/web/public/champions/
 apps/web/public/data/
 coverage/
+data/stats/.cache/

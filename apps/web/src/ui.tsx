@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { Evaluation } from '@draft/engine';
-import { PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
+import { fmtInt, fmtPct, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
 import type { Scaling } from '@draft/schemas';
 import type { AppData } from './data';
 
@@ -78,9 +78,17 @@ export const ScalingBars = ({ scaling }: { scaling: Scaling }) => (
   </div>
 );
 
-export const WinRateChips = ({ lane, game }: { lane: string; game: string }) => (
+/** Chips Lane et Partie, plus le matchup contre l'adversaire de lane quand il est connu. */
+export const WinRateChips = ({ e }: { e: Evaluation }) => (
   <>
-    <Chip title="Win rate de lane"><Icon name="lane" />Lane {lane}</Chip>
-    <Chip title="Win rate de partie"><Icon name="flag" />Partie {game}</Chip>
+    {e.laneWinRate == null
+      ? <Chip title="Win rate de lane indisponible avec la source actuelle"><Icon name="lane" />Lane —</Chip>
+      : <Chip title="Win rate de lane"><Icon name="lane" />Lane {fmtPct(e.laneWinRate)}</Chip>}
+    <Chip title="Win rate de partie sur la lane, tous adversaires"><Icon name="flag" />Partie {fmtPct(e.gameWinRate)}</Chip>
+    {e.matchup && (
+      <Chip tone="info" title={'Win rate de partie contre ' + e.matchup.opponent + ', ' + fmtInt(e.matchup.games) + ' parties'}>
+        vs {e.matchup.opponent} {fmtPct(e.matchup.winRate)}
+      </Chip>
+    )}
   </>
 );

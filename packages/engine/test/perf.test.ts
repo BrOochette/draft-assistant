@@ -29,6 +29,7 @@ const candidate = (c: Champion, i: number): Candidate => ({
 });
 const snapshot: StatsSnapshot = {
   version: 1,
+  source: 'sample',
   patch: 'perf',
   rank: 'perf',
   ddragonVersion: 'perf',
@@ -47,18 +48,46 @@ const state: DraftState = {
   enemyBans: names.slice(5, 10)
 };
 
+// Même pire cas avec des stats au format Lolalytics : matchups contre tous, duos avec tous, sans win rate de lane.
+const realData = createEngineData({
+  ...snapshot,
+  source: 'lolalytics',
+  candidates: Object.fromEntries(
+    ROLES.map((r) => [
+      r,
+      champions.map((c, i) => ({
+        ...candidate(c, i),
+        laneWinRate: null,
+        matchups: Object.fromEntries(names.map((n, j) => [n, [45 + ((i + j) % 10), 100 + j * 10] as [number, number]])),
+        duos: Object.fromEntries(ROLES.map((ar) => [ar, Object.fromEntries(names.map((n, j) => [n, [((i * j) % 7) - 3, 50 + j] as [number, number]]))]))
+      }))
+    ])
+  )
+});
+const realState: DraftState = { ...state, ally: { ...state.ally, Top: names[20]!, Support: names[21]! } };
+
+const medianMs = (run: () => void) => {
+  for (let i = 0; i < 5; i++) run();
+  const times: number[] = [];
+  for (let i = 0; i < 50; i++) {
+    const t = performance.now();
+    run();
+    times.push(performance.now() - t);
+  }
+  times.sort((a, b) => a - b);
+  return times[Math.floor(times.length / 2)]!;
+};
+
 describe('performance du moteur', () => {
   it('reste sous 50 ms (médiane) dans le pire cas', () => {
-    for (let i = 0; i < 5; i++) computeDraft(state, {}, data);
-    const times: number[] = [];
-    for (let i = 0; i < 50; i++) {
-      const t = performance.now();
-      const r = computeDraft(state, {}, data);
-      times.push(performance.now() - t);
-      expect(r.roles[0]!.inPool.length).toBe(N - 13);
-    }
-    times.sort((a, b) => a - b);
-    const median = times[Math.floor(times.length / 2)]!;
-    expect(median).toBeLessThan(50);
+    expect(computeDraft(state, {}, data).roles[0]!.inPool.length).toBe(N - 13);
+    expect(medianMs(() => computeDraft(state, {}, data))).toBeLessThan(50);
+  });
+
+  it('reste sous 50 ms avec matchups et duos', () => {
+    const jungle = computeDraft(realState, {}, realData).roles[1]!;
+    expect(jungle.inPool.length).toBe(N - 15);
+    expect(jungle.inPool[0]!.matchup?.opponent).toBe(names[11]);
+    expect(medianMs(() => computeDraft(realState, {}, realData))).toBeLessThan(50);
   });
 });

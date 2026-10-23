@@ -1,0 +1,2530 @@
+[
+  {
+    "name": "Aatrox",
+    "key": 266,
+    "ddragonId": "Aatrox",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Ahri",
+    "key": 103,
+    "ddragonId": "Ahri",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Akali",
+    "key": 84,
+    "ddragonId": "Akali",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Akshan",
+    "key": 166,
+    "ddragonId": "Akshan",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Marksman",
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Alistar",
+    "key": 12,
+    "ddragonId": "Alistar",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Ambessa",
+    "key": 799,
+    "ddragonId": "Ambessa",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Diver",
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Amumu",
+    "key": 32,
+    "ddragonId": "Amumu",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Jungle",
+      "Support"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Anivia",
+    "key": 34,
+    "ddragonId": "Anivia",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Annie",
+    "key": 1,
+    "ddragonId": "Annie",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Aphelios",
+    "key": 523,
+    "ddragonId": "Aphelios",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Ashe",
+    "key": 22,
+    "ddragonId": "Ashe",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC",
+      "Support"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Aurelion Sol",
+    "key": 136,
+    "ddragonId": "AurelionSol",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Aurora",
+    "key": 893,
+    "ddragonId": "Aurora",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid"
+    ],
+    "classes": [
+      "Burst",
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Azir",
+    "key": 268,
+    "ddragonId": "Azir",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Bard",
+    "key": 432,
+    "ddragonId": "Bard",
+    "damage": "AP",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Bel'Veth",
+    "key": 200,
+    "ddragonId": "Belveth",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Blitzcrank",
+    "key": 53,
+    "ddragonId": "Blitzcrank",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Brand",
+    "key": 63,
+    "ddragonId": "Brand",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Jungle",
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Braum",
+    "key": 201,
+    "ddragonId": "Braum",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Warden"
+    ]
+  },
+  {
+    "name": "Briar",
+    "key": 233,
+    "ddragonId": "Briar",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Caitlyn",
+    "key": 51,
+    "ddragonId": "Caitlyn",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Camille",
+    "key": 164,
+    "ddragonId": "Camille",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Support"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Cassiopeia",
+    "key": 69,
+    "ddragonId": "Cassiopeia",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Cho'Gath",
+    "key": 31,
+    "ddragonId": "Chogath",
+    "damage": "AP",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Corki",
+    "key": 42,
+    "ddragonId": "Corki",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Darius",
+    "key": 122,
+    "ddragonId": "Darius",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Diana",
+    "key": 131,
+    "ddragonId": "Diana",
+    "damage": "AP",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle",
+      "Mid"
+    ],
+    "classes": [
+      "Assassin",
+      "Diver"
+    ]
+  },
+  {
+    "name": "Dr. Mundo",
+    "key": 36,
+    "ddragonId": "DrMundo",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Draven",
+    "key": 119,
+    "ddragonId": "Draven",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Ekko",
+    "key": 245,
+    "ddragonId": "Ekko",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Jungle",
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Elise",
+    "key": 60,
+    "ddragonId": "Elise",
+    "damage": "AP",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Evelynn",
+    "key": 28,
+    "ddragonId": "Evelynn",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Ezreal",
+    "key": 81,
+    "ddragonId": "Ezreal",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Fiddlesticks",
+    "key": 9,
+    "ddragonId": "Fiddlesticks",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Fiora",
+    "key": 114,
+    "ddragonId": "Fiora",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Fizz",
+    "key": 105,
+    "ddragonId": "Fizz",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Galio",
+    "key": 3,
+    "ddragonId": "Galio",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Warden"
+    ]
+  },
+  {
+    "name": "Gangplank",
+    "key": 41,
+    "ddragonId": "Gangplank",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Garen",
+    "key": 86,
+    "ddragonId": "Garen",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Gnar",
+    "key": 150,
+    "ddragonId": "Gnar",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Gragas",
+    "key": 79,
+    "ddragonId": "Gragas",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle",
+      "Mid"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Graves",
+    "key": 104,
+    "ddragonId": "Graves",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Gwen",
+    "key": 887,
+    "ddragonId": "Gwen",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Hecarim",
+    "key": 120,
+    "ddragonId": "Hecarim",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Heimerdinger",
+    "key": 74,
+    "ddragonId": "Heimerdinger",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Hwei",
+    "key": 910,
+    "ddragonId": "Hwei",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Artillery"
+    ]
+  },
+  {
+    "name": "Illaoi",
+    "key": 420,
+    "ddragonId": "Illaoi",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Irelia",
+    "key": 39,
+    "ddragonId": "Irelia",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Mid"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Ivern",
+    "key": 427,
+    "ddragonId": "Ivern",
+    "damage": "AP",
+    "provides": [
+      "Engage",
+      "Peel"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Janna",
+    "key": 40,
+    "ddragonId": "Janna",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Jarvan IV",
+    "key": 59,
+    "ddragonId": "JarvanIV",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Jax",
+    "key": 24,
+    "ddragonId": "Jax",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Jayce",
+    "key": 126,
+    "ddragonId": "Jayce",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid"
+    ],
+    "classes": [
+      "Artillery"
+    ]
+  },
+  {
+    "name": "Jhin",
+    "key": 202,
+    "ddragonId": "Jhin",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman",
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Jinx",
+    "key": 222,
+    "ddragonId": "Jinx",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "K'Sante",
+    "key": 897,
+    "ddragonId": "KSante",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Warden",
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Kai'Sa",
+    "key": 145,
+    "ddragonId": "Kaisa",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Kalista",
+    "key": 429,
+    "ddragonId": "Kalista",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Karma",
+    "key": 43,
+    "ddragonId": "Karma",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Top",
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Burst",
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Karthus",
+    "key": 30,
+    "ddragonId": "Karthus",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Kassadin",
+    "key": 38,
+    "ddragonId": "Kassadin",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Katarina",
+    "key": 55,
+    "ddragonId": "Katarina",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Kayle",
+    "key": 10,
+    "ddragonId": "Kayle",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Kayn",
+    "key": 141,
+    "ddragonId": "Kayn",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Kennen",
+    "key": 85,
+    "ddragonId": "Kennen",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Kha'Zix",
+    "key": 121,
+    "ddragonId": "Khazix",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Kindred",
+    "key": 203,
+    "ddragonId": "Kindred",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Kled",
+    "key": 240,
+    "ddragonId": "Kled",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Kog'Maw",
+    "key": 96,
+    "ddragonId": "KogMaw",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "LeBlanc",
+    "key": 7,
+    "ddragonId": "Leblanc",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Burst",
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Lee Sin",
+    "key": 64,
+    "ddragonId": "LeeSin",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Leona",
+    "key": 89,
+    "ddragonId": "Leona",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Lillia",
+    "key": 876,
+    "ddragonId": "Lillia",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Lissandra",
+    "key": 127,
+    "ddragonId": "Lissandra",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Locke",
+    "key": 805,
+    "ddragonId": "Locke",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Lucian",
+    "key": 236,
+    "ddragonId": "Lucian",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Lulu",
+    "key": 117,
+    "ddragonId": "Lulu",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Lux",
+    "key": 99,
+    "ddragonId": "Lux",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Burst",
+      "Artillery"
+    ]
+  },
+  {
+    "name": "Malphite",
+    "key": 54,
+    "ddragonId": "Malphite",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Malzahar",
+    "key": 90,
+    "ddragonId": "Malzahar",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Maokai",
+    "key": 57,
+    "ddragonId": "Maokai",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle",
+      "Support"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Master Yi",
+    "key": 11,
+    "ddragonId": "MasterYi",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Mel",
+    "key": 800,
+    "ddragonId": "Mel",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Artillery"
+    ]
+  },
+  {
+    "name": "Milio",
+    "key": 902,
+    "ddragonId": "Milio",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Miss Fortune",
+    "key": 21,
+    "ddragonId": "MissFortune",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Mordekaiser",
+    "key": 82,
+    "ddragonId": "Mordekaiser",
+    "damage": "AP",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Morgana",
+    "key": 25,
+    "ddragonId": "Morgana",
+    "damage": "AP",
+    "provides": [
+      "Engage",
+      "Peel"
+    ],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Naafiri",
+    "key": 950,
+    "ddragonId": "Naafiri",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Nami",
+    "key": 267,
+    "ddragonId": "Nami",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Nasus",
+    "key": 75,
+    "ddragonId": "Nasus",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Nautilus",
+    "key": 111,
+    "ddragonId": "Nautilus",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Neeko",
+    "key": 518,
+    "ddragonId": "Neeko",
+    "damage": "AP",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Burst",
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Nidalee",
+    "key": 76,
+    "ddragonId": "Nidalee",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Nilah",
+    "key": 895,
+    "ddragonId": "Nilah",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Nocturne",
+    "key": 56,
+    "ddragonId": "Nocturne",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Nunu & Willump",
+    "key": 20,
+    "ddragonId": "Nunu",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Olaf",
+    "key": 2,
+    "ddragonId": "Olaf",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Orianna",
+    "key": 61,
+    "ddragonId": "Orianna",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Ornn",
+    "key": 516,
+    "ddragonId": "Ornn",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Pantheon",
+    "key": 80,
+    "ddragonId": "Pantheon",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle",
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Poppy",
+    "key": 78,
+    "ddragonId": "Poppy",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Warden"
+    ]
+  },
+  {
+    "name": "Pyke",
+    "key": 555,
+    "ddragonId": "Pyke",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Assassin",
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Qiyana",
+    "key": 246,
+    "ddragonId": "Qiyana",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Quinn",
+    "key": 133,
+    "ddragonId": "Quinn",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Rakan",
+    "key": 497,
+    "ddragonId": "Rakan",
+    "damage": "AP",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Rammus",
+    "key": 33,
+    "ddragonId": "Rammus",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Rek'Sai",
+    "key": 421,
+    "ddragonId": "RekSai",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Rell",
+    "key": 526,
+    "ddragonId": "Rell",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Renata Glasc",
+    "key": 888,
+    "ddragonId": "Renata",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Renekton",
+    "key": 58,
+    "ddragonId": "Renekton",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Rengar",
+    "key": 107,
+    "ddragonId": "Rengar",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Assassin",
+      "Diver"
+    ]
+  },
+  {
+    "name": "Riven",
+    "key": 92,
+    "ddragonId": "Riven",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Rumble",
+    "key": 68,
+    "ddragonId": "Rumble",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Ryze",
+    "key": 13,
+    "ddragonId": "Ryze",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Samira",
+    "key": 360,
+    "ddragonId": "Samira",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Sejuani",
+    "key": 113,
+    "ddragonId": "Sejuani",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Senna",
+    "key": 235,
+    "ddragonId": "Senna",
+    "damage": "AD",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "ADC",
+      "Support"
+    ],
+    "classes": [
+      "Marksman",
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Seraphine",
+    "key": 147,
+    "ddragonId": "Seraphine",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "ADC",
+      "Support"
+    ],
+    "classes": [
+      "Burst",
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Sett",
+    "key": 875,
+    "ddragonId": "Sett",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Shaco",
+    "key": 35,
+    "ddragonId": "Shaco",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle",
+      "Support"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Shen",
+    "key": 98,
+    "ddragonId": "Shen",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "roles": [
+      "Top",
+      "Support"
+    ],
+    "classes": [
+      "Warden"
+    ]
+  },
+  {
+    "name": "Shyvana",
+    "key": 102,
+    "ddragonId": "Shyvana",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Singed",
+    "key": 27,
+    "ddragonId": "Singed",
+    "damage": "AP",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Sion",
+    "key": 14,
+    "ddragonId": "Sion",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Sivir",
+    "key": 15,
+    "ddragonId": "Sivir",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Skarner",
+    "key": 72,
+    "ddragonId": "Skarner",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Vanguard",
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Smolder",
+    "key": 901,
+    "ddragonId": "Smolder",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid",
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Sona",
+    "key": 37,
+    "ddragonId": "Sona",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Soraka",
+    "key": 16,
+    "ddragonId": "Soraka",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Swain",
+    "key": 50,
+    "ddragonId": "Swain",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "ADC",
+      "Support"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Sylas",
+    "key": 517,
+    "ddragonId": "Sylas",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid"
+    ],
+    "classes": [
+      "Burst",
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Syndra",
+    "key": 134,
+    "ddragonId": "Syndra",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Tahm Kench",
+    "key": 223,
+    "ddragonId": "TahmKench",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "roles": [
+      "Top",
+      "Support"
+    ],
+    "classes": [
+      "Warden"
+    ]
+  },
+  {
+    "name": "Taliyah",
+    "key": 163,
+    "ddragonId": "Taliyah",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Jungle",
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Talon",
+    "key": 91,
+    "ddragonId": "Talon",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle",
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Taric",
+    "key": 44,
+    "ddragonId": "Taric",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Peel"
+    ],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Enchanter",
+      "Warden"
+    ]
+  },
+  {
+    "name": "Teemo",
+    "key": 17,
+    "ddragonId": "Teemo",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Jungle",
+      "Support"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Thresh",
+    "key": 412,
+    "ddragonId": "Thresh",
+    "damage": "AD",
+    "provides": [
+      "Engage",
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Catcher"
+    ]
+  },
+  {
+    "name": "Tristana",
+    "key": 18,
+    "ddragonId": "Tristana",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Trundle",
+    "key": 48,
+    "ddragonId": "Trundle",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Tryndamere",
+    "key": 23,
+    "ddragonId": "Tryndamere",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Twisted Fate",
+    "key": 4,
+    "ddragonId": "TwistedFate",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid",
+      "ADC"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Twitch",
+    "key": 29,
+    "ddragonId": "Twitch",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC",
+      "Support"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Udyr",
+    "key": 77,
+    "ddragonId": "Udyr",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Urgot",
+    "key": 6,
+    "ddragonId": "Urgot",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Varus",
+    "key": 110,
+    "ddragonId": "Varus",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman",
+      "Artillery"
+    ]
+  },
+  {
+    "name": "Vayne",
+    "key": 67,
+    "ddragonId": "Vayne",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top",
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Veigar",
+    "key": 45,
+    "ddragonId": "Veigar",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Vel'Koz",
+    "key": 161,
+    "ddragonId": "Velkoz",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Artillery"
+    ]
+  },
+  {
+    "name": "Vex",
+    "key": 711,
+    "ddragonId": "Vex",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Vi",
+    "key": 254,
+    "ddragonId": "Vi",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Viego",
+    "key": 234,
+    "ddragonId": "Viego",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Viktor",
+    "key": 112,
+    "ddragonId": "Viktor",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Vladimir",
+    "key": 8,
+    "ddragonId": "Vladimir",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid"
+    ],
+    "classes": [
+      "Battlemage"
+    ]
+  },
+  {
+    "name": "Volibear",
+    "key": 106,
+    "ddragonId": "Volibear",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Warwick",
+    "key": 19,
+    "ddragonId": "Warwick",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Wukong",
+    "key": 62,
+    "ddragonId": "MonkeyKing",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Xayah",
+    "key": 498,
+    "ddragonId": "Xayah",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Xerath",
+    "key": 101,
+    "ddragonId": "Xerath",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "Support"
+    ],
+    "classes": [
+      "Artillery"
+    ]
+  },
+  {
+    "name": "Xin Zhao",
+    "key": 5,
+    "ddragonId": "XinZhao",
+    "damage": "AD",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Jungle"
+    ],
+    "classes": [
+      "Diver"
+    ]
+  },
+  {
+    "name": "Yasuo",
+    "key": 157,
+    "ddragonId": "Yasuo",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid",
+      "ADC"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Yone",
+    "key": 777,
+    "ddragonId": "Yone",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Mid"
+    ],
+    "classes": [
+      "Assassin",
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Yorick",
+    "key": 83,
+    "ddragonId": "Yorick",
+    "damage": "AD",
+    "provides": [
+      "Frontline"
+    ],
+    "roles": [
+      "Top"
+    ],
+    "classes": [
+      "Juggernaut"
+    ]
+  },
+  {
+    "name": "Yunara",
+    "key": 804,
+    "ddragonId": "Yunara",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Yuumi",
+    "key": 350,
+    "ddragonId": "Yuumi",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Enchanter"
+    ]
+  },
+  {
+    "name": "Zaahen",
+    "key": 904,
+    "ddragonId": "Zaahen",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Top",
+      "Jungle"
+    ],
+    "classes": [
+      "Skirmisher"
+    ]
+  },
+  {
+    "name": "Zac",
+    "key": 154,
+    "ddragonId": "Zac",
+    "damage": "TANK",
+    "provides": [
+      "Frontline",
+      "Engage"
+    ],
+    "roles": [
+      "Top",
+      "Jungle",
+      "Support"
+    ],
+    "classes": [
+      "Vanguard"
+    ]
+  },
+  {
+    "name": "Zed",
+    "key": 238,
+    "ddragonId": "Zed",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "Jungle",
+      "Mid"
+    ],
+    "classes": [
+      "Assassin"
+    ]
+  },
+  {
+    "name": "Zeri",
+    "key": 221,
+    "ddragonId": "Zeri",
+    "damage": "AD",
+    "provides": [],
+    "roles": [
+      "ADC"
+    ],
+    "classes": [
+      "Marksman"
+    ]
+  },
+  {
+    "name": "Ziggs",
+    "key": 115,
+    "ddragonId": "Ziggs",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid",
+      "ADC"
+    ],
+    "classes": [
+      "Artillery"
+    ]
+  },
+  {
+    "name": "Zilean",
+    "key": 26,
+    "ddragonId": "Zilean",
+    "damage": "AP",
+    "provides": [
+      "Peel"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Specialist"
+    ]
+  },
+  {
+    "name": "Zoe",
+    "key": 142,
+    "ddragonId": "Zoe",
+    "damage": "AP",
+    "provides": [],
+    "roles": [
+      "Mid"
+    ],
+    "classes": [
+      "Burst"
+    ]
+  },
+  {
+    "name": "Zyra",
+    "key": 143,
+    "ddragonId": "Zyra",
+    "damage": "AP",
+    "provides": [
+      "Engage"
+    ],
+    "roles": [
+      "Support"
+    ],
+    "classes": [
+      "Catcher"
+    ]
+  }
+]

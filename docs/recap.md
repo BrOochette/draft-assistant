@@ -143,7 +143,7 @@ Le **moteur** est le module qui calcule, sans rien afficher. Il reçoit l'état 
 Ces formules sont celles de la maquette, **Proposé** comme point de départ. Les poids sont à ajuster avec de vraies données.
 
 **Synergie** (0 à 100) :
-- On part d'une base par champion (`synergyBase`). Dans la maquette, c'est une valeur d'exemple. **Ouvert** : comment la dériver des stats réelles.
+- On part d'une base par champion (`synergyBase`). Dans la maquette, c'est une valeur d'exemple. **Décidé** (23/10/2026) : avec les stats Lolalytics, base de 55 pour tous, plus la synergie de duo mesurée avec chaque allié verrouillé. On prend l'écart de win rate normalisé du duo (Lolalytics), lissé avec 200 parties fictives à 0, et on ajoute `arrondi(4 × moyenne des écarts)`. Raison « Duo avec X » affichée dès 1 point d'écart. Le coefficient 4 reste à ajuster.
 - Pour chaque apport du champion (Frontline +12, Engage +10, Dégâts physiques +10, Peel +6) : on ajoute le bonus si l'équipe ne l'a pas encore, sinon on retire 3 (raison « déjà couvert par X »).
 - Un champion AP quand l'équipe a déjà 2 sources AP ou plus : -4.
 - Besoin de scaling : on prend la phase où l'équipe alliée est le plus en retard sur l'ennemi. Si l'écart moyen est de -0,5 ou moins, on ajoute `(scaling du candidat sur cette phase - 3) × 4`.
@@ -153,6 +153,7 @@ Ces formules sont celles de la maquette, **Proposé** comme point de départ. Le
 **Counter** (0 à 100) :
 - `wrScore(wr) = borne(50 + (wr - 50) × 10)`
 - `counter = 0,4 × wrScore(lane) + 0,6 × wrScore(partie)`
+- **Décidé** (23/10/2026), avec les stats Lolalytics : pas de win rate de lane. Le counter vaut `wrScore(partie)`, où « partie » est le win rate du champion contre l'adversaire de sa lane quand celui-ci est connu (lissé vers le win rate du champion avec 200 parties fictives), sinon son win rate sur la lane. L'interface affiche « Lane — » et un chip « vs Adversaire ».
 
 **Score total** :
 - avec pool : `0,40 × synergie + 0,35 × counter + 0,25 × maîtrise`, où la maîtrise vaut note × 10 et un hors pool compte 0 ;
@@ -181,7 +182,9 @@ win rate lissé = (victoires + 200 × moyenne du champion) / (parties + 200)
 
 **Raisons** : la maquette produit des phrases. **Proposé** : le moteur renvoie des codes avec paramètres (`{code: "FRONTLINE_COVERED", by: "Sejuani"}`), et l'interface les traduit en texte. Le ton factuel reste ainsi géré à un seul endroit.
 
-**Suggestions de bans** : la maquette utilise un score de menace fixe. **Ouvert** : la formule réelle (win rate, taux de ban, menace contre la compo alliée prévue). Rappel : on ne connaît pas les pools ennemis.
+**Suggestions de bans** : la maquette utilise un score de menace fixe. **Proposé**, en place à titre provisoire : pour chaque rôle, les 3 meilleurs win rates parmi les champions dont c'est la lane principale (au moins 50 % de leurs parties) et d'au moins 1 000 parties, avec une menace égale à `wrScore(win rate)` et la raison « Win rate X % en Rôle ». **Ouvert** : la formule réelle (taux de ban, menace contre la compo alliée prévue). Rappel : on ne connaît pas les pools ennemis.
+
+**Scaling mesuré** : **Décidé** (23/10/2026), tranches 0-15, 15-25 et 25 min et plus. Ce sont des tranches de durée de partie Lolalytics : début = 0-15 ; milieu = 15-20 et 20-25 ; fin = 25 et au-delà. Pour chaque phase, on calcule l'écart entre son win rate (lissé avec 200 parties fictives) et le win rate global du champion. On le centre et on le réduit sur tous les candidats, puis on le ramène de 1 à 5 : 3 correspond à la moyenne, ±1 par écart-type. La tranche 0-15 min est peu fournie (environ 1 % des parties, surtout des redditions), donc le scaling « début » reste fragile.
 
 ### Tests de référence
 
@@ -202,7 +205,15 @@ win rate lissé = (victoires + 200 × moyenne du champion) / (parties + 200)
 
 ## 6. Données : d'où viennent les stats
 
-**Ouvert** : la source des statistiques n'est pas tranchée. Le porteur du projet préfère éviter une collecte de plusieurs jours, et penche pour une source tierce.
+**Décidé** (23/10/2026) : **Lolalytics** pour les stats, avec notre propre lecteur en TypeScript et une collecte légère par patch. Le **wiki LoL** (`Module:ChampionData`) sert à amorcer les attributs des champions. L'API Riot est écartée : trop d'appels pour le porteur du projet. Il n'y a donc pas de win rate de lane.
+
+Ce que lit `npm run ingest -- lolalytics` (environ 500 requêtes, une toutes les 1,5 s, User-Agent identifiable, cache du jour pour reprendre après une interruption) :
+- la page publique `lolalytics.com/lol/<champion>/build/` de chaque lane jouée à au moins 5 %. Son état embarqué (Qwik) donne le win rate, le nombre de parties, la répartition des dégâts, les victoires par durée de partie et le win rate contre chaque adversaire de la même lane ;
+- l'API interne `a1.lolalytics.com/mega/?ep=build-team`, un appel par champion et par lane, pour les win rates de duo avec chaque allié. Ce n'est pas une API publique : elle peut changer sans prévenir.
+
+Fichiers : `data/champions.json` (attributs générés depuis le wiki), `data/champions-overrides.json` (corrections à la main), `data/stats/lolalytics-<patch>.json` (stats collectées). Tous sont versionnés. Le cache `data/stats/.cache/` ne l'est pas. Le type de dégâts AP ou AD vient de la répartition mesurée, sauf pour les tanks et les corrections manuelles.
+
+*Analyse initiale, gardée pour mémoire :*
 
 ### API Riot (calcul maison)
 
@@ -220,7 +231,7 @@ win rate lissé = (victoires + 200 × moyenne du champion) / (parties + 200)
 - Volume avec clé personnelle : environ 1 500 parties par heure en comptant la timeline, soit environ 3 jours pour 100 000 parties.
 - Les données statiques (noms, images) viennent de **Data Dragon**, qui ne compte pas dans les limites. Les portraits de la maquette viennent du patch 16.21.1. Voir `data/ddragon-ids.json`.
 - Les attributs Frontline, Engage et Peel **n'existent pas dans l'API**. Il faut un fichier d'attributs maison d'environ 170 champions.
-- **Ouvert** : la définition exacte du win rate de lane (avance en or et en XP à 15 minutes, seuil à fixer).
+- Win rate de lane : abandonné avec l'API Riot (voir plus haut).
 - À vérifier : le découpage exact des régions pour les limites de `match-v5`, et les General Policies de Riot avant un crawl de masse.
 
 ### Sources tierces : ce qui a été vérifié
@@ -281,8 +292,5 @@ Principes :
 
 ## 9. Questions ouvertes
 
-- Source des statistiques (section 6).
-- Définition et seuil du win rate de lane.
-- Comment dériver la base de synergie des stats réelles.
-- Formule des suggestions de bans.
-- Tranches de durée du scaling mesuré (proposé : moins de 25 min, 25 à 35, plus de 35).
+- Formule réelle des suggestions de bans (une formule provisoire est en place, section 5).
+- Coefficients à ajuster sur de vraies drafts : poids des duos dans la synergie, seuils de candidat (5 % de la lane, 300 parties).

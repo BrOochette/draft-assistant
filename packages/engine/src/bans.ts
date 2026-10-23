@@ -13,6 +13,6 @@ export const banSuggestions = (state: DraftState, data: EngineData, avail: Avail
     .slice()
     .sort((a, b) => b.threat - a.threat)
     .slice(0, MAX_SUGGESTIONS)
-    .map((b): BanCard => ({ champion: b.champion, role: b.role, threat: b.threat, reason: b.reason })),
+    .map((b): BanCard => ({ champion: b.champion, role: b.role, threat: b.threat, ...(b.reason && { reason: b.reason }), ...(b.winRate != null && { winRate: b.winRate }) })),
   allyFull: state.allyBans.length >= MAX_BANS
 });

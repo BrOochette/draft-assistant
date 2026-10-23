@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { createSession, draftReducer } from '@draft/engine';
-import type { Pools } from '@draft/schemas';
+import { emptySlots, type Pools } from '@draft/schemas';
 import { initialDraft, loadAppData, type AppData } from './data';
 import { DraftScreen } from './draft/DraftScreen';
 import { PlayersScreen } from './players/PlayersScreen';
@@ -8,6 +8,10 @@ import { loadPools, savePools } from './store';
 import { DataContext } from './ui';
 
 type Screen = 'draft' | 'players';
+
+/** Draft de départ : l'état de la maquette avec les données d'exemple, une draft vide avec de vraies stats. */
+const startDraft = (data: AppData | undefined) =>
+  !data || data.snapshot.source === 'sample' ? initialDraft() : { ...initialDraft(), ally: emptySlots(), enemy: emptySlots(), allyBans: [], enemyBans: [] };
 const screenFromHash = (): Screen => (location.hash === '#/joueurs' ? 'players' : 'draft');
 
 interface Props {
@@ -22,10 +26,19 @@ export const App = ({ initialData, initialPools }: Props) => {
   const [error, setError] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen>(screenFromHash);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [session, dispatch] = useReducer(draftReducer, undefined, () => createSession(initialDraft()));
+  const [session, dispatch] = useReducer(draftReducer, undefined, () => createSession(startDraft(initialData)));
 
   useEffect(() => {
-    if (!initialData) loadAppData().then(setData, (e: Error) => setError(e.message));
+    if (!initialData) {
+      loadAppData().then(
+        (d) => {
+          // Même rendu pour les données et la draft de départ : pas d'état intermédiaire affiché.
+          dispatch({ type: 'load', draft: startDraft(d) });
+          setData(d);
+        },
+        (e: Error) => setError(e.message)
+      );
+    }
     if (!initialPools) loadPools().then(setPools, (e: Error) => setError(e.message));
   }, [initialData, initialPools]);
 
@@ -55,8 +68,12 @@ export const App = ({ initialData, initialPools }: Props) => {
           <a href="#/" className={'nav-link' + (screen === 'draft' ? ' is-on' : '')} aria-current={screen === 'draft' ? 'page' : undefined}>Draft</a>
         </nav>
         <span className="grow" />
-        {data && <span className="chip chip-plain" title="Win rates et échantillons : données d'exemple">Patch {data.snapshot.patch} · {data.snapshot.rank}</span>}
-        <span className="chip chip-warn">Données d'exemple</span>
+        {data && (
+          <span className="chip chip-plain" title={data.snapshot.source === 'sample' ? "Win rates et échantillons : données d'exemple" : 'Stats Lolalytics, classé solo, toutes régions'}>
+            Patch {data.snapshot.patch} · {data.snapshot.rank}{data.snapshot.source === 'lolalytics' ? ' · Lolalytics' : ''}
+          </span>
+        )}
+        {data?.snapshot.source === 'sample' && <span className="chip chip-warn">Données d'exemple</span>}
         {screen === 'draft' && (confirmReset ? (
           <div role="group" aria-label="Confirmer la nouvelle draft" className="row-gap wrap center">
             <span className="small warn-text strong">Effacer picks, bans et sélections ?</span>

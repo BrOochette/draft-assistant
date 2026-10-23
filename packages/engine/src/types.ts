@@ -5,17 +5,30 @@ export type PoolStatus = 'in' | 'out' | 'all';
 /** Champion prêt à évaluer sur un rôle : attributs, stats et statut dans le pool du joueur. */
 export interface Entry {
   name: string;
+  /** Rôle sur lequel le champion est joué. */
+  role: Role;
   damage: Damage;
   provides: Trait[];
   scaling: Scaling;
   synergyBase: number;
-  laneWinRate: number;
+  laneWinRate: number | null;
   gameWinRate: number;
   games: number;
   notes: Note[];
   pool: PoolStatus;
   /** Maîtrise sur 100 (note × 10), 0 hors pool, null sans pool. */
   mastery: number | null;
+  /** Adversaire de lane vers [win rate, parties]. */
+  matchups?: Record<string, [number, number]>;
+  /** Rôle de l'allié, puis allié vers [écart de win rate en duo, parties]. */
+  duos?: Partial<Record<Role, Record<string, [number, number]>>>;
+}
+
+/** Win rate mesuré contre l'adversaire de lane connu. */
+export interface MatchupStat {
+  opponent: string;
+  winRate: number;
+  games: number;
 }
 
 /** Ce qu'un pick apporte à une compo. */
@@ -32,6 +45,7 @@ export const PHASES: readonly Phase[] = [0, 1, 2];
 export type Reason =
   | { sign: '+'; code: 'PROVIDES'; trait: Trait }
   | { sign: '-'; code: 'COVERED'; trait: Trait; by: string }
+  | { sign: '+' | '-'; code: 'DUO'; ally: string; delta: number }
   | { sign: '-'; code: 'EXTRA_AP'; n: number }
   | { sign: '+'; code: 'SCALING_STRONG'; phase: Phase }
   | { sign: '-'; code: 'SCALING_WEAK'; phase: Phase }
@@ -56,8 +70,10 @@ export interface Evaluation {
   reasons: Reason[];
   games: number;
   lowSample: boolean;
-  laneWinRate: number;
+  laneWinRate: number | null;
   gameWinRate: number;
+  /** Matchup contre l'adversaire de lane, s'il est connu et mesuré. */
+  matchup: MatchupStat | null;
   scaling: Scaling;
 }
 
@@ -77,7 +93,7 @@ export type RecNote = 'POOL' | 'NO_POOL' | 'POOL_EXHAUSTED';
 
 export interface LockedResult extends Evaluation {
   /** Notes du matchup direct, null si la paire n'a pas de notes. */
-  matchup: Note[] | null;
+  matchupNotes: Note[] | null;
   /** Notes de compo propres au champion, null s'il n'en a pas. */
   info: Note[] | null;
 }
@@ -131,7 +147,9 @@ export interface BanCard {
   champion: string;
   role: Role;
   threat: number;
-  reason: string;
+  /** Raison rédigée (données d'exemple), sinon l'interface affiche le win rate. */
+  reason?: string;
+  winRate?: number;
 }
 
 export interface DraftResult {
