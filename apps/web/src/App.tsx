@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { createSession, draftReducer } from '@draft/engine';
-import { emptySlots, type Pools } from '@draft/schemas';
+import { emptySlots, ROLES, type Pools } from '@draft/schemas';
 import { initialDraft, loadAppData, type AppData } from './data';
 import { DraftScreen } from './draft/DraftScreen';
 import { PlayersScreen } from './players/PlayersScreen';
@@ -41,6 +41,15 @@ export const App = ({ initialData, initialPools }: Props) => {
     }
     if (!initialPools) loadPools().then(setPools, (e: Error) => setError(e.message));
   }, [initialData, initialPools]);
+
+  // Un joueur supprimé (ou absent des pools enregistrés) n'est plus placé sur aucun rôle.
+  useEffect(() => {
+    if (!pools) return;
+    for (const role of ROLES) {
+      const player = session.draft.assign[role];
+      if (player && !pools[player]) dispatch({ type: 'assignPlayer', role, player: null });
+    }
+  }, [pools, session.draft.assign]);
 
   useEffect(() => {
     const onHash = () => setScreen(screenFromHash());

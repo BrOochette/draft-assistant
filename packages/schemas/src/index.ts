@@ -116,7 +116,8 @@ const roleSlots = z.object({ Top: slot, Jungle: slot, Mid: slot, ADC: slot, Supp
 export type RoleSlots = Record<Role, string | null>;
 
 export const DraftStateSchema = z.object({
-  assign: z.object({ Top: z.string(), Jungle: z.string(), Mid: z.string(), ADC: z.string(), Support: z.string() }),
+  /** Joueur placé sur chaque rôle, null si aucun (tous les champions du rôle sont alors classés, sans maîtrise). */
+  assign: z.object({ Top: z.string().nullable(), Jungle: z.string().nullable(), Mid: z.string().nullable(), ADC: z.string().nullable(), Support: z.string().nullable() }),
   ally: roleSlots,
   enemy: roleSlots,
   allyBans: z.array(z.string()).max(5),

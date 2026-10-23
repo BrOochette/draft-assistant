@@ -34,6 +34,7 @@ Une application web d'aide à la draft sur League of Legends. Elle propose, pour
 - Chaque joueur a un **champion pool par rôle**, avec une **note de maîtrise sur 10** par champion.
 - Avant la draft, on **place un joueur sur chaque rôle**. Le pool utilisé est celui du joueur pour ce rôle précis.
 - Si le joueur n'a **pas de pool pour ce rôle**, on propose **tous les champions du rôle**, et la maîtrise n'entre pas dans le score.
+- **Décidé** (23/10/2026) : placer un joueur n'est pas obligatoire. Un rôle sans joueur (« Aucun joueur ») se comporte comme un joueur sans pool. Supprimer un joueur le retire des rôles où il était placé.
 - On **ne connaît pas les pools des joueurs ennemis**. Ils ne servent pas dans le calcul, y compris pour les bans.
 
 ### Règle de pool pour les recommandations

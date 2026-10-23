@@ -168,7 +168,7 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
                   type="button"
                   className={'face ' + (ally ? 'is-ally' : 'is-empty-ally')}
                   aria-expanded={picker === 'ally'}
-                  aria-label={(ally ? 'Saisie manuelle : changer le champion de ' : 'Saisie manuelle : choisir le champion de ') + player + ' en ' + role}
+                  aria-label={(ally ? 'Saisie manuelle : changer le champion' : 'Saisie manuelle : choisir le champion') + (player ? ' de ' + player : '') + ' en ' + role}
                   title={ally ? 'Changer à la main' : 'Choisir à la main'}
                   onClick={() => openPicker('ally')}
                 >
@@ -199,12 +199,14 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
           </div>
           <div className="col gap-4">
             <label htmlFor={'player-' + role} className="small muted">Joueur</label>
-            <select id={'player-' + role} className="input" value={player} onChange={(e) => dispatch({ type: 'assignPlayer', role, player: e.target.value })}>
-              {!players.includes(player) && <option value={player}>{player}</option>}
+            <select id={'player-' + role} className="input" value={player ?? ''} onChange={(e) => dispatch({ type: 'assignPlayer', role, player: e.target.value || null })}>
+              <option value="">Aucun joueur</option>
               {players.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
-          {!row.hasPool && <span className="small warn-text row-gap"><Icon name="warn" />Sans pool : tous les champions</span>}
+          {!row.hasPool && (
+            <span className="small warn-text row-gap"><Icon name="warn" />{player ? 'Sans pool' : 'Sans joueur'} : tous les champions</span>
+          )}
           {row.multiRole && <span className="small neg-text row-gap"><Icon name="warn" />Placé sur plusieurs rôles</span>}
         </div>
 
@@ -274,7 +276,7 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
 
       {picker && (
         <ChampionPicker
-          title={picker === 'ally' ? 'Champion de ' + player + ' en ' + role : 'Pick ennemi en ' + role}
+          title={picker === 'ally' ? 'Champion' + (player ? ' de ' + player : '') + ' en ' + role : 'Pick ennemi en ' + role}
           accent={picker === 'ally' ? 'var(--ally)' : 'var(--enemy)'}
           query={query}
           onQuery={setQuery}

@@ -16,7 +16,7 @@ export const recommendRole = (
   const ctx = allyContext(state, pools, data, role);
   const allyPick = state.ally[role];
   const enemyPick = state.enemy[role];
-  const multiRole = ROLES.filter((r) => state.assign[r] === meta.player).length > 1;
+  const multiRole = meta.player != null && ROLES.filter((r) => state.assign[r] === meta.player).length > 1;
   const base = { role, player: meta.player, hasPool: meta.hasPool, multiRole, allyPick, enemyPick };
 
   if (allyPick) {

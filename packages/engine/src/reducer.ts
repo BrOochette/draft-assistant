@@ -33,7 +33,7 @@ export type DraftAction =
   | { type: 'clearEnemy'; role: Role }
   | { type: 'addBan'; side: Side; champion: string }
   | { type: 'removeBan'; side: Side; champion: string }
-  | { type: 'assignPlayer'; role: Role; player: string }
+  | { type: 'assignPlayer'; role: Role; player: string | null }
   | { type: 'select'; role: Role; champion: string }
   | { type: 'reset' }
   /** Remplace la draft sans historique (chargement de l'état de départ). */

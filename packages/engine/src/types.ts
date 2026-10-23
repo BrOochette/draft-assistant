@@ -100,7 +100,8 @@ export interface LockedResult extends Evaluation {
 
 export interface RoleResult {
   role: Role;
-  player: string;
+  /** null : aucun joueur placé sur le rôle. */
+  player: string | null;
   hasPool: boolean;
   multiRole: boolean;
   allyPick: string | null;

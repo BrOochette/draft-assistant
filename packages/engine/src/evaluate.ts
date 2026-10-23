@@ -23,7 +23,7 @@ export const evaluate = (
   c: Entry,
   ctx: readonly Entry[],
   enemies: readonly CompMember[],
-  player: string,
+  player: string | null,
   laneOpponent: string | null = null
 ): Evaluation => {
   const met = new Map<Trait, string>();
@@ -78,7 +78,8 @@ export const evaluate = (
     if (c.mastery >= 80) reasons.push({ sign: '+', code: 'MASTERY_HIGH' });
     else if (c.mastery <= 50) reasons.push({ sign: '-', code: 'MASTERY_LOW' });
   }
-  if (c.pool === 'out') reasons.push({ sign: '-', code: 'OUT_OF_POOL', player });
+  // « Hors pool » suppose un joueur placé : sans joueur, tous les champions sont « all ».
+  if (c.pool === 'out' && player) reasons.push({ sign: '-', code: 'OUT_OF_POOL', player });
   if (c.games < LOW_SAMPLE_GAMES) reasons.push({ sign: '-', code: 'LOW_SAMPLE', games: c.games });
 
   syn = clamp(syn);

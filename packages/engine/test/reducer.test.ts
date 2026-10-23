@@ -50,6 +50,17 @@ describe('draftReducer', () => {
     expect(jungle.recommendations.map((e) => e.champion)).toEqual(['Fiddlesticks', 'Viego', 'Lee Sin']);
   });
 
+  it('un rôle sans joueur classe tous les champions, sans maîtrise', () => {
+    const s = run(start(), { type: 'assignPlayer', role: 'Jungle', player: null });
+    const jungle = computeDraft(s.draft, samplePools(), sampleData()).roles[1]!;
+    expect(jungle.player).toBeNull();
+    expect(jungle.hasPool).toBe(false);
+    expect(jungle.note).toBe('NO_POOL');
+    expect(jungle.outOfPool).toEqual([]);
+    expect(jungle.inPool.every((e) => e.pool === 'all' && e.mastery == null)).toBe(true);
+    expect(computeDraft(s.draft, samplePools(), sampleData()).team).not.toContainEqual(expect.objectContaining({ role: 'Jungle' }));
+  });
+
   it('remet la draft à zéro et garde le placement des joueurs', () => {
     const s = run(start(), { type: 'assignPlayer', role: 'Mid', player: 'Max' }, { type: 'reset' });
     expect(Object.values(s.draft.ally).every((v) => v === null)).toBe(true);

@@ -3,14 +3,14 @@ import type { EngineData } from './stats-provider';
 import type { CompMember, Entry, PoolStatus } from './types';
 
 export interface RowMeta {
-  player: string;
+  player: string | null;
   hasPool: boolean;
   list: readonly PoolEntry[];
 }
 
 export const rowMeta = (state: DraftState, pools: Pools, role: Role): RowMeta => {
   const player = state.assign[role];
-  const list = pools[player]?.[role] ?? [];
+  const list = player ? pools[player]?.[role] ?? [] : [];
   return { player, hasPool: list.length > 0, list };
 };
 

@@ -58,9 +58,9 @@ export const teamNotes = (state: DraftState, pools: Pools): TeamNote[] => {
   const out: TeamNote[] = [];
   for (const role of ROLES) {
     const m = rowMeta(state, pools, role);
-    if (!m.hasPool) out.push({ code: 'NO_POOL', player: m.player, role });
+    if (!m.hasPool && m.player) out.push({ code: 'NO_POOL', player: m.player, role });
   }
-  const players = [...new Set(ROLES.map((r) => state.assign[r]))];
+  const players = [...new Set(ROLES.map((r) => state.assign[r]).filter((p): p is string => !!p))];
   for (const player of players) {
     const roles = ROLES.filter((r) => state.assign[r] === player);
     if (roles.length > 1) out.push({ code: 'MULTI_ROLE', player, roles });

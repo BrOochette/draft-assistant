@@ -85,6 +85,22 @@ describe('écran Joueurs', () => {
     await user.click(screen.getByRole('button', { name: 'Oui, supprimer' }));
     expect(screen.queryByRole('button', { name: /^Lou/ })).not.toBeInTheDocument();
     await waitFor(async () => expect(Object.keys(await loadPools())).toEqual(['Alex', 'Sam', 'Noa', 'Max']));
+
+    // Lou était placé en ADC : le rôle n'a plus de joueur dans la draft.
+    await user.click(screen.getByRole('link', { name: 'Draft' }));
+    const adc = within(await screen.findByRole('region', { name: 'Rôle ADC' }));
+    expect(adc.getByRole('combobox', { name: 'Joueur' })).toHaveValue('');
+    expect(adc.getByText('Aucun joueur placé en ADC : tous les champions sont classés.')).toBeInTheDocument();
+    expect(adc.queryByRole('option', { name: 'Lou' })).not.toBeInTheDocument();
+  });
+
+  it('permet de ne placer aucun joueur sur un rôle', async () => {
+    const user = userEvent.setup();
+    render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
+    const mid = within(screen.getByRole('region', { name: 'Rôle Mid' }));
+    await user.selectOptions(mid.getByRole('combobox', { name: 'Joueur' }), 'Aucun joueur');
+    expect(mid.getByText('Sans joueur : tous les champions')).toBeInTheDocument();
+    expect(mid.queryByText(/Hors pool/)).not.toBeInTheDocument();
   });
 
   it('enregistre une modification de pool dans IndexedDB', async () => {
