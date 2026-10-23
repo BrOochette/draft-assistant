@@ -113,11 +113,11 @@ Les fichiers sont dans `maquettes/`. Voir `maquettes/README.md` pour le format.
 
 **Notification d'annulation.** Chaque verrouillage, retrait, ban ou saisie manuelle affiche « Annuler » en bas de l'écran.
 
-> Note : sur la version publiée de la maquette, la notification d'annulation a disparu après une modification sur le canvas, peut-être involontaire. La copie fournie ici la contient. **Ouvert** : la garder ou non.
+> Note : sur la version publiée de la maquette, la notification d'annulation a disparu après une modification sur le canvas, peut-être involontaire. La copie fournie ici la contient. **Décidé** (23/10/2026) : la notification est gardée.
 
 ### Hypothèse de la maquette à revoir
 
-Dans la maquette, Top et Support sont **verrouillés d'office** (Aurora et Brand) et seuls Jungle, Mid et ADC sont ouverts. C'est une simplification des données d'exemple. **Ouvert** : dans l'application réelle, les 5 rôles sont vraisemblablement ouverts, avec des candidats pour chacun.
+Dans la maquette, Top et Support sont **verrouillés d'office** (Aurora et Brand) et seuls Jungle, Mid et ADC sont ouverts. C'est une simplification des données d'exemple. **Décidé** (23/10/2026) : dans l'application, les 5 rôles sont ouverts. Aurora et Brand ne sont que des picks de l'état initial, et se retirent avec la croix comme les autres.
 
 ---
 
@@ -239,13 +239,13 @@ Un robots.txt n'est pas une autorisation juridique. Les pistes raisonnables :
 - une demande écrite d'accès pour usage personnel ;
 - le serveur MCP d'OP.GG pour un premier test.
 
-**Proposé** : le moteur lit une interface `StatsProvider`. On peut démarrer avec une source et en changer sans toucher au moteur.
+**Décidé** (23/10/2026) : le moteur lit une interface `StatsProvider`. L'application démarre sur les données d'exemple (`npm run ingest -- sample`). La vraie source se branchera ensuite sans toucher au moteur.
 
 ---
 
 ## 7. Architecture proposée
 
-**Proposé**, à valider avant de coder :
+**Décidé** (23/10/2026), avec des workspaces npm et sans serveur (moteur dans le navigateur, pools dans IndexedDB, snapshot de stats statique) :
 
 ```
 draft-assistant/
@@ -284,8 +284,6 @@ Principes :
 
 - Source des statistiques (section 6).
 - Définition et seuil du win rate de lane.
-- Top et Support : ouverts avec des candidats, ou pas (section 4).
 - Comment dériver la base de synergie des stats réelles.
 - Formule des suggestions de bans.
-- Garder ou non la notification d'annulation.
 - Tranches de durée du scaling mesuré (proposé : moins de 25 min, 25 à 35, plus de 35).

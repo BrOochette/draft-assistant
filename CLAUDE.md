@@ -19,9 +19,11 @@ Application web personnelle d'aide à la draft sur League of Legends. Elle recom
 
 ## Stack
 
-TypeScript partout. Ce qui est proposé, à confirmer avec le porteur du projet avant de figer :
-- monorepo avec `packages/engine` (logique pure), `packages/schemas`, `apps/web` (React + Vite) et `apps/ingest` (CLI Node) ;
+TypeScript partout, validé avec le porteur du projet :
+- monorepo en workspaces npm : `packages/schemas`, `packages/engine` (logique pure), `packages/i18n-fr` (tous les textes d'interface), `apps/web` (React + Vite) et `apps/ingest` (CLI Node) ;
 - Vitest pour les tests.
+
+Commandes : `npm run dev`, `npm test`, `npm run typecheck`, `npm run ingest -- sample|portraits`.
 
 ## Première étape suggérée
 
