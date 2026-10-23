@@ -82,6 +82,14 @@ export const CRITERION_TIP: Record<CriterionKey, string> = {
   damageMix: 'Des dégâts magiques et des dégâts physiques.',
   scaling: "Puissance de ta compo face à l'ennemi sur les trois phases de la partie."
 };
+/** Critères de la compo ennemie, calculés sur ses picks connus. */
+export const CRITERION_TIP_ENEMY: Record<CriterionKey, string> = {
+  frontline: "Au moins un champion ennemi qui encaisse les dégâts pour son équipe.",
+  engage: "Un moyen pour l'ennemi d'initier le combat.",
+  peel: 'De quoi protéger ses carry des plongées.',
+  damageMix: 'Des dégâts magiques et des dégâts physiques chez l\'ennemi.',
+  scaling: 'Puissance de la compo ennemie face à la tienne sur les trois phases de la partie.'
+};
 
 export const recNoteText = (note: RecNote, player: string, role: Role): string => {
   switch (note) {

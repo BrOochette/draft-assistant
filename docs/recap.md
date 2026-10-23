@@ -104,16 +104,16 @@ Les fichiers sont dans `maquettes/`. Voir `maquettes/README.md` pour le format.
 - **en dessous, si ouvert** : le sélecteur manuel (recherche, grille de portraits, raisons d'indisponibilité, bouton « Effacer » pour un pick ennemi).
 
 **Colonne de droite**, collée en haut au défilement et repassant sous la draft en dessous de 1100 px :
-- note de ta compo sur 100, verdict, et note ennemie ;
-- 5 critères avec barres et infobulles : Frontline, Engage, Peel, Mix de dégâts, Scaling ;
+- note de ta compo sur 100 et verdict, avec les 5 critères (barres et infobulles) : Frontline, Engage, Peel, Mix de dégâts, Scaling ;
+- même carte pour la compo ennemie, calculée sur ses picks connus (**Décidé** le 23/10/2026, ajout par rapport à la maquette) ;
 - scaling des deux équipes par phase, avec verdict (Avantage, Équilibre, Désavantage) ;
 - lecture factuelle de ta compo (+ et -) et de la compo ennemie ;
 - bloc « Équipe » d'avertissements, visible seulement s'il y en a ;
 - bloc repliable « Lire les scores » avec les définitions.
 
-**Notification d'annulation.** Chaque verrouillage, retrait, ban ou saisie manuelle affiche « Annuler » en bas de l'écran.
+**Notification d'annulation.** Dans la maquette, chaque verrouillage, retrait, ban ou saisie manuelle affiche « Annuler » en bas de l'écran.
 
-> Note : sur la version publiée de la maquette, la notification d'annulation a disparu après une modification sur le canvas, peut-être involontaire. La copie fournie ici la contient. **Décidé** (23/10/2026) : la notification est gardée.
+> **Décidé** (23/10/2026) : la notification est retirée. On corrige à la main (croix sur un pick, clic sur un ban, sélecteur). Le réducteur du moteur garde son historique (`undo`), sans usage dans l'interface pour l'instant.
 
 ### Hypothèse de la maquette à revoir
 

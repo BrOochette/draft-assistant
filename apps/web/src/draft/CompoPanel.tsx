@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import type { DraftResult, ScalingVerdict, Verdict } from '@draft/engine';
+import type { CompScore, DraftResult, ScalingVerdict, Verdict } from '@draft/engine';
 import {
   allyReadText,
   CRITERION_LABEL,
   CRITERION_TIP,
+  CRITERION_TIP_ENEMY,
   enemyReadText,
   fmt1,
   phaseTitle,
@@ -16,36 +17,44 @@ import { Bar, Icon, useData } from '../ui';
 const VERDICT_TONE: Record<Verdict, string> = { solid: 'pos', fair: 'info', fragile: 'warn', fix: 'neg' };
 const SCALING_TONE: Record<ScalingVerdict, string> = { advantage: 'pos', even: 'plain', disadvantage: 'neg' };
 
+interface ScoreCardProps {
+  side: 'ally' | 'enemy';
+  score: CompScore & { verdict: Verdict };
+}
+
+const ScoreCard = ({ side, score }: ScoreCardProps) => {
+  const title = side === 'ally' ? 'Ta compo' : 'Compo ennemie';
+  const tips = side === 'ally' ? CRITERION_TIP : CRITERION_TIP_ENEMY;
+  return (
+    <section aria-label={'Note de ' + title.toLowerCase()} className="card col gap-14" data-testid={side + '-compo'}>
+      <div className="row-gap center gap-16">
+        <div className="col center-items compo-score">
+          <span className={'eyebrow ' + side + '-text'}>{title}</span>
+          <span className={'big-score tone-' + VERDICT_TONE[score.verdict]} data-testid="compo-score">{score.total}</span>
+          <span className="small muted">sur 100</span>
+        </div>
+        <span className={'chip chip-' + VERDICT_TONE[score.verdict] + ' bold'} data-testid="compo-verdict">{VERDICT_LABEL[score.verdict]}</span>
+      </div>
+      <div className="col gap-8">
+        {score.criteria.map((c) => (
+          <div key={c.key} className="criterion" title={tips[c.key]}>
+            <span>{CRITERION_LABEL[c.key]}</span>
+            <Bar value={c.value} color={c.value >= 75 ? 'var(--accent)' : c.value >= 50 ? 'var(--ally)' : 'var(--neg)'} />
+            <span className="strong text right">{c.value}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 export const CompoPanel = ({ result }: { result: DraftResult }) => {
   const { snapshot } = useData();
   const [help, setHelp] = useState(false);
-  const { ally, enemy } = result.composition;
   return (
     <aside aria-label="Analyse de la composition" className="side">
-      <section aria-label="Note globale de la composition" className="card col gap-14">
-        <div className="row-gap center gap-16">
-          <div className="col center-items compo-score">
-            <span className="eyebrow ally-text">Ta compo</span>
-            <span className={'big-score tone-' + VERDICT_TONE[ally.verdict]} data-testid="compo-score">{ally.total}</span>
-            <span className="small muted">sur 100</span>
-          </div>
-          <div className="col gap-10 start">
-            <span className={'chip chip-' + VERDICT_TONE[ally.verdict] + ' bold'} data-testid="compo-verdict">{VERDICT_LABEL[ally.verdict]}</span>
-            <span className="small muted">
-              Ennemis : <span className={'bold tone-' + VERDICT_TONE[enemy.verdict]}>{enemy.total}</span> · {VERDICT_LABEL[enemy.verdict]}
-            </span>
-          </div>
-        </div>
-        <div className="col gap-8">
-          {ally.criteria.map((c) => (
-            <div key={c.key} className="criterion" title={CRITERION_TIP[c.key]}>
-              <span>{CRITERION_LABEL[c.key]}</span>
-              <Bar value={c.value} color={c.value >= 75 ? 'var(--accent)' : c.value >= 50 ? 'var(--ally)' : 'var(--neg)'} />
-              <span className="strong text right">{c.value}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ScoreCard side="ally" score={result.composition.ally} />
+      <ScoreCard side="enemy" score={result.composition.enemy} />
 
       <section aria-label="Scaling des deux équipes" className="card col gap-10">
         <h2 className="h3">Scaling</h2>

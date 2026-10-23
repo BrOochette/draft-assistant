@@ -12,22 +12,25 @@ const jungleRecs = () =>
     .map((b) => b.getAttribute('aria-label') ?? '')
     .filter((l) => l.includes('score'));
 
+const compo = (side: 'ally' | 'enemy') => {
+  const card = within(screen.getByTestId(side + '-compo'));
+  return { score: card.getByTestId('compo-score').textContent, verdict: card.getByTestId('compo-verdict').textContent };
+};
+
 describe('écran Draft', () => {
-  it('verrouille Sejuani puis annule', async () => {
+  it('verrouille Sejuani puis la retire', async () => {
     const user = userEvent.setup();
     render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
-    expect(screen.getByTestId('compo-score')).toHaveTextContent('29');
-    expect(screen.getByTestId('compo-verdict')).toHaveTextContent('À corriger');
+    expect(compo('ally')).toEqual({ score: '29', verdict: 'À corriger' });
+    expect(compo('enemy')).toEqual({ score: '69', verdict: 'Correcte' });
 
     await user.click(screen.getByRole('button', { name: 'Sejuani, score 74 sur 100. Sélectionner.' }));
     await user.click(screen.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' }));
-    expect(screen.getByTestId('compo-score')).toHaveTextContent('68');
-    expect(screen.getByTestId('compo-verdict')).toHaveTextContent('Correcte');
-    expect(screen.getByRole('status')).toHaveTextContent('Sejuani verrouillé en Jungle');
-
-    await user.click(within(screen.getByRole('status')).getByRole('button', { name: 'Annuler' }));
-    expect(screen.getByTestId('compo-score')).toHaveTextContent('29');
+    expect(compo('ally')).toEqual({ score: '68', verdict: 'Correcte' });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Retirer Sejuani et rouvrir les suggestions en Jungle' }));
+    expect(compo('ally').score).toBe('29');
   });
 
   it('un ban ennemi retire le champion des recommandations', async () => {
@@ -61,7 +64,9 @@ describe('écran Draft', () => {
     expect(screen.getByRole('button', { name: 'Ahri, indisponible : Déjà pris' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'ADC' }));
     await user.click(screen.getByRole('button', { name: 'Saisir Jinx en ADC' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Pick ennemi en ADC : Jinx');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: 'Rôle ADC' })).getByText('Jinx')).toBeInTheDocument();
+    expect(compo('enemy').score).not.toBe('69');
   });
 });
 
