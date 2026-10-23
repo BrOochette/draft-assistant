@@ -9,6 +9,8 @@ export const LOW_SAMPLE_GAMES = 500;
 const DUO_PRIOR_GAMES = 200;
 /** Parties « fictives » au win rate lissé du champion, pour lisser un matchup peu joué. */
 const MATCHUP_PRIOR_GAMES = 1000;
+/** Un matchup de moins de parties est ignoré : le counter utilise alors le win rate lissé du champion. */
+export const MATCHUP_MIN_GAMES = 500;
 /** Points de synergie par point d'écart moyen de win rate en duo. */
 const DUO_WEIGHT = 4;
 /** Écart de duo (lissé) à partir duquel une raison est affichée. */
@@ -87,7 +89,8 @@ export const evaluate = (
   syn = clamp(syn);
   // Win rate lissé vers 50 % : un pick peu joué au win rate élevé ne sature plus le counter.
   const baseWr = c.priorGames > 0 ? (c.gameWinRate * c.games + 50 * c.priorGames) / (c.games + c.priorGames) : c.gameWinRate;
-  const m = laneOpponent ? c.matchups?.[laneOpponent] : undefined;
+  const found = laneOpponent ? c.matchups?.[laneOpponent] : undefined;
+  const m = found && found[1] >= MATCHUP_MIN_GAMES ? found : undefined;
   const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1] } : null;
   const gameWr = m ? smooth(m[0], m[1], baseWr, MATCHUP_PRIOR_GAMES) : baseWr;
   // Sans win rate de lane (Lolalytics), le counter repose sur le win rate de partie seul.

@@ -58,7 +58,7 @@ const realData = createEngineData({
       champions.map((c, i) => ({
         ...candidate(c, i),
         laneWinRate: null,
-        matchups: Object.fromEntries(names.map((n, j) => [n, [45 + ((i + j) % 10), 100 + j * 10] as [number, number]])),
+        matchups: Object.fromEntries(names.map((n, j) => [n, [45 + ((i + j) % 10), 500 + j * 10] as [number, number]])),
         duos: Object.fromEntries(ROLES.map((ar) => [ar, Object.fromEntries(names.map((n, j) => [n, [((i * j) % 7) - 3, 50 + j] as [number, number]]))]))
       }))
     ])

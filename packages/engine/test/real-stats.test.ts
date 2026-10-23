@@ -88,6 +88,16 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(malphite.gameWinRate).toBe(53.13);
   });
 
+  it('ignore un matchup de moins de 500 parties', () => {
+    const d = createEngineData({
+      ...snapshot,
+      candidates: { Mid: [cand('Ahri', { gameWinRate: 52, matchups: { Zed: [63, 219] } })] }
+    });
+    const e = computeDraft({ ...base, enemy: { ...base.enemy, Mid: 'Zed' } }, {}, d).roles[2]!.recommendations[0]!;
+    expect(e.matchup).toBeNull();
+    expect(e.counter).toBe(wrScore(52));
+  });
+
   it('ajoute la synergie de duo avec un allié verrouillé', () => {
     const without = mid(base);
     const withSej = mid({ ...base, ally: { ...base.ally, Jungle: 'Sejuani' } });
