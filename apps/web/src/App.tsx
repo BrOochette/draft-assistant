@@ -78,8 +78,8 @@ export const App = ({ initialData, initialPools }: Props) => {
         </nav>
         <span className="grow" />
         {data && (
-          <span className="chip chip-plain" title={data.snapshot.source === 'sample' ? "Win rates et échantillons : données d'exemple" : 'Stats Lolalytics, classé solo, toutes régions'}>
-            Patch {data.snapshot.patch} · {data.snapshot.rank}{data.snapshot.source === 'lolalytics' ? ' · Lolalytics' : ''}
+          <span className="chip chip-plain" title={data.snapshot.source === 'sample' ? "Win rates et échantillons : données d'exemple" : 'Stats Lolalytics, classé solo, ' + (data.snapshot.region ?? 'toutes régions')}>
+            Patch {data.snapshot.patch} · {data.snapshot.rank}{data.snapshot.region ? ' · ' + data.snapshot.region : ''}{data.snapshot.source === 'lolalytics' ? ' · Lolalytics' : ''}
           </span>
         )}
         {data?.snapshot.source === 'sample' && <span className="chip chip-warn">Données d'exemple</span>}

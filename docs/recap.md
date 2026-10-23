@@ -208,7 +208,7 @@ win rate lissé = (victoires + 200 × moyenne du champion) / (parties + 200)
 
 ## 6. Données : d'où viennent les stats
 
-**Décidé** (23/10/2026) : **Lolalytics** pour les stats, avec notre propre lecteur en TypeScript et une collecte légère par patch. Le **wiki LoL** (`Module:ChampionData`) sert à amorcer les attributs des champions. L'API Riot est écartée : trop d'appels pour le porteur du projet. Il n'y a donc pas de win rate de lane.
+**Décidé** (23/10/2026) : **Lolalytics** pour les stats, avec notre propre lecteur en TypeScript et une collecte légère par patch. Le **wiki LoL** (`Module:ChampionData`) sert à amorcer les attributs des champions. L'API Riot est écartée : trop d'appels pour le porteur du projet. Il n'y a donc pas de win rate de lane. **Décidé** (23/10/2026) : région **EUW**, rang Emerald+ (`npm run ingest -- lolalytics [région]` permet d'en changer). EUW représente environ 30 % des parties toutes régions : le lissage et le seuil de 300 parties prennent plus d'importance.
 
 Ce que lit `npm run ingest -- lolalytics` (environ 500 requêtes, une toutes les 1,5 s, User-Agent identifiable, cache du jour pour reprendre après une interruption) :
 - la page publique `lolalytics.com/lol/<champion>/build/` de chaque lane jouée à au moins 5 %. Son état embarqué (Qwik) donne le win rate, le nombre de parties, la répartition des dégâts, les victoires par durée de partie et le win rate contre chaque adversaire de la même lane ;

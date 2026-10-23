@@ -51,6 +51,7 @@ describe('assemblage du snapshot Lolalytics', () => {
     source: 'lolalytics',
     patch: '16.21',
     tier: 'emerald_plus',
+    region: 'euw',
     fetchedAt: '2026-10-23T00:00:00Z',
     champions: {
       Ahri: { Mid: lane(52.7, [50, 52, 53], { matchups: { Zed: [50.6, 2017] }, duos: { Jungle: { Sejuani: [2.1, 900] } } }) },
@@ -75,6 +76,7 @@ describe('assemblage du snapshot Lolalytics', () => {
     const ahri = snap.candidates.Mid![0]!;
     expect(ahri).toMatchObject({ laneWinRate: null, gameWinRate: 52.7, synergyBase: 55, provides: ['Peel'], laneShare: 90 });
     expect(snap.winRatePriorGames).toBe(3000);
+    expect(snap.region).toBe('EUW');
     expect(ahri.matchups).toEqual({ Zed: [50.6, 2017] });
     expect(ahri.duos).toEqual({ Jungle: { Sejuani: [2.1, 900] } });
   });

@@ -135,6 +135,7 @@ export const assembleLolalyticsSnapshot = (
     source: 'lolalytics',
     patch: dump.patch,
     rank: 'Emerald+',
+    ...(dump.region !== 'all' && { region: dump.region.toUpperCase() }),
     ddragonVersion,
     champions,
     candidates,

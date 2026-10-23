@@ -5,6 +5,8 @@ import { readQwikState } from './qwik';
 
 /** Rangs analysés : Emerald et au-dessus, toutes régions, classé solo. */
 export const TIER = 'emerald_plus';
+/** Région par défaut (code Lolalytics : all, euw, eune, na, kr…). */
+export const DEFAULT_REGION = 'euw';
 /** Lanes secondaires collectées à partir de cette part des parties du champion (en %). */
 export const MIN_LANE_SHARE = 5;
 /** Matchups et duos gardés à partir de ce nombre de parties. */
@@ -33,6 +35,8 @@ export const LolalyticsDumpSchema = z.object({
   source: z.literal('lolalytics'),
   patch: z.string(),
   tier: z.string(),
+  /** Région Lolalytics (« all » : toutes régions). Absente des collectes antérieures : toutes régions. */
+  region: z.string().default('all'),
   fetchedAt: z.string(),
   champions: z.record(z.string(), z.record(z.string(), LaneStatsSchema))
 });
@@ -103,9 +107,10 @@ export const parseTeam = (json: string, nameOfKey: ReadonlyMap<number, string>):
   return duos;
 };
 
-const buildUrl = (slug: string, role?: Role) => `https://lolalytics.com/lol/${slug}/build/` + (role ? `?lane=${LANE[role]}&tier=${TIER}` : `?tier=${TIER}`);
-const teamUrl = (slug: string, role: Role, patch: string) =>
-  `https://a1.lolalytics.com/mega/?ep=build-team&v=1&patch=${patch}&c=${slug}&lane=${LANE[role]}&tier=${TIER}&queue=ranked&region=all`;
+const buildUrl = (slug: string, region: string, role?: Role) =>
+  `https://lolalytics.com/lol/${slug}/build/?` + (role ? `lane=${LANE[role]}&` : '') + `tier=${TIER}&region=${region}`;
+const teamUrl = (slug: string, role: Role, patch: string, region: string) =>
+  `https://a1.lolalytics.com/mega/?ep=build-team&v=1&patch=${patch}&c=${slug}&lane=${LANE[role]}&tier=${TIER}&queue=ranked&region=${region}`;
 
 /**
  * Collecte un patch : pour chaque champion, la page build de sa lane principale (lanes, win rate, durées,
@@ -115,11 +120,12 @@ export const crawlLolalytics = async (
   champions: readonly ChampionAttributes[],
   fetchPage: PoliteFetch,
   fetchApi: PoliteFetch,
-  log: (msg: string) => void = () => {}
+  log: (msg: string) => void = () => {},
+  region: string = DEFAULT_REGION
 ): Promise<{ dump: LolalyticsDump; missing: string[] }> => {
   const nameOfKey = new Map(champions.map((c) => [c.key, c.name]));
   // La première page donne le patch courant et les identifiants d'URL de tous les champions.
-  const first = parseBuildPage(await fetchPage(buildUrl('ahri')), nameOfKey);
+  const first = parseBuildPage(await fetchPage(buildUrl('ahri', region)), nameOfKey);
   const patch = first.patch;
   const slugOf = new Map(Object.entries(first.slugs).map(([k, s]) => [Number(k), s]));
   const out: LolalyticsDump['champions'] = {};
@@ -133,15 +139,15 @@ export const crawlLolalytics = async (
     }
     log(`[${i + 1}/${champions.length}] ${c.name}`);
     try {
-      const main = parseBuildPage(await fetchPage(buildUrl(slug)), nameOfKey);
+      const main = parseBuildPage(await fetchPage(buildUrl(slug, region)), nameOfKey);
       const lanes: Partial<Record<Role, LaneStats>> = { [main.role]: main.stats };
       for (const [lane, share] of Object.entries(main.lanes)) {
         const role = ROLE_OF[lane];
         if (!role || role === main.role || share < MIN_LANE_SHARE) continue;
-        lanes[role] = parseBuildPage(await fetchPage(buildUrl(slug, role)), nameOfKey).stats;
+        lanes[role] = parseBuildPage(await fetchPage(buildUrl(slug, region, role)), nameOfKey).stats;
       }
       for (const [role, stats] of Object.entries(lanes) as [Role, LaneStats][]) {
-        stats.duos = parseTeam(await fetchApi(teamUrl(slug, role, patch)), nameOfKey);
+        stats.duos = parseTeam(await fetchApi(teamUrl(slug, role, patch, region)), nameOfKey);
       }
       out[c.name] = lanes;
     } catch (e) {
@@ -151,5 +157,5 @@ export const crawlLolalytics = async (
       missing.push(c.name);
     }
   }
-  return { dump: { source: 'lolalytics', patch, tier: TIER, fetchedAt: new Date().toISOString(), champions: out }, missing };
+  return { dump: { source: 'lolalytics', patch, tier: TIER, region, fetchedAt: new Date().toISOString(), champions: out }, missing };
 };

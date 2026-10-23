@@ -144,6 +144,8 @@ export const StatsSnapshotSchema = z.object({
   source: z.enum(['sample', 'lolalytics']),
   patch: z.string(),
   rank: z.string(),
+  /** Région des stats (« EUW »…), absente : toutes régions. */
+  region: z.string().optional(),
   ddragonVersion: z.string(),
   champions: z.array(ChampionSchema),
   candidates: CandidatesSchema,

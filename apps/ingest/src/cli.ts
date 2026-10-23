@@ -2,7 +2,7 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { ChampionAttributesSchema, ChampionOverridesSchema, type ChampionAttributes } from '@draft/schemas';
 import { politeFetch } from './http';
-import { crawlLolalytics, LolalyticsDumpSchema } from './lolalytics';
+import { crawlLolalytics, DEFAULT_REGION, LolalyticsDumpSchema } from './lolalytics';
 import { downloadPortraits, latestDdragonVersion } from './portraits';
 import { buildSampleSnapshot, writeSnapshot } from './sample';
 import { assembleLolalyticsSnapshot } from './snapshot';
@@ -20,7 +20,8 @@ const SNAPSHOT = PUBLIC + 'data/snapshot.json';
 const USAGE = `Usage : npm run ingest -- <commande>
 
   wiki        Amorce les attributs des champions depuis le wiki LoL : data/champions.json
-  lolalytics  Collecte les stats du patch courant sur Lolalytics : data/stats/lolalytics-<patch>.json (environ 10 min)
+  lolalytics [région]  Collecte les stats du patch courant sur Lolalytics (région euw par défaut, « all » pour toutes)
+              : data/stats/lolalytics-<patch>.json (environ 12 min)
   snapshot    Assemble le fichier chargé par l'appli (stats Lolalytics si présentes, sinon données d'exemple)
   sample      Force le snapshot sur les données d'exemple de la maquette
   portraits   Télécharge les portraits Data Dragon manquants dans apps/web/public/champions/`;
@@ -58,15 +59,18 @@ const main = async (cmd: string | undefined): Promise<number> => {
       // Cache du jour : une collecte interrompue reprend là où elle s'est arrêtée.
       const cacheDir = STATS + '.cache/' + new Date().toISOString().slice(0, 10);
       const log = (m: string) => console.log(m);
+      const region = (process.argv[3] ?? DEFAULT_REGION).toLowerCase();
+      if (!/^[a-z]+$/.test(region)) throw new Error('Région invalide : ' + region);
       const { dump, missing } = await crawlLolalytics(
         attributes,
         politeFetch({ delayMs: 1500, cacheDir, log }),
         politeFetch({ delayMs: 1500, cacheDir, log, referer: 'https://lolalytics.com/' }),
-        log
+        log,
+        region
       );
       const file = STATS + `lolalytics-${dump.patch}.json`;
       await writeFile(file, JSON.stringify(dump) + '\n', 'utf8');
-      console.log(`Stats écrites : ${file} (${Object.keys(dump.champions).length} champions).` + (missing.length ? ` Absents de Lolalytics : ${missing.join(', ')}.` : ''));
+      console.log(`Stats écrites (région ${region}) : ${file} (${Object.keys(dump.champions).length} champions).` + (missing.length ? ` Absents de Lolalytics : ${missing.join(', ')}.` : ''));
       return 0;
     }
     case 'snapshot': {
