@@ -183,10 +183,9 @@ button:disabled { cursor: not-allowed; }
 .scal-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .scal-col > span:first-child { display: block; width: 10px; border-radius: 2px; }
 
-.compo-score { min-width: 96px; }
 .big-score { font-family: 'Barlow Condensed', sans-serif; font-size: 68px; font-weight: 700; line-height: 1; }
-.criterion { display: grid; grid-template-columns: 104px 1fr 34px; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
-.criterion .bar { height: 8px; border-radius: 4px; }
+.score-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.team-score { padding: 8px 4px; border-radius: 10px; background: var(--bg-2); }
 .phase-line { display: grid; grid-template-columns: 56px 1fr 30px; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 .read-item { display: flex; gap: 8px; font-size: 13px; }
 .sign { min-width: 10px; }
