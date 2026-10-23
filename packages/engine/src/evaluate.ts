@@ -1,0 +1,76 @@
+import type { Trait } from '@draft/schemas';
+import { compScore } from './composition';
+import { avgScal, clamp, wrScore } from './math';
+import type { CompMember, Entry, Evaluation, Phase, Reason } from './types';
+
+export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
+export const LOW_SAMPLE_GAMES = 500;
+
+/**
+ * Évalue un candidat face au contexte allié `ctx` (les autres picks) et aux ennemis connus.
+ * Portage ligne par ligne de `evalChamp` (maquette Draft v2) : ordre des opérations et arrondis identiques.
+ */
+export const evaluate = (c: Entry, ctx: readonly Entry[], enemies: readonly CompMember[], player: string): Evaluation => {
+  const met = new Map<Trait, string>();
+  for (const x of ctx) for (const g of x.provides) if (!met.has(g)) met.set(g, x.name);
+  const apCount = ctx.filter((x) => x.damage === 'AP').length;
+  const a = avgScal(ctx);
+  const e = avgScal(enemies);
+  const diff = [a[0] - e[0], a[1] - e[1], a[2] - e[2]] as const;
+  let wi: Phase = 0;
+  for (const i of [0, 1, 2] as const) if (diff[i] < diff[wi]) wi = i;
+  const needScal: Phase | null = diff[wi] <= -0.5 ? wi : null;
+
+  let syn = c.synergyBase;
+  const reasons: Reason[] = [];
+  for (const g of c.provides) {
+    const by = met.get(g);
+    if (by) {
+      syn -= 3;
+      reasons.push({ sign: '-', code: 'COVERED', trait: g, by });
+    } else {
+      syn += SYNERGY_BONUS[g];
+      reasons.push({ sign: '+', code: 'PROVIDES', trait: g });
+    }
+  }
+  if (c.damage === 'AP' && apCount >= 2) {
+    syn -= 4;
+    reasons.push({ sign: '-', code: 'EXTRA_AP', n: apCount + 1 });
+  }
+  if (needScal !== null) {
+    const v = c.scaling[needScal];
+    syn += (v - 3) * 4;
+    if (v >= 4) reasons.push({ sign: '+', code: 'SCALING_STRONG', phase: needScal });
+    else if (v <= 2) reasons.push({ sign: '-', code: 'SCALING_WEAK', phase: needScal });
+  }
+  for (const n of c.notes) reasons.push({ sign: n.sign, code: 'NOTE', text: n.text });
+  if (c.laneWinRate - c.gameWinRate >= 3) reasons.push({ sign: '-', code: 'OUTSCALED' });
+  if (c.gameWinRate - c.laneWinRate >= 3) reasons.push({ sign: '+', code: 'BETTER_IN_GAME' });
+  if (c.pool === 'in' && c.mastery != null) {
+    if (c.mastery >= 80) reasons.push({ sign: '+', code: 'MASTERY_HIGH' });
+    else if (c.mastery <= 50) reasons.push({ sign: '-', code: 'MASTERY_LOW' });
+  }
+  if (c.pool === 'out') reasons.push({ sign: '-', code: 'OUT_OF_POOL', player });
+  if (c.games < LOW_SAMPLE_GAMES) reasons.push({ sign: '-', code: 'LOW_SAMPLE', games: c.games });
+
+  syn = clamp(syn);
+  const ctr = Math.round(wrScore(c.laneWinRate) * 0.4 + wrScore(c.gameWinRate) * 0.6);
+  const total = c.mastery == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + c.mastery * 0.25);
+  const delta = compScore([...ctx, c], enemies).total - compScore(ctx, enemies).total;
+
+  return {
+    champion: c.name,
+    pool: c.pool,
+    synergy: syn,
+    counter: ctr,
+    mastery: c.mastery,
+    total,
+    compoDelta: delta,
+    reasons: [...reasons.filter((r) => r.sign === '+'), ...reasons.filter((r) => r.sign === '-')],
+    games: c.games,
+    lowSample: c.games < LOW_SAMPLE_GAMES,
+    laneWinRate: c.laneWinRate,
+    gameWinRate: c.gameWinRate,
+    scaling: c.scaling
+  };
+};

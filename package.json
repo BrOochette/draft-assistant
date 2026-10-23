@@ -1,0 +1,21 @@
+{
+  "name": "draft-assistant",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run ingest -- sample && npm run dev -w @draft/web",
+    "build": "npm run ingest -- sample && npm run build -w @draft/web",
+    "ingest": "npm run cli -w @draft/ingest --",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "~5.6.3",
+    "vitest": "^2.1.8"
+  }
+}
