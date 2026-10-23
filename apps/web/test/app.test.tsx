@@ -46,7 +46,14 @@ describe('écran Draft', () => {
   it('saisit un pick ennemi à la main', async () => {
     const user = userEvent.setup();
     render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
-    await user.click(screen.getByRole('button', { name: 'Saisie manuelle : pick ennemi en ADC' }));
+    const opener = screen.getByRole('button', { name: 'Saisie manuelle : pick ennemi en ADC' });
+    await user.click(opener);
+    expect(screen.getByRole('dialog', { name: 'Pick ennemi en ADC' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(opener).toHaveFocus();
+
+    await user.click(opener);
     expect(screen.getByRole('button', { name: 'Jhin, indisponible : Banni' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Saisir Jinx en ADC' }));
     expect(screen.getByRole('status')).toHaveTextContent('Pick ennemi en ADC : Jinx');

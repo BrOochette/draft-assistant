@@ -124,11 +124,13 @@ button:disabled { cursor: not-allowed; }
 
 .picker { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--bg-2); border: 1px solid; }
 .picker-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(6, 8, 12, .72); }
+.modal { width: min(760px, 100%); max-height: min(640px, calc(100vh - 32px)); box-shadow: 0 16px 48px rgba(0, 0, 0, .6); }
+.modal .picker-grid { flex: 1 1 auto; min-height: 0; max-height: none; }
 .picker-grid { max-height: 264px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; align-content: start; }
 .picker-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 92px; padding: 8px 4px; border-radius: 10px; cursor: pointer; color: var(--text); background: var(--card); border: 1px solid var(--border); text-align: center; }
 .picker-item:disabled { opacity: .55; }
 .picker-item.is-current { border-color: var(--accent); }
-.role-row .picker { margin: 0 14px 12px; }
 
 .role-row { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 .role-main { display: flex; flex-wrap: wrap; align-items: stretch; }
@@ -165,7 +167,6 @@ button:disabled { cursor: not-allowed; }
 .score-md { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 700; line-height: 1; color: var(--text); }
 .is-best { color: var(--accent); }
 .delta { font-size: 13px; font-weight: 600; color: var(--ally-soft); }
-.selected-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--pos); }
 .rec-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 8px; width: 100%; }
 .rec-stats .col { gap: 3px; }
 .lock-btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border: 0; border-top: 1px solid #1f6f66; background: var(--accent); color: var(--accent-ink); font-size: 14px; font-weight: 700; cursor: pointer; }

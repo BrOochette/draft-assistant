@@ -41,8 +41,6 @@ const RecCard = ({ e, rank, selected, onSelect, onLock, role }: { e: Evaluation;
             <span className={'score' + (rank === 1 ? ' is-best' : '')}>{e.total}</span>
             <span className="delta">Compo {fmtDelta(e.compoDelta)}</span>
           </span>
-          <span className="grow" />
-          {selected && <span className="selected-tag"><Icon name="check" />Sélectionné</span>}
         </span>
         <span className="rec-stats">
           {stats.map((s) => (
