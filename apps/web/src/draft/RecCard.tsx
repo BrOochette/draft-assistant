@@ -105,10 +105,13 @@ export const DetailItem = ({ e, role, avg, best, selected, secondary = false, on
     </div>
     {/* Pied de ligne : raisons et chips « vs » et « avec » sur une ligne, nombre de parties à droite. */}
     <div className="detail-foot">
-      {chips
-        ? chips.map((c, i) => <Chip key={i} tone={c.sign === '+' ? 'pos' : c.sign === '-' ? 'neg' : 'plain'}>{c.text}</Chip>)
-        : e.reasons.slice(0, 3).map((r, i) => <ReasonChip key={i} r={r} />)}
-      <WinRateChips e={e} wr={false} />
+      {/* Retour à la ligne inversé : la ligne du bas est la plus remplie, le surplus passe au-dessus. */}
+      <div className="detail-chips">
+        {chips
+          ? chips.map((c, i) => <Chip key={i} tone={c.sign === '+' ? 'pos' : c.sign === '-' ? 'neg' : 'plain'}>{c.text}</Chip>)
+          : e.reasons.slice(0, 3).map((r, i) => <ReasonChip key={i} r={r} />)}
+        <WinRateChips e={e} wr={false} />
+      </div>
       <span className="detail-games"><SampleText e={e} /></span>
     </div>
   </div>

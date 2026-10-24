@@ -193,14 +193,15 @@ button:disabled { cursor: not-allowed; }
 .details { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .detail-head { padding-top: 4px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 /* Ligne de la vue liste : identité | contributions | bouton et score, puis un pied de ligne (raisons, scaling, chips, parties). */
-.detail { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(220px, 1.4fr) auto; grid-template-areas: "id contrib score" "foot foot foot"; gap: 8px 18px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); }
-.detail-id { grid-area: id; display: flex; align-items: center; gap: 10px; min-width: 0; }
-.detail-contrib { grid-area: contrib; min-width: 0; justify-self: center; width: 100%; max-width: 340px; }
+.detail { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "id contrib score" "foot foot foot"; gap: 8px 18px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); }
+.detail-id { grid-area: id; display: flex; align-self: start; align-items: flex-start; gap: 10px; min-width: 0; }
+.detail-contrib { grid-area: contrib; min-width: 0; }
 .detail-contrib .contribs-inline { width: 100%; }
 .detail-score { grid-area: score; align-self: start; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .detail-score-value { align-items: flex-end; }
-.detail-foot { grid-area: foot; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
-.detail-games { margin-left: auto; }
+.detail-foot { grid-area: foot; display: flex; align-items: flex-end; gap: 10px; }
+.detail-chips { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap-reverse; align-items: center; gap: 6px; }
+.detail-games { flex: none; margin-left: auto; padding-bottom: 6px; }
 /* Téléphone : identité et score, puis contributions, puis le pied de ligne. */
 @container (max-width: 480px) {
   .detail { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "id score" "contrib contrib" "foot foot"; }
