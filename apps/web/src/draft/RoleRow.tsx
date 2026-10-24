@@ -50,11 +50,12 @@ const RecCard = ({ e, rank, selected, onSelect, onLock, role }: { e: Evaluation;
             </span>
           ))}
         </span>
-        <span className="row-gap wrap">
-          <WinRateChips e={e} />
-          {e.lowSample && <Chip tone="warn" title={sampleTip(e)}><Icon name="warn" />Peu fiable</Chip>}
-        </span>
       </button>
+      {/* Hors du bouton de sélection : le détail de la compo ennemie s'ouvre dans sa propre fenêtre. */}
+      <div className="row-gap wrap rec-chips">
+        <WinRateChips e={e} />
+        {e.lowSample && <Chip tone="warn" title={sampleTip(e)}><Icon name="warn" />Peu fiable</Chip>}
+      </div>
       {selected && (
         <button type="button" className="lock-btn" aria-label={'Verrouiller ' + e.champion + ' en ' + role} onClick={onLock}>
           <Icon name="lock" size={16} />Verrouiller

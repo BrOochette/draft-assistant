@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import type { Evaluation } from '@draft/engine';
 import { fmtInt, fmtPct, fmtSigned, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
 import type { Scaling } from '@draft/schemas';
@@ -78,6 +79,97 @@ export const ScalingBars = ({ scaling }: { scaling: Scaling }) => (
   </div>
 );
 
+const weightLabel = (w: number) => (w === 1 ? '×1' : w === 0.5 ? '×1/2' : w === 0.25 ? '×1/4' : '×' + fmt2(w));
+const fmt2 = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
+
+/** Chip « Compo ennemie » : survol, focus ou clic ouvre une fenêtre flottante avec le détail par ennemi. */
+const EnemyTeamPopover = ({ e }: { e: Evaluation }) => {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const anchor = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
+  const closeTimer = useRef<number | undefined>(undefined);
+  const open = () => {
+    window.clearTimeout(closeTimer.current);
+    const r = anchor.current?.getBoundingClientRect();
+    if (!r) return;
+    const width = 340;
+    setPos({ top: r.bottom + 6, left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)) });
+  };
+  const closeSoon = () => {
+    closeTimer.current = window.setTimeout(() => setPos(null), 120);
+  };
+  useEffect(() => {
+    if (!pos) return;
+    const close = () => setPos(null);
+    const onKey = (ev: KeyboardEvent) => ev.key === 'Escape' && close();
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [pos]);
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+
+  return (
+    <>
+      <button
+        ref={anchor}
+        type="button"
+        className="chip chip-info chip-btn"
+        aria-expanded={!!pos}
+        aria-controls={pos ? panelId : undefined}
+        onMouseEnter={open}
+        onMouseLeave={closeSoon}
+        onFocus={open}
+        onBlur={closeSoon}
+        onClick={() => (pos ? setPos(null) : open())}
+      >
+        Compo ennemie {fmtSigned(e.enemyTeamDelta)} pts
+      </button>
+      {pos &&
+        createPortal(
+          <div
+            id={panelId}
+            role="group"
+            aria-label={'Effet de la compo ennemie sur le counter de ' + e.champion}
+            className="popover"
+            style={{ top: pos.top, left: pos.left }}
+            onMouseEnter={open}
+            onMouseLeave={closeSoon}
+          >
+            <div className="popover-head">
+              <span className="strong">{e.champion} contre la compo ennemie</span>
+              <span className={'strong ' + (e.enemyTeamDelta >= 0 ? 'pos-text' : 'neg-text')}>{fmtSigned(e.enemyTeamDelta)} pts</span>
+            </div>
+            <table className="popover-table">
+              <thead>
+                <tr><th>Ennemi</th><th>Win rate</th><th>Écart</th><th>Poids</th><th>Effet</th></tr>
+              </thead>
+              <tbody>
+                {e.enemyTeam.map((m) => (
+                  <tr key={m.role}>
+                    <td>
+                      <span className="row-gap"><Portrait name={m.opponent} size={24} /><span><span className="strong">{m.opponent}</span><br /><span className="muted">{m.role}</span></span></span>
+                    </td>
+                    <td>{fmtPct(m.winRate)}<br /><span className="muted">{fmtInt(m.games)} parties</span></td>
+                    <td className={m.delta >= 0 ? 'pos-text' : 'neg-text'}>{fmtSigned(m.delta)}</td>
+                    <td>{weightLabel(m.weight)}</td>
+                    <td className={'strong ' + (m.delta >= 0 ? 'pos-text' : 'neg-text')}>{fmtSigned(m.delta * m.weight)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="popover-foot muted">Écart : win rate contre cet ennemi moins win rate général, en points, lissés. Le vis-à-vis compte ×1.</p>
+          </div>,
+          document.body
+        )}
+    </>
+  );
+};
+
 /** Chips Lane et Partie, plus le matchup contre l'adversaire de lane quand il est connu. */
 export const WinRateChips = ({ e }: { e: Evaluation }) => (
   <>
@@ -90,16 +182,6 @@ export const WinRateChips = ({ e }: { e: Evaluation }) => (
         vs {e.matchup.opponent} {fmtPct(e.matchup.winRate)}
       </Chip>
     )}
-    {e.enemyTeam.length > 0 && (
-      <Chip
-        tone="info"
-        title={
-          'Effet des autres ennemis sur le win rate du counter : ' +
-          e.enemyTeam.map((m) => `${m.opponent} (${m.role}, ${fmtPct(m.winRate)} sur ${fmtInt(m.games)} parties) ${fmtSigned(m.delta)} pts × ${m.weight === 0.5 ? '1/2' : '1/4'}`).join(' ; ')
-        }
-      >
-        Compo ennemie {fmtSigned(e.enemyTeamDelta)} pts
-      </Chip>
-    )}
+    {e.enemyTeam.length > 0 && <EnemyTeamPopover e={e} />}
   </>
 );
