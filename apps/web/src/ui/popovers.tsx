@@ -100,12 +100,11 @@ const AllyPopover = ({ e }: { e: Evaluation }) => {
 };
 
 /** Win rate de partie (et de lane s'il est connu), puis ennemis et alliés connus, chacun avec sa fenêtre flottante. */
-export const WrChip = ({ e }: { e: Evaluation }) => <Chip title={CARD_TEXT.wrTip(e.laneWinRate != null, e.expected?.base ?? null)}>{CARD_TEXT.wr(e.gameWinRate, e.laneWinRate)}</Chip>;
+const WrChip = ({ e }: { e: Evaluation }) => <Chip title={CARD_TEXT.wrTip(e.laneWinRate != null, e.expected?.base ?? null)}>{CARD_TEXT.wr(e.gameWinRate, e.laneWinRate)}</Chip>;
 
-/** `wr` : avec le chip du win rate (absent quand il est affiché ailleurs). */
-export const WinRateChips = ({ e, wr = true }: { e: Evaluation; wr?: boolean }) => (
+export const WinRateChips = ({ e }: { e: Evaluation }) => (
   <>
-    {wr && <WrChip e={e} />}
+    <WrChip e={e} />
     {e.enemyTeam.length > 0 && <MatchupPopover e={e} />}
     {e.allyTeam.length > 0 && <AllyPopover e={e} />}
   </>
