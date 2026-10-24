@@ -70,6 +70,8 @@ export type SuggestionMode = 'mix' | 'synergy' | 'counter';
 export interface ScoringOptions {
   /** Absent : « mix » avec les poids de la maquette. */
   mode?: SuggestionMode;
+  /** Mode propre à un rôle ; absent pour un rôle : `mode`. */
+  modeByRole?: Partial<Record<Role, SuggestionMode>>;
   /**
    * En « mix », part du counter dans (synergie + counter) quand l'adversaire de lane est connu, par rôle.
    * Absente pour un rôle : poids de la maquette.

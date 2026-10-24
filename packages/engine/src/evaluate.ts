@@ -29,8 +29,9 @@ export const totalScore = (
   mastery: number | null,
   role: Role,
   laneOpponentKnown: boolean,
-  { mode = 'mix', laneCounterWeight }: ScoringOptions
+  { mode: globalMode = 'mix', modeByRole, laneCounterWeight }: ScoringOptions
 ): number => {
+  const mode = modeByRole?.[role] ?? globalMode;
   const withMastery = (v: number) => (mastery == null ? Math.round(v) : Math.round(v * 0.75 + mastery * 0.25));
   if (mode === 'synergy') return withMastery(syn);
   if (mode === 'counter') return withMastery(ctr);

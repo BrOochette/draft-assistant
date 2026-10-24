@@ -1,7 +1,7 @@
 import { useMemo, useState, type Dispatch } from 'react';
 import { computeDraft, LANE_COUNTER_WEIGHT, type DraftAction, type DraftSession, type SuggestionMode } from '@draft/engine';
 import { SUGGESTION_MODE_LABEL, SUGGESTION_MODE_TIP } from '@draft/i18n-fr';
-import type { Pools } from '@draft/schemas';
+import { ROLES, type Pools, type Role } from '@draft/schemas';
 import { useData } from '../ui';
 import { BanBar } from './BanBar';
 import { CompoPanel } from './CompoPanel';
@@ -14,20 +14,30 @@ interface Props {
 }
 
 const MODES: SuggestionMode[] = ['mix', 'synergy', 'counter'];
-const MODE_KEY = 'draft-assistant:suggestion-mode';
+type Modes = Record<Role, SuggestionMode>;
+const MODES_KEY = 'draft-assistant:suggestion-modes';
+/** Ancienne clé, un seul mode pour tous les rôles : reprise comme valeur de départ. */
+const LEGACY_MODE_KEY = 'draft-assistant:suggestion-mode';
+
+const isMode = (v: unknown): v is SuggestionMode => MODES.includes(v as SuggestionMode);
+const allModes = (m: SuggestionMode): Modes => Object.fromEntries(ROLES.map((r) => [r, m])) as Modes;
 
 // Préférence de cet appareil seulement : sans stockage disponible, on revient au mode « mix ».
-const readMode = (): SuggestionMode => {
+const readModes = (): Modes => {
   try {
-    const v = localStorage.getItem(MODE_KEY);
-    return MODES.includes(v as SuggestionMode) ? (v as SuggestionMode) : 'mix';
+    const saved = JSON.parse(localStorage.getItem(MODES_KEY) ?? 'null') as Partial<Record<Role, unknown>> | null;
+    const legacy = localStorage.getItem(LEGACY_MODE_KEY);
+    const base = allModes(isMode(legacy) ? legacy : 'mix');
+    if (!saved) return base;
+    for (const r of ROLES) if (isMode(saved[r])) base[r] = saved[r];
+    return base;
   } catch {
-    return 'mix';
+    return allModes('mix');
   }
 };
-const saveMode = (m: SuggestionMode) => {
+const saveModes = (m: Modes) => {
   try {
-    localStorage.setItem(MODE_KEY, m);
+    localStorage.setItem(MODES_KEY, JSON.stringify(m));
   } catch {
     // Stockage indisponible : le choix vaut pour la session en cours.
   }
@@ -35,25 +45,27 @@ const saveMode = (m: SuggestionMode) => {
 
 export const DraftScreen = ({ session, dispatch, pools }: Props) => {
   const { engine } = useData();
-  const [mode, setMode] = useState<SuggestionMode>(readMode);
+  const [modes, setModes] = useState<Modes>(readModes);
   const result = useMemo(
-    () => computeDraft(session.draft, pools, engine, { mode, laneCounterWeight: LANE_COUNTER_WEIGHT }),
-    [session.draft, pools, engine, mode]
+    () => computeDraft(session.draft, pools, engine, { modeByRole: modes, laneCounterWeight: LANE_COUNTER_WEIGHT }),
+    [session.draft, pools, engine, modes]
   );
   const players = Object.keys(pools);
-  const choose = (m: SuggestionMode) => {
-    setMode(m);
-    saveMode(m);
+  const update = (next: Modes) => {
+    setModes(next);
+    saveModes(next);
   };
+  // Le sélecteur global règle les 5 rôles ; il n'est allumé que si tous les rôles sont sur le même mode.
+  const shared = ROLES.every((r) => modes[r] === modes.Top) ? modes.Top : null;
   return (
     <main className="draft">
       <div className="draft-main">
         <BanBar draft={session.draft} bans={result.bans} dispatch={dispatch} />
         <div className="mode-bar">
-          <span className="small muted" id="mode-label">Suggestions</span>
+          <span className="small muted" id="mode-label">Suggestions, tous les rôles</span>
           <div role="group" aria-labelledby="mode-label" className="segmented">
             {MODES.map((m) => (
-              <button key={m} type="button" className={'segment' + (mode === m ? ' is-on' : '')} aria-pressed={mode === m} title={SUGGESTION_MODE_TIP[m]} onClick={() => choose(m)}>
+              <button key={m} type="button" className={'segment' + (shared === m ? ' is-on' : '')} aria-pressed={shared === m} title={SUGGESTION_MODE_TIP[m]} onClick={() => update(allModes(m))}>
                 {SUGGESTION_MODE_LABEL[m]}
               </button>
             ))}
@@ -61,7 +73,16 @@ export const DraftScreen = ({ session, dispatch, pools }: Props) => {
         </div>
         <div className="col gap-12">
           {result.roles.map((row) => (
-            <RoleRow key={row.role} row={row} draft={session.draft} players={players} selected={session.selected[row.role]} dispatch={dispatch} />
+            <RoleRow
+              key={row.role}
+              row={row}
+              draft={session.draft}
+              players={players}
+              selected={session.selected[row.role]}
+              mode={modes[row.role]}
+              onModeChange={(m) => update({ ...modes, [row.role]: m })}
+              dispatch={dispatch}
+            />
           ))}
         </div>
       </div>

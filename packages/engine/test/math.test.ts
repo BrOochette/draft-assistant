@@ -21,6 +21,12 @@ describe('totalScore', () => {
     expect(totalScore(80, 60, 40, 'Mid', false, { mode: 'counter' })).toBe(Math.round(60 * 0.75 + 40 * 0.25));
   });
 
+  it('le mode propre à un rôle remplace le mode global', () => {
+    const options = { mode: 'synergy' as const, modeByRole: { Top: 'counter' as const } };
+    expect(totalScore(80, 60, null, 'Top', false, options)).toBe(60);
+    expect(totalScore(80, 60, null, 'Mid', false, options)).toBe(80);
+  });
+
   it("en mix, pondère le counter par rôle quand l'adversaire de lane est connu", () => {
     const w = { Top: 0.65, Jungle: 0.35 };
     expect(totalScore(80, 60, null, 'Top', true, { laneCounterWeight: w })).toBe(Math.round(80 * 0.35 + 60 * 0.65));

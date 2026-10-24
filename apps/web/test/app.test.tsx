@@ -107,7 +107,21 @@ describe('écran Joueurs', () => {
     expect(screen.getByRole('button', { name: 'Meilleure synergie' })).toHaveAttribute('aria-pressed', 'true');
     // Synergie 82 et maîtrise 80 : 0,75 × 82 + 0,25 × 80 = 81,5.
     expect(screen.getByRole('button', { name: /^Orianna, score 82 sur 100/ })).toBeInTheDocument();
-    expect(localStorage.getItem('draft-assistant:suggestion-mode')).toBe('synergy');
+    const saved = () => JSON.parse(localStorage.getItem('draft-assistant:suggestion-modes')!);
+    expect(saved()).toEqual({ Top: 'synergy', Jungle: 'synergy', Mid: 'synergy', ADC: 'synergy', Support: 'synergy' });
+    // Le sélecteur global a réglé chaque rôle.
+    expect(screen.getByRole('button', { name: 'Synergie en Mid' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('change le type de suggestion pour un seul rôle', async () => {
+    const user = userEvent.setup();
+    render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
+    await user.click(screen.getByRole('button', { name: 'Synergie en Mid' }));
+    expect(screen.getByRole('button', { name: /^Orianna, score 82 sur 100/ })).toBeInTheDocument();
+    // Les autres rôles restent en mix : le sélecteur global n'est plus allumé.
+    expect(screen.getByRole('button', { name: 'Mix en Jungle' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Mix' })).toHaveAttribute('aria-pressed', 'false');
+    expect(JSON.parse(localStorage.getItem('draft-assistant:suggestion-modes')!).Mid).toBe('synergy');
   });
 
   it('bascule entre les 3 cards et la vue liste', async () => {

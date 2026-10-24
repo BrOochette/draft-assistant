@@ -1,6 +1,6 @@
 import { useMemo, useState, type Dispatch } from 'react';
-import { availability, MAIN_ROLE_SHARE, type DraftAction, type Evaluation, type RoleResult, type Side } from '@draft/engine';
-import { blockedLabel, fmtDelta, fmtInt, formatReason, POOL_TAG, recNoteText } from '@draft/i18n-fr';
+import { availability, MAIN_ROLE_SHARE, type DraftAction, type Evaluation, type RoleResult, type Side, type SuggestionMode } from '@draft/engine';
+import { blockedLabel, fmtDelta, fmtInt, formatReason, POOL_TAG, recNoteText, SUGGESTION_MODE_SHORT, SUGGESTION_MODE_TIP } from '@draft/i18n-fr';
 import type { DraftState, Note } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, ScalingBars, scoreStats, useData, WinRateChips } from '../ui';
 import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
@@ -10,8 +10,12 @@ interface Props {
   draft: DraftState;
   players: string[];
   selected: string | undefined;
+  mode: SuggestionMode;
+  onModeChange: (m: SuggestionMode) => void;
   dispatch: Dispatch<DraftAction>;
 }
+
+const MODES: SuggestionMode[] = ['mix', 'synergy', 'counter'];
 
 /** Champions affichés dans la vue liste sans recherche. */
 export const LIST_LIMIT = 20;
@@ -121,7 +125,7 @@ const lockedChips = (row: RoleResult): { sign: '+' | '-' | null; text: string }[
   return [...(l.matchupNotes ? notes(l.matchupNotes) : []), ...l.reasons.slice(0, 3).map((r) => ({ sign: r.sign, text: formatReason(r) }))];
 };
 
-export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
+export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dispatch }: Props) => {
   const { engine } = useData();
   const { role, player } = row;
   const [expanded, setExpanded] = useState(false);
@@ -244,21 +248,39 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
               <div className="row-between wrap">
                 {/* Sans pool ou sans joueur, l'avertissement de la colonne de gauche suffit. */}
                 <span className="small soft">{row.note && row.note !== 'NO_POOL' && player ? recNoteText(row.note, player, role) : ''}</span>
-                {/* Affichage : les 3 cards, ou la liste détaillée à leur place. */}
-                <div role="group" aria-label={'Affichage des suggestions en ' + role} className="segmented segmented-icons">
-                  {([false, true] as const).map((list) => (
-                    <button
-                      key={String(list)}
-                      type="button"
-                      className={'segment' + (expanded === list ? ' is-on' : '')}
-                      aria-pressed={expanded === list}
-                      aria-label={(list ? 'Vue liste' : 'Vue top 3') + ' en ' + role}
-                      title={list ? 'Vue liste' : 'Vue top 3'}
-                      onClick={() => setExpanded(list)}
-                    >
-                      <Icon name={list ? 'list' : 'grid'} size={16} />
-                    </button>
-                  ))}
+                <div className="row-gap wrap">
+                  {/* Mode de suggestion propre au rôle ; le sélecteur global règle les 5 d'un coup. */}
+                  <div role="group" aria-label={'Suggestions en ' + role} className="segmented segmented-sm">
+                    {MODES.map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        className={'segment' + (mode === m ? ' is-on' : '')}
+                        aria-pressed={mode === m}
+                        aria-label={SUGGESTION_MODE_SHORT[m] + ' en ' + role}
+                        title={SUGGESTION_MODE_TIP[m]}
+                        onClick={() => onModeChange(m)}
+                      >
+                        {SUGGESTION_MODE_SHORT[m]}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Affichage : les 3 cards, ou la liste détaillée à leur place. */}
+                  <div role="group" aria-label={'Affichage des suggestions en ' + role} className="segmented segmented-icons">
+                    {([false, true] as const).map((list) => (
+                      <button
+                        key={String(list)}
+                        type="button"
+                        className={'segment' + (expanded === list ? ' is-on' : '')}
+                        aria-pressed={expanded === list}
+                        aria-label={(list ? 'Vue liste' : 'Vue top 3') + ' en ' + role}
+                        title={list ? 'Vue liste' : 'Vue top 3'}
+                        onClick={() => setExpanded(list)}
+                      >
+                        <Icon name={list ? 'list' : 'grid'} size={16} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
               {shown.length === 0 && <span className="empty-box">Aucun champion disponible pour ce rôle.</span>}

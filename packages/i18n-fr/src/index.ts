@@ -67,6 +67,7 @@ export const formatReason = (r: Reason | { sign: '+' | '-'; text: string }): str
   r.sign + ' ' + ('code' in r ? reasonText(r) : r.text);
 
 export const SUGGESTION_MODE_LABEL: Record<SuggestionMode, string> = { mix: 'Mix', synergy: 'Meilleure synergie', counter: 'Meilleur counter' };
+export const SUGGESTION_MODE_SHORT: Record<SuggestionMode, string> = { mix: 'Mix', synergy: 'Synergie', counter: 'Counter' };
 export const SUGGESTION_MODE_TIP: Record<SuggestionMode, string> = {
   mix: "Synergie et counter. Quand l'adversaire de lane est connu, le counter pèse plus en top, puis mid et support, puis ADC, puis jungle.",
   synergy: 'Classement par synergie avec ta compo (et maîtrise si le joueur a un pool).',
