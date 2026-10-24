@@ -42,10 +42,10 @@ export const totalScore = (
 
 /**
  * Poids d'un ennemi d'une autre lane par rapport au vis-à-vis (1) : un quart, sauf en botlane où l'ADC
- * et le support ennemis jouent la même lane à deux (la moitié).
+ * et le support ennemis jouent la même lane à deux (trois quarts).
  */
 export const otherEnemyWeight = (role: Role, enemyRole: Role): number =>
-  (role === 'ADC' && enemyRole === 'Support') || (role === 'Support' && enemyRole === 'ADC') ? 0.5 : 0.25;
+  (role === 'ADC' && enemyRole === 'Support') || (role === 'Support' && enemyRole === 'ADC') ? 0.75 : 0.25;
 
 const smooth = (value: number, games: number, prior: number, priorGames: number) => (value * games + prior * priorGames) / (games + priorGames);
 

@@ -79,7 +79,7 @@ export const ScalingBars = ({ scaling }: { scaling: Scaling }) => (
   </div>
 );
 
-const weightLabel = (w: number) => (w === 1 ? '×1' : w === 0.5 ? '×1/2' : w === 0.25 ? '×1/4' : '×' + fmt2(w));
+const weightLabel = (w: number) => (w === 1 ? '×1' : w === 0.75 ? '×3/4' : w === 0.5 ? '×1/2' : w === 0.25 ? '×1/4' : '×' + fmt2(w));
 const fmt2 = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
 
 /** Chip « Compo ennemie » : survol, focus ou clic ouvre une fenêtre flottante avec le détail par ennemi. */
