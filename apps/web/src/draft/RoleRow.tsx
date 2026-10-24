@@ -17,8 +17,8 @@ interface Props {
 
 const MODES: SuggestionMode[] = ['mix', 'synergy', 'counter'];
 
-/** Champions affichés dans la vue liste sans recherche. */
-export const LIST_LIMIT = 20;
+/** Champions affichés dans la vue liste sans recherche, puis à chaque « Voir plus ». */
+export const LIST_LIMIT = 10;
 
 const ReasonChip =({ r }: { r: Parameters<typeof formatReason>[0] }) => (
   <Chip tone={r.sign === '+' ? 'pos' : 'neg'}>{formatReason(r)}</Chip>
@@ -130,6 +130,7 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
   const { role, player } = row;
   const [expanded, setExpanded] = useState(false);
   const [listQuery, setListQuery] = useState('');
+  const [listCount, setListCount] = useState(LIST_LIMIT);
   const [picker, setPicker] = useState<Side | null>(null);
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilterValue>(role);
@@ -163,7 +164,7 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
 
   const shown = active ? row.recommendations : [];
 
-  // Vue liste : les LIST_LIMIT premiers (pool, hors pool, rôle secondaire) ; la recherche porte sur tous.
+  // Vue liste : les listCount premiers (pool, hors pool, rôle secondaire) ; la recherche porte sur tous.
   const listed = useMemo(() => {
     const q = listQuery.trim().toLowerCase();
     const sections = [
@@ -172,9 +173,9 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
       { kind: 'secondary' as const, list: row.secondaryRole }
     ];
     const all = sections.flatMap(({ kind, list }) => list.map((e, i) => ({ e, kind, best: kind === 'pool' && i === 0 })));
-    const kept = q ? all.filter(({ e }) => e.champion.toLowerCase().includes(q)) : all.slice(0, LIST_LIMIT);
-    return kept.map((x, i) => ({ ...x, first: i === 0 || kept[i - 1]!.kind !== x.kind }));
-  }, [row, listQuery]);
+    const kept = q ? all.filter(({ e }) => e.champion.toLowerCase().includes(q)) : all.slice(0, listCount);
+    return { items: kept.map((x, i) => ({ ...x, first: i === 0 || kept[i - 1]!.kind !== x.kind })), more: !q && all.length > kept.length };
+  }, [row, listQuery, listCount]);
 
   return (
     <section className="card role-row" aria-label={'Rôle ' + role}>
@@ -307,9 +308,9 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                     value={listQuery}
                     onChange={(ev) => setListQuery(ev.target.value)}
                   />
-                  {listed.length === 0 && <span className="empty-box">Aucun champion trouvé.</span>}
+                  {listed.items.length === 0 && <span className="empty-box">Aucun champion trouvé.</span>}
                   <ul className="details">
-                    {listed.map(({ e, kind, first, best }) => (
+                    {listed.items.map(({ e, kind, first, best }) => (
                       <li key={e.champion} className="col gap-6">
                         {first && kind === 'pool' && <span className="detail-head accent-text">{row.hasPool ? 'Pool' : 'Tous les champions ' + role + (player ? ' (aucun pool)' : ' (aucun joueur)')}</span>}
                         {first && kind === 'out' && <span className="detail-head warn-text">Hors pool</span>}
@@ -322,6 +323,11 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                       </li>
                     ))}
                   </ul>
+                  {listed.more && (
+                    <button type="button" className="btn btn-sm more-btn" aria-label={'Voir plus de champions en ' + role} onClick={() => setListCount(listCount + LIST_LIMIT)}>
+                      Voir plus <Icon name="chevron" size={14} />
+                    </button>
+                  )}
                 </>
               )}
             </>

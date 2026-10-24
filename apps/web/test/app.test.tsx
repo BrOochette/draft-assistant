@@ -138,6 +138,14 @@ describe('écran Joueurs', () => {
     expect(jungle.getByText('Pool', { selector: '.detail-head' })).toBeInTheDocument();
     expect(jungle.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' })).toBeInTheDocument();
 
+    const listed = () => jungle.getAllByRole('button', { name: /^Verrouiller .* en Jungle$/ }).length;
+    expect(listed()).toBeLessThanOrEqual(10);
+    const more = jungle.queryByRole('button', { name: 'Voir plus de champions en Jungle' });
+    if (more) {
+      await user.click(more);
+      expect(listed()).toBeGreaterThan(10);
+    }
+
     await user.type(jungle.getByRole('searchbox', { name: 'Rechercher un champion dans la liste Jungle' }), 'fid');
     expect(jungle.getAllByRole('button', { name: /^Verrouiller .* en Jungle$/ }).map((b) => b.getAttribute('aria-label'))).toEqual(['Verrouiller Fiddlesticks en Jungle']);
     await user.type(jungle.getByRole('searchbox', { name: 'Rechercher un champion dans la liste Jungle' }), 'zzz');

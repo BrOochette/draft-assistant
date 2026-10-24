@@ -255,3 +255,4 @@ button:disabled { cursor: not-allowed; }
 .spinner { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 1.5s; } }
+.more-btn { align-self: center; }
