@@ -184,6 +184,8 @@ export const BANS_TEXT = {
 
 export const COMPO_TEXT = {
   aside: 'Analyse de la composition',
+  /** Barre de résumé en bas d'écran (mobile) : un clic mène à l'analyse. */
+  mini: "Aller à l'analyse de la composition",
   scores: 'Notes des compositions',
   ally: 'Ta compo',
   enemy: 'Compo ennemie',

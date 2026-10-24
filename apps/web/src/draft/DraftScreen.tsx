@@ -4,7 +4,7 @@ import { DRAFT_TEXT, SUGGESTION_MODE_LABEL, SUGGESTION_MODE_TIP } from '@draft/i
 import { ROLES, type Pools, type Role } from '@draft/schemas';
 import { useData } from '../ui';
 import { BanBar } from './BanBar';
-import { CompoPanel } from './CompoPanel';
+import { CompoMini, CompoPanel } from './CompoPanel';
 import { QuickPick } from './QuickPick';
 import { RoleRow } from './RoleRow';
 
@@ -89,6 +89,7 @@ export const DraftScreen = ({ session, dispatch, pools }: Props) => {
         </div>
       </div>
       <CompoPanel result={result} />
+      <CompoMini result={result} />
     </main>
   );
 };

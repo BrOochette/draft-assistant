@@ -34,12 +34,33 @@ const Archetypes = ({ groups }: { groups: ArchetypeGroup[] }) =>
     </ul>
   ) : null;
 
+/**
+ * Résumé des deux notes de compo, fixé en bas de l'écran sur mobile (l'analyse complète est tout en bas de la page) :
+ * un clic y mène. Caché sur grand écran, où la colonne d'analyse reste visible.
+ */
+export const CompoMini = ({ result }: { result: DraftResult }) => {
+  const { ally, enemy } = result.composition;
+  const side = (label: string, s: CompScore & { verdict: Verdict }, cls: string) => (
+    <span className="compo-mini-side">
+      <span className={'eyebrow ' + cls}>{label}</span>
+      {/* La couleur porte le verdict ; le libellé est dans l'infobulle, faute de place. */}
+      <span className={'compo-mini-score tone-' + VERDICT_TONE[s.verdict]} title={VERDICT_LABEL[s.verdict]}>{s.total}</span>
+    </span>
+  );
+  return (
+    <button type="button" className="compo-mini" aria-label={T.mini} onClick={() => document.getElementById('compo-panel')?.scrollIntoView({ block: 'start' })}>
+      {side(T.ally, ally, 'ally-text')}
+      {side(T.enemy, enemy, 'enemy-text')}
+    </button>
+  );
+};
+
 export const CompoPanel = ({ result }: { result: DraftResult }) => {
   const { snapshot, engine } = useData();
   const [help, setHelp] = useState(false);
   const { ally, enemy } = result.composition;
   return (
-    <aside aria-label={T.aside} className="side">
+    <aside id="compo-panel" aria-label={T.aside} className="side">
       <section aria-label={T.scores} className="card col gap-10">
         <div className="score-pair">
           <TeamScore side="ally" score={ally} />
