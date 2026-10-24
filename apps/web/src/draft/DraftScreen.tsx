@@ -1,6 +1,6 @@
 import { useMemo, useState, type Dispatch } from 'react';
-import { computeDraft, LANE_COUNTER_WEIGHT, type DraftAction, type DraftSession, type SuggestionMode } from '@draft/engine';
-import { SUGGESTION_MODE_LABEL, SUGGESTION_MODE_TIP } from '@draft/i18n-fr';
+import { computeDraft, type DraftAction, type DraftSession, type SuggestionMode } from '@draft/engine';
+import { DRAFT_TEXT, SUGGESTION_MODE_LABEL, SUGGESTION_MODE_TIP } from '@draft/i18n-fr';
 import { ROLES, type Pools, type Role } from '@draft/schemas';
 import { useData } from '../ui';
 import { BanBar } from './BanBar';
@@ -47,7 +47,7 @@ export const DraftScreen = ({ session, dispatch, pools }: Props) => {
   const { engine } = useData();
   const [modes, setModes] = useState<Modes>(readModes);
   const result = useMemo(
-    () => computeDraft(session.draft, pools, engine, { modeByRole: modes, laneCounterWeight: LANE_COUNTER_WEIGHT }),
+    () => computeDraft(session.draft, pools, engine, { modeByRole: modes }),
     [session.draft, pools, engine, modes]
   );
   const players = Object.keys(pools);
@@ -62,7 +62,7 @@ export const DraftScreen = ({ session, dispatch, pools }: Props) => {
       <div className="draft-main">
         <BanBar draft={session.draft} bans={result.bans} dispatch={dispatch} />
         <div className="mode-bar">
-          <span className="small muted" id="mode-label">Suggestions, tous les rôles</span>
+          <span className="small muted" id="mode-label">{DRAFT_TEXT.modesLabel}</span>
           <div role="group" aria-labelledby="mode-label" className="segmented">
             {MODES.map((m) => (
               <button key={m} type="button" className={'segment' + (shared === m ? ' is-on' : '')} aria-pressed={shared === m} title={SUGGESTION_MODE_TIP[m]} onClick={() => update(allModes(m))}>

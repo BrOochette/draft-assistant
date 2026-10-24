@@ -1,4 +1,5 @@
 import { createEngineData, type EngineData } from '@draft/engine';
+import { APP_TEXT } from '@draft/i18n-fr';
 import {
   fromSampleDraftState,
   PoolsSchema,
@@ -19,7 +20,7 @@ export interface AppData {
 /** Charge le snapshot de stats une seule fois au démarrage. Aucun appel réseau ensuite. */
 export const loadAppData = async (): Promise<AppData> => {
   const res = await fetch(import.meta.env.BASE_URL + 'data/snapshot.json');
-  if (!res.ok) throw new Error('Snapshot introuvable (' + res.status + '). Lancer « npm run ingest -- sample ».');
+  if (!res.ok) throw new Error(APP_TEXT.snapshotMissing(res.status));
   const snapshot = StatsSnapshotSchema.parse(await res.json());
   return { snapshot, engine: createEngineData(snapshot) };
 };

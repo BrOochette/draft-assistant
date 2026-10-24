@@ -1,40 +1,40 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import type { Evaluation } from '@draft/engine';
+import type { EnemyEffect, Evaluation } from '@draft/engine';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DataContext, POPOVER_LOADER_MS, WinRateChips } from '../src/ui';
 import { sampleAppData } from './fixtures';
 
+const jinx: EnemyEffect = { opponent: 'Jinx', role: 'ADC', lane: true, weight: 1, winRate: 54.9, games: 3115, prior: null, delta: 2.2 };
+const leona: EnemyEffect = { opponent: 'Leona', role: 'Support', lane: false, weight: 0.75, winRate: 47.5, games: 1419, prior: null, delta: -2.7 };
 const e = {
   champion: 'Twitch',
   laneWinRate: null,
   gameWinRate: 51,
-  matchup: { opponent: 'Jinx', winRate: 54.9, games: 3115, delta: 2.2 },
+  matchup: jinx,
+  enemyTeam: [jinx, leona],
   allyTeam: [],
-  enemyNoData: [],
-  duoBonus: 0,
-  enemyTeam: [{ opponent: 'Leona', role: 'Support', winRate: 47.5, games: 1419, delta: -2.7, weight: 0.75 }]
+  expected: { base: 51, matchups: 0.175, duos: 0, mastery: 0, score: 51.175 }
 } as unknown as Evaluation;
+
+const renderChips = (ev: Evaluation = e) =>
+  render(
+    <DataContext.Provider value={sampleAppData()}>
+      <WinRateChips e={ev} />
+    </DataContext.Provider>
+  );
 
 afterEach(() => vi.useRealTimers());
 
-describe('fenêtre flottante du matchup', () => {
+describe('fenêtre flottante des ennemis', () => {
   it('affiche un seul chip de win rate', () => {
-    render(
-      <DataContext.Provider value={sampleAppData()}>
-        <WinRateChips e={e} />
-      </DataContext.Provider>
-    );
+    renderChips();
     expect(screen.getByText('WR 51,0 %')).toBeInTheDocument();
     expect(screen.queryByText(/Lane/)).not.toBeInTheDocument();
   });
 
   it('affiche un loader de 0,3 s sous la souris avant le détail', () => {
     vi.useFakeTimers();
-    render(
-      <DataContext.Provider value={sampleAppData()}>
-        <WinRateChips e={e} />
-      </DataContext.Provider>
-    );
+    renderChips();
     fireEvent.mouseEnter(screen.getByRole('button', { name: 'vs Jinx 54,9 %' }), { clientX: 200, clientY: 100 });
     const loader = screen.getByRole('status', { name: 'Chargement' });
     expect(loader.style.left).toBe('212px');
@@ -45,17 +45,15 @@ describe('fenêtre flottante du matchup', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
     act(() => vi.advanceTimersByTime(1));
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.getByRole('group', { name: 'Effet des ennemis sur le counter de Twitch' })).toBeInTheDocument();
-    expect(screen.getByText('Vis-à-vis')).toBeInTheDocument();
+    const panel = screen.getByRole('group', { name: 'Effet des ennemis sur le win rate attendu de Twitch' });
+    expect(panel).toHaveTextContent('Vis-à-vis');
+    expect(panel).toHaveTextContent('3 115 parties');
+    expect(panel).toHaveTextContent('×3/4');
   });
 
   it('annule le chargement si la souris quitte le chip', () => {
     vi.useFakeTimers();
-    render(
-      <DataContext.Provider value={sampleAppData()}>
-        <WinRateChips e={e} />
-      </DataContext.Provider>
-    );
+    renderChips();
     const chip = screen.getByRole('button', { name: 'vs Jinx 54,9 %' });
     fireEvent.mouseEnter(chip);
     fireEvent.mouseLeave(chip);
@@ -63,61 +61,54 @@ describe('fenêtre flottante du matchup', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
-});
 
-describe('fenêtre flottante des alliés', () => {
-  it('montre le duo avec chaque allié verrouillé et son effet sur la synergie', () => {
-    vi.useFakeTimers();
-    const withAllies = { ...e, allyTeam: [{ ally: 'Sejuani', role: 'Jungle', delta: 2.5, games: 1800, smoothed: 2.25 }], duoBonus: 9 } as unknown as Evaluation;
-    render(
-      <DataContext.Provider value={sampleAppData()}>
-        <WinRateChips e={withAllies} />
-      </DataContext.Provider>
-    );
-    fireEvent.mouseEnter(screen.getByRole('button', { name: 'avec Sejuani +9 pts de synergie' }), { clientX: 10, clientY: 10 });
-    act(() => vi.advanceTimersByTime(POPOVER_LOADER_MS));
-    const panel = screen.getByRole('group', { name: 'Effet des alliés sur la synergie de Twitch' });
-    expect(panel).toHaveTextContent('Sejuani');
-    expect(panel).toHaveTextContent('1 800 parties');
-    expect(panel).toHaveTextContent('×4');
-    expect(panel).toHaveTextContent('+9,0');
+  it('montre la moyenne de classe pour un ennemi sans données', () => {
+    const amumu: EnemyEffect = {
+      opponent: 'Amumu', role: 'Jungle', lane: false, weight: 0.25, winRate: null, games: 0,
+      prior: { classes: ['Marksman', 'Vanguard'], delta: -0.5, games: 9000 }, delta: -0.5
+    };
+    renderChips({ ...e, enemyTeam: [jinx, amumu, leona] } as Evaluation);
+    fireEvent.click(screen.getByRole('button', { name: 'vs Jinx 54,9 %' }), { detail: 1 });
+    const rows = screen.getAllByRole('row').map((r) => r.textContent!);
+    expect(rows.slice(1).map((t) => t.match(/Jinx|Amumu|Leona/)![0])).toEqual(['Jinx', 'Amumu', 'Leona']);
+    expect(rows[2]).toContain('Pas de données');
+    expect(rows[2]).toContain('Moyenne Marksman contre Vanguard -0,5');
   });
-});
 
-describe('ennemis sans assez de parties', () => {
-  it('les liste avec un effet nul', () => {
-    vi.useFakeTimers();
-    const withNoData = { ...e, enemyNoData: [{ opponent: 'Amumu', role: 'Jungle', lane: false, games: null }] } as unknown as Evaluation;
-    render(
-      <DataContext.Provider value={sampleAppData()}>
-        <WinRateChips e={withNoData} />
-      </DataContext.Provider>
-    );
-    fireEvent.mouseEnter(screen.getByRole('button', { name: 'vs Jinx 54,9 %' }), { clientX: 10, clientY: 10 });
-    act(() => vi.advanceTimersByTime(POPOVER_LOADER_MS));
-    const rows = screen.getAllByRole('row').map((r) => r.textContent);
-    // Vis-à-vis, puis Jungle (Amumu), puis Support (Leona).
-    expect(rows.slice(1).map((t) => t!.match(/Jinx|Amumu|Leona/)![0])).toEqual(['Jinx', 'Amumu', 'Leona']);
-    expect(screen.getByText('Pas assez de parties')).toBeInTheDocument();
-    expect(screen.getByText('Paire absente des données')).toBeInTheDocument();
-  });
-});
-
-describe('clic sur le chip', () => {
   it('après le survol, le clic garde la fenêtre et saute le loader ; un second clic la ferme', () => {
     vi.useFakeTimers();
-    render(
-      <DataContext.Provider value={sampleAppData()}>
-        <WinRateChips e={e} />
-      </DataContext.Provider>
-    );
+    renderChips();
     const chip = screen.getByRole('button', { name: 'vs Jinx 54,9 %' });
     expect(chip).not.toHaveAttribute('title');
     fireEvent.mouseEnter(chip, { clientX: 10, clientY: 10 });
     fireEvent.click(chip, { detail: 1 });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.getByRole('group', { name: 'Effet des ennemis sur le counter de Twitch' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Effet des ennemis sur le win rate attendu de Twitch' })).toBeInTheDocument();
     fireEvent.click(chip, { detail: 1 });
     expect(screen.queryByRole('group')).not.toBeInTheDocument();
+  });
+
+  it('se ferme avec Échap', () => {
+    renderChips();
+    fireEvent.click(screen.getByRole('button', { name: 'vs Jinx 54,9 %' }), { detail: 1 });
+    expect(screen.getByRole('group')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+  });
+});
+
+describe('fenêtre flottante des alliés', () => {
+  it('montre le duo avec chaque allié verrouillé et son effet sur le win rate attendu', () => {
+    const withAllies = {
+      ...e,
+      allyTeam: [{ ally: 'Sejuani', role: 'Jungle', weight: 0.5, raw: 2.5, games: 1800, prior: null, delta: 2.25 }]
+    } as unknown as Evaluation;
+    renderChips(withAllies);
+    // 0,5 × 2,25 = 1,125 point.
+    fireEvent.click(screen.getByRole('button', { name: 'avec Sejuani +1,1 pts' }), { detail: 1 });
+    const panel = screen.getByRole('group', { name: 'Effet des alliés sur le win rate attendu de Twitch' });
+    expect(panel).toHaveTextContent('1 800 parties');
+    expect(panel).toHaveTextContent('×1/2');
+    expect(panel).toHaveTextContent('+1,1');
   });
 });

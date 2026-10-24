@@ -1,8 +1,10 @@
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ROLES, type Champion, type Role } from '@draft/schemas';
+import { PICKER_TEXT as T } from '@draft/i18n-fr';
 import { Icon, Portrait } from '../ui';
 
+/** « Tous » : aucun filtre de rôle (valeur interne, libellé dans PICKER_TEXT). */
 export type RoleFilterValue = Role | 'Tous';
 
 /** Champions du catalogue pour un filtre de rôle (« Tous » : ordre alphabétique) et une recherche. */
@@ -15,9 +17,9 @@ export const filterChampions = (catalog: ReadonlyMap<string, Champion>, filter: 
 };
 
 export const RoleFilter = ({ value, onChange }: { value: RoleFilterValue; onChange: (v: RoleFilterValue) => void }) => (
-  <div role="group" aria-label="Filtrer par rôle" className="row-gap wrap">
+  <div role="group" aria-label={T.roleFilter} className="row-gap wrap">
     {(['Tous', ...ROLES] as const).map((r) => (
-      <button key={r} type="button" className={'btn btn-toggle' + (value === r ? ' is-on' : '')} aria-pressed={value === r} onClick={() => onChange(r)}>{r}</button>
+      <button key={r} type="button" className={'btn btn-toggle' + (value === r ? ' is-on' : '')} aria-pressed={value === r} onClick={() => onChange(r)}>{r === 'Tous' ? T.all : r}</button>
     ))}
   </div>
 );
@@ -88,7 +90,7 @@ export const ChampionPicker = ({ title, accent, query, onQuery, items, onChoose,
           <h2 id={titleId} className="h3">{title}</h2>
           <div className="row-gap">
             {actions}
-            <button type="button" className="icon-btn" aria-label="Fermer" onClick={onClose}><Icon name="close" size={18} /></button>
+            <button type="button" className="icon-btn" aria-label={T.close} onClick={onClose}><Icon name="close" size={18} /></button>
           </div>
         </div>
         <div className="row-gap wrap">
@@ -96,8 +98,8 @@ export const ChampionPicker = ({ title, accent, query, onQuery, items, onChoose,
             ref={input}
             type="text"
             className="input grow"
-            aria-label="Rechercher un champion"
-            placeholder="Rechercher un champion"
+            aria-label={T.search}
+            placeholder={T.search}
             value={query}
             onChange={(e) => onQuery(e.target.value)}
           />
@@ -110,7 +112,7 @@ export const ChampionPicker = ({ title, accent, query, onQuery, items, onChoose,
               type="button"
               className={'picker-item' + (c.current ? ' is-current' : '')}
               disabled={c.disabled}
-              aria-label={c.disabled ? c.name + ', indisponible : ' + c.note : actionLabel(c.name)}
+              aria-label={c.disabled ? T.unavailable(c.name, c.note) : actionLabel(c.name)}
               onClick={() => onChoose(c.name)}
             >
               <Portrait name={c.name} size={44} />
@@ -119,7 +121,7 @@ export const ChampionPicker = ({ title, accent, query, onQuery, items, onChoose,
             </button>
           ))}
         </div>
-        {items.length === 0 && <span className="muted small">Aucun champion trouvé.</span>}
+        {items.length === 0 && <span className="muted small">{T.notFound}</span>}
         {footer}
       </div>
     </div>,

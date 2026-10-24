@@ -5,6 +5,7 @@ import { initialDraft, loadAppData, type AppData } from './data';
 import { DraftScreen } from './draft/DraftScreen';
 import { PlayersScreen } from './players/PlayersScreen';
 import { loadPools, savePools } from './store';
+import { APP_TEXT as T } from '@draft/i18n-fr';
 import { DataContext } from './ui';
 
 type Screen = 'draft' | 'players';
@@ -70,32 +71,32 @@ export const App = ({ initialData, initialPools }: Props) => {
             <rect x="1" y="1" width="26" height="26" rx="6" stroke="var(--accent)" strokeWidth="2" />
             <path d="M8 19l6-11 6 11" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span>Draft Assistant</span>
+          <span>{T.brand}</span>
         </div>
-        <nav aria-label="Navigation principale" className="row-gap">
-          <a href="#/joueurs" className={'nav-link' + (screen === 'players' ? ' is-on' : '')} aria-current={screen === 'players' ? 'page' : undefined}>Joueurs</a>
-          <a href="#/" className={'nav-link' + (screen === 'draft' ? ' is-on' : '')} aria-current={screen === 'draft' ? 'page' : undefined}>Draft</a>
+        <nav aria-label={T.nav} className="row-gap">
+          <a href="#/joueurs" className={'nav-link' + (screen === 'players' ? ' is-on' : '')} aria-current={screen === 'players' ? 'page' : undefined}>{T.players}</a>
+          <a href="#/" className={'nav-link' + (screen === 'draft' ? ' is-on' : '')} aria-current={screen === 'draft' ? 'page' : undefined}>{T.draft}</a>
         </nav>
         <span className="grow" />
         {data && (
-          <span className="chip chip-plain" title={data.snapshot.source === 'sample' ? "Win rates et échantillons : données d'exemple" : 'Stats Lolalytics, classé solo, ' + (data.snapshot.region ?? 'toutes régions')}>
-            Patch {data.snapshot.patch} · {data.snapshot.rank}{data.snapshot.region ? ' · ' + data.snapshot.region : ''}{data.snapshot.source === 'lolalytics' ? ' · Lolalytics' : ''}
+          <span className="chip chip-plain" title={T.dataTip(data.snapshot.source === 'sample', data.snapshot.region)}>
+            {T.dataChip(data.snapshot.patch, data.snapshot.rank, data.snapshot.region, data.snapshot.source === 'lolalytics')}
           </span>
         )}
-        {data?.snapshot.source === 'sample' && <span className="chip chip-warn">Données d'exemple</span>}
+        {data?.snapshot.source === 'sample' && <span className="chip chip-warn">{T.sampleData}</span>}
         {screen === 'draft' && (confirmReset ? (
-          <div role="group" aria-label="Confirmer la nouvelle draft" className="row-gap wrap center">
-            <span className="small warn-text strong">Effacer picks, bans et sélections ?</span>
-            <button type="button" className="btn btn-danger" onClick={() => { dispatch({ type: 'reset' }); setConfirmReset(false); }}>Oui, nouvelle draft</button>
-            <button type="button" className="btn" onClick={() => setConfirmReset(false)}>Annuler</button>
+          <div role="group" aria-label={T.resetGroup} className="row-gap wrap center">
+            <span className="small warn-text strong">{T.resetAsk}</span>
+            <button type="button" className="btn btn-danger" onClick={() => { dispatch({ type: 'reset' }); setConfirmReset(false); }}>{T.resetYes}</button>
+            <button type="button" className="btn" onClick={() => setConfirmReset(false)}>{T.cancel}</button>
           </div>
         ) : (
-          <button type="button" className="btn" onClick={() => setConfirmReset(true)}>Nouvelle draft</button>
+          <button type="button" className="btn" onClick={() => setConfirmReset(true)}>{T.newDraft}</button>
         ))}
       </header>
 
       {error && <p role="alert" className="error">{error}</p>}
-      {!error && (!data || !pools) && <p className="loading">Chargement…</p>}
+      {!error && (!data || !pools) && <p className="loading">{T.loading}</p>}
       {data && pools && (
         <DataContext.Provider value={data}>
           {screen === 'draft'

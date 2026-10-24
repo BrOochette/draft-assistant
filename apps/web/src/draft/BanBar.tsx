@@ -1,8 +1,8 @@
 import { useMemo, useState, type Dispatch } from 'react';
-import { availability, MAX_BANS, type DraftAction, type DraftResult, type Side } from '@draft/engine';
-import { BAN_BLOCKED_LABEL, fmtPct } from '@draft/i18n-fr';
+import { availability, MAX_BANS, type BanCard, type DraftAction, type DraftResult, type Side } from '@draft/engine';
+import { BAN_BLOCKED_LABEL, BANS_TEXT as B } from '@draft/i18n-fr';
 import { ROLES, type DraftState } from '@draft/schemas';
-import { Icon, Portrait, useData } from '../ui';
+import { Icon, Portrait, toneOf, useData } from '../ui';
 import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
 
 interface Props {
@@ -10,6 +10,19 @@ interface Props {
   bans: DraftResult['bans'];
   dispatch: Dispatch<DraftAction>;
 }
+
+/** Raison d'un ban : valeur pour nous (stats mesurées), sinon raison rédigée ou menace (données d'exemple). */
+const BanReason = ({ c }: { c: BanCard }) => {
+  const i = c.impact;
+  if (i) {
+    return (
+      <span className="small muted ellipsis" title={B.impactTip(i.strength, i.ours, i.drop)}>
+        <span className={'strong ' + toneOf(i.value)}>{B.impact(i.value)}</span> · {B.impactDetail(c.winRate ?? 50, i.ours, i.drop)}
+      </span>
+    );
+  }
+  return <span className="small muted ellipsis" title={B.threatTip(c.threat)}>{c.reason ?? B.threatTip(c.threat)}</span>;
+};
 
 export const BanBar = ({ draft, bans, dispatch }: Props) => {
   const { engine } = useData();
@@ -39,12 +52,12 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
     return Array.from({ length: MAX_BANS }, (_, i) => {
       const n = list[i];
       return n ? (
-        <button key={i} type="button" className={'ban-slot is-' + side} aria-label={'Retirer le ban de ' + n} title={'Retirer le ban de ' + n} onClick={() => dispatch({ type: 'removeBan', side, champion: n })}>
+        <button key={i} type="button" className={'ban-slot is-' + side} aria-label={B.remove(n)} title={B.remove(n)} onClick={() => dispatch({ type: 'removeBan', side, champion: n })}>
           <Portrait name={n} size={46} />
           <svg aria-hidden="true" className="strike" viewBox="0 0 48 48"><line x1="6" y1="42" x2="42" y2="6" /></svg>
         </button>
       ) : (
-        <button key={i} type="button" className="ban-slot is-empty" aria-label={side === 'ally' ? 'Ajouter un ban de ton équipe' : "Saisir un ban de l'équipe ennemie"} onClick={() => openPicker(side)}>+</button>
+        <button key={i} type="button" className="ban-slot is-empty" aria-label={side === 'ally' ? B.addAlly : B.addEnemy} onClick={() => openPicker(side)}>+</button>
       );
     });
   };
@@ -52,34 +65,34 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
   const sideFull = picker && (picker === 'ally' ? draft.allyBans : draft.enemyBans).length >= MAX_BANS;
 
   return (
-    <section aria-label="Bans" className="card bans">
+    <section aria-label={B.title} className="card bans">
       <div className="row-between">
-        <h2 className="h2">Bans</h2>
+        <h2 className="h2">{B.title}</h2>
         <button type="button" className="btn btn-sm" aria-expanded={open} onClick={() => setOpen(!open)}>
-          Suggestions de bans <Icon name="chevron" size={14} rotate={open} />
+          {B.suggestions} <Icon name="chevron" size={14} rotate={open} />
         </button>
       </div>
       {/* Alliés à gauche, ennemis collés à droite, en miroir comme les lignes de rôle. */}
       <div className="bans-row">
-        <div className="ban-side" role="group" aria-label="Bans de ton équipe">
-          <span className="side-label ally">Alliés</span>
+        <div className="ban-side" role="group" aria-label={B.allyGroup}>
+          <span className="side-label ally">{B.allies}</span>
           <div className="ban-slots">{slots('ally')}</div>
         </div>
-        <div className="ban-side is-enemy" role="group" aria-label="Bans de l'équipe ennemie">
-          <span className="side-label enemy">Ennemis</span>
+        <div className="ban-side is-enemy" role="group" aria-label={B.enemyGroup}>
+          <span className="side-label enemy">{B.enemies}</span>
           <div className="ban-slots">{slots('enemy')}</div>
         </div>
       </div>
 
       {open && (bans.allyFull ? (
-        <p className="small soft">Les 5 bans de ton équipe sont posés.</p>
+        <p className="small soft">{B.allyFull}</p>
       ) : (
         <div className="ban-roles">
           {ROLES.map((role) => {
             const list = bans.suggestions.filter((c) => c.role === role);
             if (!list.length) return null;
             return (
-              <section key={role} className="col gap-6" aria-label={'Bans suggérés en ' + role}>
+              <section key={role} className="col gap-6" aria-label={B.suggestedIn(role)}>
                 <span className="detail-head muted">{role}</span>
                 <ul className="ban-cards">
                   {list.map((c) => (
@@ -87,12 +100,9 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
                       <Portrait name={c.champion} size={44} label={c.champion} />
                       <div className="grow min0 col">
                         <span className="strong ellipsis">{c.champion}</span>
-                        {/* Avec les stats Lolalytics, la menace découle du win rate : on affiche le win rate seul. */}
-                        <span className="small muted ellipsis" title={'Menace ' + c.threat + ' sur 100'}>
-                          {c.reason ?? (c.winRate != null ? 'WR ' + fmtPct(c.winRate) : 'Menace ' + c.threat)}
-                        </span>
+                        <BanReason c={c} />
                       </div>
-                      <button type="button" className="btn btn-accent" aria-label={'Bannir ' + c.champion} onClick={() => dispatch({ type: 'addBan', side: 'ally', champion: c.champion })}>Bannir</button>
+                      <button type="button" className="btn btn-accent" aria-label={B.banChampion(c.champion)} onClick={() => dispatch({ type: 'addBan', side: 'ally', champion: c.champion })}>{B.ban}</button>
                     </li>
                   ))}
                 </ul>
@@ -104,19 +114,19 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
 
       {picker && (
         <ChampionPicker
-          title={picker === 'ally' ? 'Ban de ton équipe' : "Ban de l'équipe ennemie"}
+          title={picker === 'ally' ? B.pickerAlly : B.pickerEnemy}
           accent={picker === 'ally' ? 'var(--ally)' : 'var(--enemy)'}
           query={query}
           onQuery={setQuery}
           items={items}
-          actionLabel={(n) => 'Bannir ' + n}
+          actionLabel={B.banChampion}
           onChoose={(n) => {
             dispatch({ type: 'addBan', side: picker, champion: n });
             setPicker(null);
           }}
           onClose={() => setPicker(null)}
           filters={<RoleFilter value={roleFilter} onChange={setRoleFilter} />}
-          footer={sideFull ? <span className="small warn-text">Les 5 bans de ce côté sont déjà posés.</span> : null}
+          footer={sideFull ? <span className="small warn-text">{B.sideFull}</span> : null}
         />
       )}
     </section>
