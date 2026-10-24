@@ -34,8 +34,6 @@ export interface Entry {
 export interface EnemyTeamMatchup extends MatchupStat {
   role: Role;
   weight: number;
-  /** Écart, en points, entre le win rate lissé contre lui et le win rate général lissé du champion. */
-  delta: number;
 }
 
 /** Win rate mesuré contre l'adversaire de lane connu. */
@@ -43,6 +41,8 @@ export interface MatchupStat {
   opponent: string;
   winRate: number;
   games: number;
+  /** Écart, en points, entre le win rate lissé contre lui et le win rate général lissé du champion. */
+  delta: number;
 }
 
 /** Ce qu'un pick apporte à une compo. */

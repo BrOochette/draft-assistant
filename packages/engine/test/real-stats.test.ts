@@ -64,7 +64,8 @@ describe('stats réelles (format Lolalytics)', () => {
 
   it("avec l'adversaire de lane connu, le counter utilise le matchup lissé", () => {
     const e = mid({ ...base, enemy: { ...base.enemy, Mid: 'Zed' } });
-    expect(e.matchup).toEqual({ opponent: 'Zed', winRate: 56, games: 2000 });
+    // Écart : (56 × 2000 + 52 × 1000) / 3000 − 52 = 2,67 points.
+    expect(e.matchup).toEqual({ opponent: 'Zed', winRate: 56, games: 2000, delta: (56 * 2000 + 52 * 1000) / 3000 - 52 });
     // (56 × 2000 + 52 × 1000) / 3000 = 54,67 %
     expect(e.counter).toBe(wrScore((56 * 2000 + 52 * 1000) / 3000));
   });

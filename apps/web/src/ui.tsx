@@ -82,12 +82,30 @@ export const ScalingBars = ({ scaling }: { scaling: Scaling }) => (
 const weightLabel = (w: number) => (w === 1 ? '×1' : w === 0.75 ? '×3/4' : w === 0.5 ? '×1/2' : w === 0.25 ? '×1/4' : '×' + fmt2(w));
 const fmt2 = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
 
-/** Chip « Compo ennemie » : survol, focus ou clic ouvre une fenêtre flottante avec le détail par ennemi. */
-const EnemyTeamPopover = ({ e }: { e: Evaluation }) => {
+interface MatchupRow {
+  opponent: string;
+  /** « Vis-à-vis » ou le rôle de l'ennemi. */
+  label: string;
+  winRate: number;
+  games: number;
+  delta: number;
+  weight: number;
+}
+
+/**
+ * Chip « vs adversaire » : survol, focus ou clic ouvre une fenêtre flottante avec l'effet de chaque ennemi
+ * connu sur le counter, vis-à-vis en tête. Sans matchup de lane retenu, le chip résume la compo ennemie.
+ */
+const MatchupPopover = ({ e }: { e: Evaluation }) => {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const anchor = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const closeTimer = useRef<number | undefined>(undefined);
+  const rows: MatchupRow[] = [
+    ...(e.matchup ? [{ ...e.matchup, label: 'Vis-à-vis', weight: 1 }] : []),
+    ...e.enemyTeam.map((m) => ({ ...m, label: m.role }))
+  ];
+  const total = rows.reduce((s, r) => s + r.delta * r.weight, 0);
   const open = () => {
     window.clearTimeout(closeTimer.current);
     const r = anchor.current?.getBoundingClientRect();
@@ -127,32 +145,32 @@ const EnemyTeamPopover = ({ e }: { e: Evaluation }) => {
         onBlur={closeSoon}
         onClick={() => (pos ? setPos(null) : open())}
       >
-        Compo ennemie {fmtSigned(e.enemyTeamDelta)} pts
+        {e.matchup ? `vs ${e.matchup.opponent} ${fmtPct(e.matchup.winRate)}` : `vs compo ennemie ${fmtSigned(total)} pts`}
       </button>
       {pos &&
         createPortal(
           <div
             id={panelId}
             role="group"
-            aria-label={'Effet de la compo ennemie sur le counter de ' + e.champion}
+            aria-label={'Effet des ennemis sur le counter de ' + e.champion}
             className="popover"
             style={{ top: pos.top, left: pos.left }}
             onMouseEnter={open}
             onMouseLeave={closeSoon}
           >
             <div className="popover-head">
-              <span className="strong">{e.champion} contre la compo ennemie</span>
-              <span className={'strong ' + (e.enemyTeamDelta >= 0 ? 'pos-text' : 'neg-text')}>{fmtSigned(e.enemyTeamDelta)} pts</span>
+              <span className="strong">{e.champion} contre les ennemis connus</span>
+              <span className={'strong ' + (total >= 0 ? 'pos-text' : 'neg-text')}>{fmtSigned(total)} pts</span>
             </div>
             <table className="popover-table">
               <thead>
                 <tr><th>Ennemi</th><th>Win rate</th><th>Écart</th><th>Poids</th><th>Effet</th></tr>
               </thead>
               <tbody>
-                {e.enemyTeam.map((m) => (
-                  <tr key={m.role}>
+                {rows.map((m) => (
+                  <tr key={m.label}>
                     <td>
-                      <span className="row-gap"><Portrait name={m.opponent} size={24} /><span><span className="strong">{m.opponent}</span><br /><span className="muted">{m.role}</span></span></span>
+                      <span className="row-gap"><Portrait name={m.opponent} size={24} /><span><span className="strong">{m.opponent}</span><br /><span className="muted">{m.label}</span></span></span>
                     </td>
                     <td>{fmtPct(m.winRate)}<br /><span className="muted">{fmtInt(m.games)} parties</span></td>
                     <td className={m.delta >= 0 ? 'pos-text' : 'neg-text'}>{fmtSigned(m.delta)}</td>
@@ -162,7 +180,9 @@ const EnemyTeamPopover = ({ e }: { e: Evaluation }) => {
                 ))}
               </tbody>
             </table>
-            <p className="popover-foot muted">Écart : win rate contre cet ennemi moins win rate général, en points, lissés. Le vis-à-vis compte ×1.</p>
+            <p className="popover-foot muted">
+              Écart : win rate contre cet ennemi moins win rate général du champion, en points, lissés. L'effet total s'ajoute au win rate du counter.
+            </p>
           </div>,
           document.body
         )}
@@ -177,11 +197,6 @@ export const WinRateChips = ({ e }: { e: Evaluation }) => (
       ? <Chip title="Win rate de lane indisponible avec la source actuelle"><Icon name="lane" />Lane —</Chip>
       : <Chip title="Win rate de lane"><Icon name="lane" />Lane {fmtPct(e.laneWinRate)}</Chip>}
     <Chip title="Win rate de partie sur la lane, tous adversaires"><Icon name="flag" />Partie {fmtPct(e.gameWinRate)}</Chip>
-    {e.matchup && (
-      <Chip tone="info" title={'Win rate de partie contre ' + e.matchup.opponent + ', ' + fmtInt(e.matchup.games) + ' parties'}>
-        vs {e.matchup.opponent} {fmtPct(e.matchup.winRate)}
-      </Chip>
-    )}
-    {e.enemyTeam.length > 0 && <EnemyTeamPopover e={e} />}
+    {(e.matchup || e.enemyTeam.length > 0) && <MatchupPopover e={e} />}
   </>
 );

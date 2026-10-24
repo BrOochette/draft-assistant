@@ -125,8 +125,8 @@ export const evaluate = (
   const baseWr = c.priorGames > 0 ? (c.gameWinRate * c.games + 50 * c.priorGames) / (c.games + c.priorGames) : c.gameWinRate;
   const found = laneOpponent ? c.matchups?.[laneOpponent] : undefined;
   const m = found && found[1] >= MATCHUP_MIN_GAMES ? found : undefined;
-  const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1] } : null;
   const laneWr = m ? smooth(m[0], m[1], baseWr, MATCHUP_PRIOR_GAMES) : baseWr;
+  const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1], delta: laneWr - baseWr } : null;
   // Ennemis des autres lanes : chacun ajoute son écart au win rate général, avec moins de poids que le vis-à-vis.
   const enemyTeam: EnemyTeamMatchup[] = [];
   for (const [role, name] of Object.entries(foes) as [Role, string | null][]) {
