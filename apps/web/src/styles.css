@@ -255,6 +255,8 @@ button:disabled { cursor: not-allowed; }
 .spinner { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 1.5s; } }
-.list-end { justify-content: center; }
+.list-end { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.list-end > :first-child:not(.up-btn) { grid-column: 2; }
+.up-btn { grid-column: 3; justify-self: end; width: 32px; padding: 0; }
 .role-row { scroll-margin-top: 12px; }
 .role-row:focus { outline: none; }

@@ -331,14 +331,14 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                     ))}
                   </ul>
                   {listed.items.length > 0 && (
-                    <div className="row-gap list-end">
+                    <div className="list-end">
                       {listed.more && (
                         <button type="button" className="btn btn-sm" aria-label={'Voir plus de champions en ' + role} onClick={() => setListCount(listCount + LIST_LIMIT)}>
                           Voir plus <Icon name="chevron" size={14} />
                         </button>
                       )}
-                      <button type="button" className="btn btn-sm" aria-label={'Remonter en haut du rôle ' + role} onClick={scrollToTop}>
-                        Remonter <Icon name="chevron" size={14} rotate />
+                      <button type="button" className="btn btn-sm up-btn" aria-label={'Remonter en haut du rôle ' + role} title="Remonter" onClick={scrollToTop}>
+                        <Icon name="chevron" size={16} rotate />
                       </button>
                     </div>
                   )}
