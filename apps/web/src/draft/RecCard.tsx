@@ -1,7 +1,7 @@
 import type { Evaluation } from '@draft/engine';
 import { CARD_TEXT as C, formatReason, POOL_TAG } from '@draft/i18n-fr';
 import type { Role } from '@draft/schemas';
-import { Chip, Icon, Portrait, ScalingBars, WinRateChips } from '../ui';
+import { Chip, Icon, Portrait, ScalingBars, WinRateChips, WrChip } from '../ui';
 import { ScoreLine, ScoreStats, ScoreValue } from './score';
 
 export const ReasonChip = ({ r }: { r: Parameters<typeof formatReason>[0] }) => (
@@ -83,6 +83,10 @@ export const DetailItem = ({ e, role, avg, best, selected, secondary = false, on
         {secondary && e.laneShare != null
           ? <Chip title={C.secondaryTip(role)}>{C.secondary(e.laneShare)}</Chip>
           : e.pool !== 'all' && <Chip tone={e.pool === 'out' ? 'warn' : 'plain'}>{POOL_TAG[e.pool]}</Chip>}
+        <span className="row-gap wrap">
+          <ScalingBars scaling={e.scaling} />
+          <WrChip e={e} />
+        </span>
       </div>
     </div>
     <div className="detail-contrib">
@@ -95,11 +99,10 @@ export const DetailItem = ({ e, role, avg, best, selected, secondary = false, on
         <Compo e={e} />
       </div>
     </div>
-    {/* Pied de ligne : raisons, scaling et chips à gauche, nombre de parties à droite. */}
+    {/* Pied de ligne : raisons et chips « vs » et « avec » sur une ligne, nombre de parties à droite. */}
     <div className="detail-foot">
       {e.reasons.slice(0, 3).map((r, i) => <ReasonChip key={i} r={r} />)}
-      <ScalingBars scaling={e.scaling} />
-      <WinRateChips e={e} />
+      <WinRateChips e={e} wr={false} />
       <span className="detail-games"><SampleText e={e} /></span>
     </div>
   </div>

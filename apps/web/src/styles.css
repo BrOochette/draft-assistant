@@ -195,7 +195,7 @@ button:disabled { cursor: not-allowed; }
 /* Ligne de la vue liste : identité | contributions | bouton et score, puis un pied de ligne (raisons, scaling, chips, parties). */
 .detail { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(220px, 1.4fr) auto; grid-template-areas: "id contrib score" "foot foot foot"; gap: 8px 18px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); }
 .detail-id { grid-area: id; display: flex; align-items: center; gap: 10px; min-width: 0; }
-.detail-contrib { grid-area: contrib; min-width: 0; }
+.detail-contrib { grid-area: contrib; min-width: 0; justify-self: center; width: 100%; max-width: 340px; }
 .detail-contrib .contribs-inline { width: 100%; }
 .detail-score { grid-area: score; align-self: start; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .detail-score-value { align-items: flex-end; }
