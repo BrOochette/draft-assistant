@@ -124,6 +124,11 @@ describe('écran Joueurs', () => {
     expect(jungle.getByText('Pool', { selector: '.detail-head' })).toBeInTheDocument();
     expect(jungle.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' })).toBeInTheDocument();
 
+    await user.type(jungle.getByRole('searchbox', { name: 'Rechercher un champion dans la liste Jungle' }), 'fid');
+    expect(jungle.getAllByRole('button', { name: /^Verrouiller .* en Jungle$/ }).map((b) => b.getAttribute('aria-label'))).toEqual(['Verrouiller Fiddlesticks en Jungle']);
+    await user.type(jungle.getByRole('searchbox', { name: 'Rechercher un champion dans la liste Jungle' }), 'zzz');
+    expect(jungle.getByText('Aucun champion trouvé.')).toBeInTheDocument();
+
     await user.click(jungle.getByRole('button', { name: 'Vue top 3 en Jungle' }));
     expect(jungleRecs()).toHaveLength(3);
     expect(jungle.queryByText('Pool', { selector: '.detail-head' })).not.toBeInTheDocument();
