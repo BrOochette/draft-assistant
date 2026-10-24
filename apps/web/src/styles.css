@@ -403,3 +403,7 @@ button:disabled { cursor: not-allowed; }
   .rec:hover { transform: none; }
   .spinner { animation-duration: 1.5s !important; }
 }
+/* Rôle verrouillé : la ligne occupe toute la hauteur de la colonne. */
+.role-center:has(> .locked-in) { justify-content: stretch; }
+.locked-in { flex: 1 1 auto; }
+.locked-in > .detail { flex: 1 1 auto; align-content: space-between; }

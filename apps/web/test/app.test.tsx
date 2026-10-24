@@ -201,7 +201,9 @@ describe('écran Joueurs', () => {
     render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
     const mid = within(screen.getByRole('region', { name: 'Rôle Mid' }));
     await user.selectOptions(mid.getByRole('combobox', { name: 'Joueur' }), 'Aucun joueur');
-    expect(mid.getByText('Sans joueur : tous les champions')).toBeInTheDocument();
+    expect(mid.getByRole('combobox', { name: 'Joueur' })).toHaveValue('');
+    // Sans joueur, pas d'avertissement : tous les champions sont proposés.
+    expect(mid.queryByText(/tous les champions/)).not.toBeInTheDocument();
     expect(mid.queryByText(/Hors pool/)).not.toBeInTheDocument();
   });
 

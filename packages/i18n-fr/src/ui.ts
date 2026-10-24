@@ -58,7 +58,7 @@ export const DRAFT_TEXT = {
   swapTip: 'Inverser les picks',
   player: 'Joueur',
   noPlayer: 'Aucun joueur',
-  noPoolWarn: (hasPlayer: boolean) => (hasPlayer ? 'Sans pool' : 'Sans joueur') + ' : tous les champions',
+  noPoolWarn: 'Sans pool : tous les champions',
   multiRole: 'Placé sur plusieurs rôles',
   roleModes: (role: Role) => 'Suggestions en ' + role,
   inRole: (label: string, role: Role) => label + ' en ' + role,

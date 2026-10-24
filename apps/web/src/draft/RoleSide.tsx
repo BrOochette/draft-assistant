@@ -91,7 +91,8 @@ export const RoleSide = ({ row, players, picker, onOpenPicker, dispatch }: Props
           {players.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
       </div>
-      {!row.hasPool && <span className="small warn-text row-gap"><Icon name="warn" />{D.noPoolWarn(!!player)}</span>}
+      {/* Sans joueur, rien à signaler : tous les champions sont proposés. */}
+      {player && !row.hasPool && <span className="small warn-text row-gap"><Icon name="warn" />{D.noPoolWarn}</span>}
       {row.multiRole && <span className="small neg-text row-gap"><Icon name="warn" />{D.multiRole}</span>}
     </div>
   );
