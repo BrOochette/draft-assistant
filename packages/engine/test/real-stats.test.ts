@@ -135,6 +135,14 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(bans({ ...base, enemy: { ...base.enemy, Jungle: 'Lee Sin' } })).toEqual(['Ahri']);
   });
 
+  it('propose au plus 3 bans par rôle, la réserve remplace un champion déjà pris', () => {
+    const jgl = (champion: string, threat: number) => ({ champion, role: 'Jungle' as const, threat });
+    const d = createEngineData({ ...snapshot, banSuggestions: [jgl('Sejuani', 90), jgl('Lee Sin', 85), jgl('Viego', 80), jgl('Zac', 75)] });
+    const bans = (state: DraftState) => computeDraft(state, {}, d).bans.suggestions.map((b) => b.champion);
+    expect(bans(base)).toEqual(['Sejuani', 'Lee Sin', 'Viego']);
+    expect(bans({ ...base, enemyBans: ['Sejuani'] })).toEqual(['Lee Sin', 'Viego', 'Zac']);
+  });
+
   it('ajoute la synergie de duo avec un allié verrouillé', () => {
     const without = mid(base);
     const withSej = mid({ ...base, ally: { ...base.ally, Jungle: 'Sejuani' } });

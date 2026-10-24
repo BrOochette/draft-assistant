@@ -25,7 +25,8 @@ const PRIOR_GAMES = 200;
 /** Suggestions de bans : par rôle, champions dont c'est la lane principale (au moins BAN_LANE_SHARE % de leurs parties) et d'au moins BAN_GAMES parties, les BAN_PER_ROLE meilleurs win rates. */
 const BAN_GAMES = 1000;
 const BAN_LANE_SHARE = 50;
-const BAN_PER_ROLE = 3;
+/** Réserve par rôle : l'appli en affiche 3, les suivants remplacent un champion banni ou pris. */
+const BAN_PER_ROLE = 8;
 
 /** Tranches Lolalytics (1 : 0-15, 2 : 15-20, 3 : 20-25, 4+ : 25 min et plus) vers les phases D, M, F. */
 const PHASE_BUCKETS: readonly (readonly string[])[] = [['1'], ['2', '3'], ['4', '5', '6', '7']];

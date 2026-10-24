@@ -96,7 +96,7 @@ Les fichiers sont dans `maquettes/`. Voir `maquettes/README.md` pour le format.
 **Barre des bans.** En haut, le titre « Bans » à gauche et le bouton « Suggestions de bans » (32 px) à droite ; en dessous, les 5 slots alliés à gauche et les 5 slots ennemis collés à droite, en miroir (décidé le 24/10/2026) :
 - un slot rempli montre le portrait barré, et un clic retire le ban ;
 - un slot vide « + » ouvre le sélecteur avec recherche et filtre par rôle ;
-- un bouton « Suggestions de bans » déplie des cards (portrait, rôle, score de menace, raison, bouton « Bannir »).
+- un bouton « Suggestions de bans » déplie les suggestions groupées par rôle, 3 par rôle encore ouvert (décidé le 24/10/2026) : portrait, nom, win rate (la menace, qui en découle, est dans l'infobulle) et bouton « Bannir ». Le snapshot garde 8 candidats par rôle : quand l'un est banni ou pris, le suivant le remplace.
 
 **Cinq lignes de rôle** (Top, Jungle, Mid, ADC, Support). Chaque ligne contient :
 - **à gauche** : le rôle et un chip d'état, puis le portrait allié « VS » le portrait ennemi, les deux cliquables pour la saisie manuelle. En dessous, le sélecteur de joueur (fusion de l'ancien écran Composition) et des avertissements (« Sans pool : tous les champions », « Placé sur plusieurs rôles ») ;

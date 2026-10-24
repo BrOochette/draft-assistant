@@ -33,7 +33,7 @@ export { availability, type Availability, type BanBlocked, type Blocked, type Go
 export { compScore, verdictOf } from './composition';
 export { DUO_WEIGHT, evaluate, LANE_COUNTER_WEIGHT, LOW_SAMPLE_GAMES, MATCHUP_MIN_GAMES, otherEnemyWeight, totalScore } from './evaluate';
 export { avgScal, clamp, wrScore } from './math';
-export { MAX_BANS } from './bans';
+export { BANS_PER_ROLE, MAX_BANS } from './bans';
 export { MAIN_ROLE_SHARE } from './recommend';
 export { createSession, draftReducer, type ActionMessage, type DraftAction, type DraftSession, type Side } from './reducer';
 export { createEngineData, SnapshotStatsProvider, type EngineData, type StatsProvider } from './stats-provider';

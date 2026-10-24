@@ -133,7 +133,8 @@ button:disabled { cursor: not-allowed; }
 .ban-slot .portrait { border: 0; border-radius: 0; }
 .ban-slot .strike { position: absolute; inset: 0; width: 100%; height: 100%; stroke: var(--text); stroke-width: 2; opacity: .75; }
 .ban-slot:hover, .face:hover { outline: 2px solid var(--accent); outline-offset: 2px; }
-.ban-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.ban-roles { display: flex; flex-direction: column; gap: 12px; }
+.ban-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .ban-card { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); }
 
 .picker { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--bg-2); border: 1px solid; }
