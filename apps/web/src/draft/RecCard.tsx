@@ -76,36 +76,31 @@ interface DetailProps {
 export const DetailItem = ({ e, role, avg, best, selected, secondary = false, onLock }: DetailProps) => (
   <div className={'detail' + (selected ? ' is-selected' : '')}>
     <div className="detail-id">
-      <div className="row-gap center">
-        <Portrait name={e.champion} size={48} label={e.champion} />
-        <div className="col gap-4 min0">
-          <span className="detail-name">{e.champion}</span>
-          {secondary && e.laneShare != null
-            ? <Chip title={C.secondaryTip(role)}>{C.secondary(e.laneShare)}</Chip>
-            : <Chip tone={e.pool === 'out' ? 'warn' : 'plain'}>{POOL_TAG[e.pool]}</Chip>}
-        </div>
-      </div>
-      <div className="row-gap wrap">
-        {e.reasons.slice(0, 3).map((r, i) => <ReasonChip key={i} r={r} />)}
+      <Portrait name={e.champion} size={48} label={e.champion} />
+      <div className="col gap-4 min0">
+        <span className="detail-name">{e.champion}</span>
+        {/* Le tag n'apparaît que s'il apporte une info : rôle secondaire, pool ou hors pool. */}
+        {secondary && e.laneShare != null
+          ? <Chip title={C.secondaryTip(role)}>{C.secondary(e.laneShare)}</Chip>
+          : e.pool !== 'all' && <Chip tone={e.pool === 'out' ? 'warn' : 'plain'}>{POOL_TAG[e.pool]}</Chip>}
       </div>
     </div>
     <div className="detail-contrib">
       <ScoreLine e={e} barWidth={64} />
     </div>
-    <div className="detail-meta">
-      <ScalingBars scaling={e.scaling} />
-      {/* Chips et nombre de parties dans un même groupe : écarts égaux entre eux. */}
-      <span className="row-gap wrap chip-group">
-        <WinRateChips e={e} />
-        <SampleText e={e} />
-      </span>
-    </div>
     <div className="detail-score">
+      <button type="button" className="btn btn-accent btn-sm" aria-label={C.lock(e.champion, role)} onClick={onLock}>{C.lockButton}</button>
       <div className="col detail-score-value">
         <ScoreValue e={e} className="score-md" avg={avg} best={best} />
         <Compo e={e} />
       </div>
-      <button type="button" className="btn btn-accent" aria-label={C.lock(e.champion, role)} onClick={onLock}>{C.lockButton}</button>
+    </div>
+    {/* Pied de ligne : raisons, scaling et chips à gauche, nombre de parties à droite. */}
+    <div className="detail-foot">
+      {e.reasons.slice(0, 3).map((r, i) => <ReasonChip key={i} r={r} />)}
+      <ScalingBars scaling={e.scaling} />
+      <WinRateChips e={e} />
+      <span className="detail-games"><SampleText e={e} /></span>
     </div>
   </div>
 );
