@@ -9,6 +9,8 @@ const e = {
   laneWinRate: null,
   gameWinRate: 51,
   matchup: { opponent: 'Jinx', winRate: 54.9, games: 3115, delta: 2.2 },
+  allyTeam: [],
+  duoBonus: 0,
   enemyTeam: [{ opponent: 'Leona', role: 'Support', winRate: 47.5, games: 1419, delta: -2.7, weight: 0.75 }]
 } as unknown as Evaluation;
 
@@ -59,5 +61,24 @@ describe('fenêtre flottante du matchup', () => {
     act(() => vi.advanceTimersByTime(POPOVER_LOADER_MS));
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.queryByRole('group')).not.toBeInTheDocument();
+  });
+});
+
+describe('fenêtre flottante des alliés', () => {
+  it('montre le duo avec chaque allié verrouillé et son effet sur la synergie', () => {
+    vi.useFakeTimers();
+    const withAllies = { ...e, allyTeam: [{ ally: 'Sejuani', role: 'Jungle', delta: 2.5, games: 1800, smoothed: 2.25 }], duoBonus: 9 } as unknown as Evaluation;
+    render(
+      <DataContext.Provider value={sampleAppData()}>
+        <WinRateChips e={withAllies} />
+      </DataContext.Provider>
+    );
+    fireEvent.mouseEnter(screen.getByRole('button', { name: 'avec Sejuani +9 pts de synergie' }), { clientX: 10, clientY: 10 });
+    act(() => vi.advanceTimersByTime(POPOVER_LOADER_MS));
+    const panel = screen.getByRole('group', { name: 'Effet des alliés sur la synergie de Twitch' });
+    expect(panel).toHaveTextContent('Sejuani');
+    expect(panel).toHaveTextContent('1 800 parties');
+    expect(panel).toHaveTextContent('×4');
+    expect(panel).toHaveTextContent('+9,0');
   });
 });

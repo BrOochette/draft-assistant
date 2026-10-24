@@ -1,7 +1,7 @@
 import type { Role, Trait } from '@draft/schemas';
 import { compScore } from './composition';
 import { avgScal, clamp, wrScore } from './math';
-import type { CompMember, EnemyTeamMatchup, Entry, Evaluation, Phase, Reason, ScoringOptions } from './types';
+import type { AllyDuo, CompMember, EnemyTeamMatchup, Entry, Evaluation, Phase, Reason, ScoringOptions } from './types';
 
 export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
 export const LOW_SAMPLE_GAMES = 500;
@@ -12,7 +12,7 @@ const MATCHUP_PRIOR_GAMES = 1000;
 /** Un matchup de moins de parties est ignoré : le counter utilise alors le win rate lissé du champion. */
 export const MATCHUP_MIN_GAMES = 500;
 /** Points de synergie par point d'écart moyen de win rate en duo. */
-const DUO_WEIGHT = 4;
+export const DUO_WEIGHT = 4;
 /** Écart de duo (lissé) à partir duquel une raison est affichée. */
 const DUO_REASON_MIN = 1;
 
@@ -86,16 +86,18 @@ export const evaluate = (
       reasons.push({ sign: '+', code: 'PROVIDES', trait: g });
     }
   }
+  const allyTeam: AllyDuo[] = [];
+  let duoBonus = 0;
   if (c.duos) {
-    const duos: { ally: string; delta: number }[] = [];
     for (const x of ctx) {
       const d = c.duos[x.role]?.[x.name];
-      if (d) duos.push({ ally: x.name, delta: smooth(d[0], d[1], 0, DUO_PRIOR_GAMES) });
+      if (d) allyTeam.push({ ally: x.name, role: x.role, delta: d[0], games: d[1], smoothed: smooth(d[0], d[1], 0, DUO_PRIOR_GAMES) });
     }
-    if (duos.length) {
-      syn += Math.round((DUO_WEIGHT * duos.reduce((s, d) => s + d.delta, 0)) / duos.length);
-      for (const d of duos) {
-        if (Math.abs(d.delta) >= DUO_REASON_MIN) reasons.push({ sign: d.delta > 0 ? '+' : '-', code: 'DUO', ally: d.ally, delta: d.delta });
+    if (allyTeam.length) {
+      duoBonus = Math.round((DUO_WEIGHT * allyTeam.reduce((s, d) => s + d.smoothed, 0)) / allyTeam.length);
+      syn += duoBonus;
+      for (const d of allyTeam) {
+        if (Math.abs(d.smoothed) >= DUO_REASON_MIN) reasons.push({ sign: d.smoothed > 0 ? '+' : '-', code: 'DUO', ally: d.ally, delta: d.smoothed });
       }
     }
   }
@@ -158,6 +160,8 @@ export const evaluate = (
     matchup,
     enemyTeam,
     enemyTeamDelta,
+    allyTeam,
+    duoBonus,
     laneShare: c.laneShare,
     scaling: c.scaling
   };

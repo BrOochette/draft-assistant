@@ -45,6 +45,17 @@ export interface MatchupStat {
   delta: number;
 }
 
+/** Duo mesuré avec un allié verrouillé. */
+export interface AllyDuo {
+  ally: string;
+  role: Role;
+  /** Écart de win rate en duo, en points, brut. */
+  delta: number;
+  games: number;
+  /** Écart lissé, celui qui compte dans la synergie. */
+  smoothed: number;
+}
+
 /** Ce qu'un pick apporte à une compo. */
 export interface CompMember {
   name: string;
@@ -105,6 +116,10 @@ export interface Evaluation {
   enemyTeam: EnemyTeamMatchup[];
   /** Effet total de ces matchups sur le win rate du counter, en points (pondéré). */
   enemyTeamDelta: number;
+  /** Duos mesurés avec les alliés verrouillés. */
+  allyTeam: AllyDuo[];
+  /** Points de synergie ajoutés par ces duos (avant le plafond de 0 à 100). */
+  duoBonus: number;
   /** Part des parties du champion jouées sur ce rôle (%), null si inconnue. */
   laneShare: number | null;
   scaling: Scaling;

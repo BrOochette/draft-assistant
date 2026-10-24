@@ -227,15 +227,22 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
               <div className="row-between wrap">
                 {/* Sans pool ou sans joueur, l'avertissement de la colonne de gauche suffit. */}
                 <span className="small soft">{row.note && row.note !== 'NO_POOL' && player ? recNoteText(row.note, player, role) : ''}</span>
-                {/* Bascule d'affichage : les 3 cards, ou la liste détaillée à leur place. */}
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  aria-label={(expanded ? 'Vue top 3' : 'Vue liste') + ' en ' + role}
-                  onClick={() => setExpanded(!expanded)}
-                >
-                  <Icon name={expanded ? 'grid' : 'list'} size={14} />{expanded ? 'Vue top 3' : 'Vue liste'}
-                </button>
+                {/* Affichage : les 3 cards, ou la liste détaillée à leur place. */}
+                <div role="group" aria-label={'Affichage des suggestions en ' + role} className="segmented segmented-icons">
+                  {([false, true] as const).map((list) => (
+                    <button
+                      key={String(list)}
+                      type="button"
+                      className={'segment' + (expanded === list ? ' is-on' : '')}
+                      aria-pressed={expanded === list}
+                      aria-label={(list ? 'Vue liste' : 'Vue top 3') + ' en ' + role}
+                      title={list ? 'Vue liste' : 'Vue top 3'}
+                      onClick={() => setExpanded(list)}
+                    >
+                      <Icon name={list ? 'list' : 'grid'} size={16} />
+                    </button>
+                  ))}
+                </div>
               </div>
               {shown.length === 0 && <span className="empty-box">Aucun champion disponible pour ce rôle.</span>}
               {!expanded && <ul className="recs">

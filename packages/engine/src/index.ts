@@ -31,7 +31,7 @@ export const computeDraft = (state: DraftState, pools: Pools, data: EngineData, 
 
 export { availability, type Availability, type BanBlocked, type Blocked, type GoneReason } from './context';
 export { compScore, verdictOf } from './composition';
-export { evaluate, LANE_COUNTER_WEIGHT, LOW_SAMPLE_GAMES, MATCHUP_MIN_GAMES, otherEnemyWeight, totalScore } from './evaluate';
+export { DUO_WEIGHT, evaluate, LANE_COUNTER_WEIGHT, LOW_SAMPLE_GAMES, MATCHUP_MIN_GAMES, otherEnemyWeight, totalScore } from './evaluate';
 export { avgScal, clamp, wrScore } from './math';
 export { MAX_BANS } from './bans';
 export { MAIN_ROLE_SHARE } from './recommend';

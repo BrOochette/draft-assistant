@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import type { Evaluation } from '@draft/engine';
-import { fmtInt, fmtPct, fmtSigned, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
+import { DUO_WEIGHT, type Evaluation } from '@draft/engine';
+import { fmtDelta, fmtInt, fmtPct, fmtSigned, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
 import type { Scaling } from '@draft/schemas';
 import type { AppData } from './data';
 
@@ -96,11 +96,10 @@ interface MatchupRow {
 export const POPOVER_LOADER_MS = 300;
 
 /**
- * Chip « vs adversaire » : survol, focus ou clic ouvre une fenêtre flottante avec l'effet de chaque ennemi
- * connu sur le counter, vis-à-vis en tête, après un loader de POPOVER_LOADER_MS. Sans matchup de lane retenu,
- * le chip résume la compo ennemie.
+ * Chip qui ouvre une fenêtre flottante au survol, au focus ou au clic, après un loader de POPOVER_LOADER_MS
+ * affiché sous le curseur. Seul `name` est tronqué si la place manque, jamais `value`.
  */
-const MatchupPopover = ({ e }: { e: Evaluation }) => {
+const FloatingChip = ({ name, value, label, panelLabel, children }: { name: string; value: string; label: string; panelLabel: string; children: ReactNode }) => {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const anchor = useRef<HTMLButtonElement>(null);
   const panelId = useId();
@@ -109,14 +108,6 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
   const [loading, setLoading] = useState(false);
   /** Position du loader : sous le curseur à la souris, sur le chip au clavier. */
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
-  const rows: MatchupRow[] = [
-    ...(e.matchup ? [{ ...e.matchup, label: 'Vis-à-vis', weight: 1 }] : []),
-    ...e.enemyTeam.map((m) => ({ ...m, label: m.role }))
-  ];
-  const total = rows.reduce((s, r) => s + r.delta * r.weight, 0);
-  // Seul le nom est tronqué si la place manque, jamais la valeur.
-  const [name, value] = e.matchup ? ['vs ' + e.matchup.opponent, fmtPct(e.matchup.winRate)] : ['vs compo', fmtSigned(total)];
-  const label = name + ' ' + value + (e.matchup ? '' : ' pts');
   const close = () => {
     window.clearTimeout(loadTimer.current);
     setLoading(false);
@@ -188,37 +179,13 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
           <div
             id={panelId}
             role="group"
-            aria-label={'Effet des ennemis sur le counter de ' + e.champion}
+            aria-label={panelLabel}
             className="popover"
             style={{ top: pos.top, left: pos.left }}
             onMouseEnter={() => open()}
             onMouseLeave={closeSoon}
           >
-            <div className="popover-head">
-              <span className="strong">{e.champion} contre les ennemis connus</span>
-              <span className={'strong ' + (total >= 0 ? 'pos-text' : 'neg-text')}>{fmtSigned(total)} pts</span>
-            </div>
-            <table className="popover-table">
-              <thead>
-                <tr><th>Ennemi</th><th>Win rate</th><th>Écart</th><th>Poids</th><th>Effet</th></tr>
-              </thead>
-              <tbody>
-                {rows.map((m) => (
-                  <tr key={m.label}>
-                    <td>
-                      <span className="row-gap"><Portrait name={m.opponent} size={24} /><span><span className="strong">{m.opponent}</span><br /><span className="muted">{m.label}</span></span></span>
-                    </td>
-                    <td>{fmtPct(m.winRate)}<br /><span className="muted">{fmtInt(m.games)} parties</span></td>
-                    <td className={m.delta >= 0 ? 'pos-text' : 'neg-text'}>{fmtSigned(m.delta)}</td>
-                    <td>{weightLabel(m.weight)}</td>
-                    <td className={'strong ' + (m.delta >= 0 ? 'pos-text' : 'neg-text')}>{fmtSigned(m.delta * m.weight)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="popover-foot muted">
-              Écart : win rate contre cet ennemi moins win rate général du champion, en points, lissés. L'effet total s'ajoute au win rate du counter.
-            </p>
+            {children}
           </div>,
           document.body
         )}
@@ -226,15 +193,99 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
   );
 };
 
+const tone = (v: number) => (v >= 0 ? 'pos-text' : 'neg-text');
+
+/** Portrait, nom et sous-titre d'un champion dans une ligne de fenêtre flottante. */
+const PopoverChamp = ({ name, sub }: { name: string; sub: string }) => (
+  <span className="row-gap"><Portrait name={name} size={24} /><span><span className="strong">{name}</span><br /><span className="muted">{sub}</span></span></span>
+);
+
+/**
+ * Chip « vs adversaire » : effet de chaque ennemi connu sur le counter, vis-à-vis en tête.
+ * Sans matchup de lane retenu, le chip résume la compo ennemie.
+ */
+const MatchupPopover = ({ e }: { e: Evaluation }) => {
+  const rows: MatchupRow[] = [
+    ...(e.matchup ? [{ ...e.matchup, label: 'Vis-à-vis', weight: 1 }] : []),
+    ...e.enemyTeam.map((m) => ({ ...m, label: m.role }))
+  ];
+  const total = rows.reduce((s, r) => s + r.delta * r.weight, 0);
+  const [name, value] = e.matchup ? ['vs ' + e.matchup.opponent, fmtPct(e.matchup.winRate)] : ['vs compo', fmtSigned(total)];
+  return (
+    <FloatingChip name={name} value={value} label={name + ' ' + value + (e.matchup ? '' : ' pts')} panelLabel={'Effet des ennemis sur le counter de ' + e.champion}>
+      <div className="popover-head">
+        <span className="strong">{e.champion} contre les ennemis connus</span>
+        <span className={'strong ' + tone(total)}>{fmtSigned(total)} pts</span>
+      </div>
+      <table className="popover-table">
+        <thead>
+          <tr><th>Ennemi</th><th>Win rate</th><th>Écart</th><th>Poids</th><th>Effet</th></tr>
+        </thead>
+        <tbody>
+          {rows.map((m) => (
+            <tr key={m.label}>
+              <td><PopoverChamp name={m.opponent} sub={m.label} /></td>
+              <td>{fmtPct(m.winRate)}<br /><span className="muted">{fmtInt(m.games)} parties</span></td>
+              <td className={tone(m.delta)}>{fmtSigned(m.delta)}</td>
+              <td>{weightLabel(m.weight)}</td>
+              <td className={'strong ' + tone(m.delta)}>{fmtSigned(m.delta * m.weight)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="popover-foot muted">
+        Écart : win rate contre cet ennemi moins win rate général du champion, en points, lissés. L'effet total s'ajoute au win rate du counter.
+      </p>
+    </FloatingChip>
+  );
+};
+
+/** Chip « avec allié(s) » : effet de chaque duo mesuré avec un allié verrouillé sur la synergie. */
+const AllyPopover = ({ e }: { e: Evaluation }) => {
+  const n = e.allyTeam.length;
+  const name = n === 1 ? 'avec ' + e.allyTeam[0]!.ally : 'avec alliés';
+  const value = fmtDelta(e.duoBonus);
+  return (
+    <FloatingChip name={name} value={value} label={name + ' ' + value + ' pts de synergie'} panelLabel={'Effet des alliés sur la synergie de ' + e.champion}>
+      <div className="popover-head">
+        <span className="strong">{e.champion} avec les alliés verrouillés</span>
+        <span className={'strong ' + tone(e.duoBonus)}>{value} synergie</span>
+      </div>
+      <table className="popover-table">
+        <thead>
+          <tr><th>Allié</th><th>Duo</th><th>Lissé</th><th>Poids</th><th>Effet</th></tr>
+        </thead>
+        <tbody>
+          {e.allyTeam.map((d) => (
+            <tr key={d.role}>
+              <td><PopoverChamp name={d.ally} sub={d.role} /></td>
+              <td className={tone(d.delta)}>{fmtSigned(d.delta)}<br /><span className="muted">{fmtInt(d.games)} parties</span></td>
+              <td className={tone(d.smoothed)}>{fmtSigned(d.smoothed)}</td>
+              <td>{'×' + fmt2(DUO_WEIGHT / n)}</td>
+              <td className={'strong ' + tone(d.smoothed)}>{fmtSigned((DUO_WEIGHT * d.smoothed) / n)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="popover-foot muted">
+        Duo : écart de win rate quand les deux champions jouent ensemble, en points, lissé. L'effet total, arrondi, s'ajoute au score de synergie.
+      </p>
+    </FloatingChip>
+  );
+};
+
 /**
  * Win rate de partie (et de lane s'il est connu) puis matchup contre l'adversaire de lane, sur une seule ligne :
- * le nom de l'adversaire est tronqué si la place manque.
+ * le nom de l'adversaire est tronqué si la place manque. Les duos avec les alliés verrouillés suivent.
  */
 export const WinRateChips = ({ e }: { e: Evaluation }) => (
-  <span className="wr-line">
-    <Chip title={'Win rate de partie sur ce rôle, tous adversaires' + (e.laneWinRate == null ? '' : ', puis win rate de lane')}>
-      WR {fmtPct(e.gameWinRate)}{e.laneWinRate != null && <> · lane {fmtPct(e.laneWinRate)}</>}
-    </Chip>
-    {(e.matchup || e.enemyTeam.length > 0) && <MatchupPopover e={e} />}
-  </span>
+  <>
+    <span className="wr-line">
+      <Chip title={'Win rate de partie sur ce rôle, tous adversaires' + (e.laneWinRate == null ? '' : ', puis win rate de lane')}>
+        WR {fmtPct(e.gameWinRate)}{e.laneWinRate != null && <> · lane {fmtPct(e.laneWinRate)}</>}
+      </Chip>
+      {(e.matchup || e.enemyTeam.length > 0) && <MatchupPopover e={e} />}
+    </span>
+    {e.allyTeam.length > 0 && <span className="wr-line"><AllyPopover e={e} /></span>}
+  </>
 );

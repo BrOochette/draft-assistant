@@ -40,7 +40,7 @@ Une application web d'aide à la draft sur League of Legends. Elle propose, pour
 ### Règle de pool pour les recommandations
 
 - Les picks proposés par défaut viennent **du pool du joueur**.
-- Les champions **hors pool** n'apparaissent que dans le détail d'une ligne (bouton « Vue liste »), dans une section séparée « Hors pool ».
+- Les champions **hors pool** n'apparaissent que dans le détail d'une ligne (vue liste), dans une section séparée « Hors pool ».
 - Si aucun champion du pool n'est disponible (tous bannis ou pris), la ligne affiche les meilleurs hors pool, avec une note factuelle qui le signale.
 
 ### Règle de counter
@@ -100,7 +100,7 @@ Les fichiers sont dans `maquettes/`. Voir `maquettes/README.md` pour le format.
 
 **Cinq lignes de rôle** (Top, Jungle, Mid, ADC, Support). Chaque ligne contient :
 - **à gauche** : le rôle et un chip d'état, puis le portrait allié « VS » le portrait ennemi, les deux cliquables pour la saisie manuelle. En dessous, le sélecteur de joueur (fusion de l'ancien écran Composition) et des avertissements (« Sans pool : tous les champions », « Placé sur plusieurs rôles ») ;
-- **au centre, si le rôle est ouvert** : les **3 meilleures recommandations** en cards compactes. Chaque card montre le portrait avec son rang, le score sur 100, « Compo +N », trois mini barres (Synergie, Counter, Maîtrise), le chip « WR » (win rate de partie ; Lane et Partie fusionnés le 24/10/2026, faute de win rate de lane) suivi de « vs adversaire » sur la même ligne (nom tronqué si la place manque), et un chip « Peu fiable » si l'échantillon est faible. Le bouton « Vue liste » remplace les 3 cards par la liste complète (« Vue top 3 » pour revenir, décidé le 24/10/2026) : pool puis hors pool, avec le nom, le tag, le score, 3 raisons, les barres, le scaling D M F et le nombre de parties ;
+- **au centre, si le rôle est ouvert** : les **3 meilleures recommandations** en cards compactes. Chaque card montre le portrait avec son rang, le score sur 100, « Compo +N », trois mini barres (Synergie, Counter, Maîtrise), le chip « WR » (win rate de partie ; Lane et Partie fusionnés le 24/10/2026, faute de win rate de lane) suivi de « vs adversaire » sur la même ligne (nom tronqué si la place manque), puis « avec allié(s) +N » quand un allié verrouillé a un duo mesuré : sa fenêtre flottante détaille, par allié, l'écart en duo brut et lissé, le poids (4 divisé par le nombre d'alliés) et l'effet sur la synergie (décidé le 24/10/2026), et un chip « Peu fiable » si l'échantillon est faible. Deux boutons collés à icônes, « Vue top 3 » et « Vue liste », choisissent l'affichage : la liste complète remplace les 3 cards (décidé le 24/10/2026) : pool puis hors pool, avec le nom, le tag, le score, 3 raisons, les barres, le scaling D M F et le nombre de parties ;
 - **au centre, si le rôle est verrouillé** : un résumé avec le score, « Compo +N », le tag, le chip « Win rate », le nombre de parties, les barres, le scaling et les raisons. Pour Top et Support, les raisons sont des notes de matchup et de compo ;
 - **en dessous, si ouvert** : le sélecteur manuel (recherche, grille de portraits, raisons d'indisponibilité, bouton « Effacer » pour un pick ennemi).
 
@@ -163,7 +163,7 @@ Ces formules sont celles de la maquette, **Proposé** comme point de départ. Le
 - **Meilleur counter** : counter seul (0,75 × counter + 0,25 × maîtrise avec un pool).
 - **Mix** (par défaut) : les poids ci-dessous. Quand l'adversaire de lane est connu, la part du counter dans (synergie + counter) dépend du rôle, car le matchup compte plus sur certaines lanes : top 65 %, mid et support 55 %, ADC 45 %, jungle 35 %. Avec un pool, cette part s'applique aux 75 % hors maîtrise. Les scénarios de référence du moteur gardent les poids de la maquette.
 
-Le bouton « Vue liste » / « Vue top 3 » est réduit à 32 px de haut, à la demande du porteur du projet. C'est une exception à la règle des cibles tactiles de 44 px.
+Les boutons « Vue top 3 » et « Vue liste » sont réduits à 32 px de haut, à la demande du porteur du projet. C'est une exception à la règle des cibles tactiles de 44 px.
 
 **Score total** :
 - avec pool : `0,40 × synergie + 0,35 × counter + 0,25 × maîtrise`, où la maîtrise vaut note × 10 et un hors pool compte 0 ;

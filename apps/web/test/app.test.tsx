@@ -117,7 +117,9 @@ describe('écran Joueurs', () => {
     expect(jungleRecs()).toHaveLength(3);
     expect(jungle.queryByText('Pool', { selector: '.detail-head' })).not.toBeInTheDocument();
 
+    expect(jungle.getByRole('button', { name: 'Vue top 3 en Jungle' })).toHaveAttribute('aria-pressed', 'true');
     await user.click(jungle.getByRole('button', { name: 'Vue liste en Jungle' }));
+    expect(jungle.getByRole('button', { name: 'Vue liste en Jungle' })).toHaveAttribute('aria-pressed', 'true');
     expect(jungle.queryAllByRole('button', { name: /score .* Sélectionner/ })).toHaveLength(0);
     expect(jungle.getByText('Pool', { selector: '.detail-head' })).toBeInTheDocument();
     expect(jungle.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' })).toBeInTheDocument();

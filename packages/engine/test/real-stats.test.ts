@@ -128,5 +128,9 @@ describe('stats réelles (format Lolalytics)', () => {
     // Sejuani n'apporte ici ni trait ni écart de scaling : seule la synergie de duo change.
     expect(withSej.synergy - without.synergy).toBe(Math.round(4 * smoothed));
     expect(withSej.reasons).toContainEqual({ sign: '+', code: 'DUO', ally: 'Sejuani', delta: smoothed });
+    expect(withSej.allyTeam).toEqual([{ ally: 'Sejuani', role: 'Jungle', delta: 2.5, games: 1800, smoothed }]);
+    expect(withSej.duoBonus).toBe(Math.round(4 * smoothed));
+    expect(without.allyTeam).toEqual([]);
+    expect(without.duoBonus).toBe(0);
   });
 });

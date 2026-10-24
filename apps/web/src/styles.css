@@ -75,6 +75,9 @@ button:disabled { cursor: not-allowed; }
 .segmented { display: inline-flex; flex-wrap: wrap; padding: 3px; gap: 3px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); }
 .segment { min-height: 36px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; }
 .segment.is-on { background: var(--raise-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); }
+.segmented-icons { flex-wrap: nowrap; }
+.segmented-icons .segment { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; min-height: 32px; padding: 0 8px; }
+.segmented-icons .segment.is-on { color: var(--accent); }
 .btn:disabled { opacity: .5; }
 .btn-accent { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
 .btn-danger { border-color: var(--neg); background: var(--neg); color: #2a1608; font-weight: 700; }
