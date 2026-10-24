@@ -93,7 +93,7 @@ Les fichiers sont dans `maquettes/`. Voir `maquettes/README.md` pour le format.
 
 **En-tête.** Navigation (Joueurs, Draft), chip « Patch 26.21 · Emerald+ », bouton « Nouvelle draft » avec confirmation (« Effacer tes picks et sélections ? »).
 
-**Barre des bans.** 5 slots alliés et 5 slots ennemis :
+**Barre des bans.** En haut, le titre « Bans » à gauche et le bouton « Suggestions de bans » (32 px) à droite ; en dessous, les 5 slots alliés à gauche et les 5 slots ennemis collés à droite, en miroir (décidé le 24/10/2026) :
 - un slot rempli montre le portrait barré, et un clic retire le ban ;
 - un slot vide « + » ouvre le sélecteur avec recherche et filtre par rôle ;
 - un bouton « Suggestions de bans » déplie des cards (portrait, rôle, score de menace, raison, bouton « Bannir »).

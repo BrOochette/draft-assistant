@@ -53,20 +53,22 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
 
   return (
     <section aria-label="Bans" className="card bans">
-      <div className="bans-head">
+      <div className="row-between">
         <h2 className="h2">Bans</h2>
-        <div className="row-gap" role="group" aria-label="Bans de ton équipe">
-          <span className="side-label ally">Alliés</span>
-          {slots('ally')}
-        </div>
-        <div className="row-gap" role="group" aria-label="Bans de l'équipe ennemie">
-          <span className="side-label enemy">Ennemis</span>
-          {slots('enemy')}
-        </div>
-        <span className="grow" />
-        <button type="button" className="btn" aria-expanded={open} onClick={() => setOpen(!open)}>
-          Suggestions de bans <Icon name="chevron" size={16} rotate={open} />
+        <button type="button" className="btn btn-sm" aria-expanded={open} onClick={() => setOpen(!open)}>
+          Suggestions de bans <Icon name="chevron" size={14} rotate={open} />
         </button>
+      </div>
+      {/* Alliés à gauche, ennemis collés à droite, en miroir comme les lignes de rôle. */}
+      <div className="bans-row">
+        <div className="ban-side" role="group" aria-label="Bans de ton équipe">
+          <span className="side-label ally">Alliés</span>
+          <div className="ban-slots">{slots('ally')}</div>
+        </div>
+        <div className="ban-side is-enemy" role="group" aria-label="Bans de l'équipe ennemie">
+          <span className="side-label enemy">Ennemis</span>
+          <div className="ban-slots">{slots('enemy')}</div>
+        </div>
       </div>
 
       {open && (bans.allyFull ? (
