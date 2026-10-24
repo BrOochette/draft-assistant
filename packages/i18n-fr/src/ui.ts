@@ -91,15 +91,15 @@ export const CARD_TEXT = {
   compo: (delta: number) => 'Compo ' + fmtDelta(delta),
   compoTip: 'Points que ce pick ajoute à la note de ta compo',
   expected: 'attendu',
-  expectedTip: (base: number) => 'Win rate attendu : ' + fmtPct(base) + ' de base, plus les matchups, les duos et la maîtrise',
+  expectedTip: (base: number) => 'Win rate attendu : ' + fmtPct(base) + " de base, plus l'effet des ennemis, des alliés et de la maîtrise",
   base: 'Base',
   baseTip: (base: number) => 'Win rate du champion sur le rôle, lissé vers 50 % : ' + fmtPct(base),
-  matchups: 'Matchups',
-  duos: 'Duos',
+  enemies: 'Ennemis',
+  allies: 'Alliés',
   mastery: 'Maîtrise',
   masteryNone: 'n/a',
-  matchupsTip: 'Effet des ennemis connus, en points de win rate (détail dans « vs … »)',
-  duosTip: 'Effet des alliés verrouillés, en points de win rate (détail dans « avec … »)',
+  enemiesTip: 'Effet de toute la compo ennemie connue (matchups), en points de win rate (détail dans « vs … »)',
+  alliesTip: 'Effet de tous les alliés verrouillés (synergies de duo), en points de win rate (détail dans « avec … »)',
   masteryTip: (note: number | null) => (note == null ? "Pas de pool pour ce rôle, la maîtrise n'entre pas dans le score" : 'Maîtrise ' + note + '/10 : (note − 5) × 0,4 point'),
   synergy: 'Synergie',
   counter: 'Counter',
@@ -190,8 +190,8 @@ export const COMPO_TEXT = {
   helpItems: (measured: boolean): [string, string][] =>
     measured
       ? [
-          ['Win rate attendu', "Win rate du champion sur le rôle (lissé vers 50 %), plus l'effet des ennemis connus (vis-à-vis ×1, duo bot adverse ×3/4, autres ×1/4), plus l'effet des alliés verrouillés (ADC et support ×1, autres ×1/2), plus la maîtrise : (note − 5) × 0,4 point, −2 hors pool. En mode Synergie, sans les matchups ; en mode Counter, sans les duos."],
-          ['Matchups et duos', 'Une paire peu jouée est lissée vers la moyenne de sa paire de classes (par exemple Diver contre Vanguard) : plus elle est jouée, plus sa propre mesure compte.'],
+          ['Win rate attendu', "Win rate du champion sur le rôle (lissé vers 50 %), plus l'effet des ennemis connus (vis-à-vis ×1, duo bot adverse ×3/4, autres ×1/4), plus l'effet des alliés verrouillés (ADC et support ×1, autres ×1/2), plus la maîtrise : (note − 5) × 0,4 point, −2 hors pool. En mode Synergie, sans l'effet des ennemis ; en mode Counter, sans l'effet des alliés."],
+          ['Ennemis et alliés', 'Chaque paire (matchup contre un ennemi, duo avec un allié) est mesurée sur Lolalytics. Une paire peu jouée est lissée vers la moyenne de sa paire de classes (par exemple Diver contre Vanguard) : plus elle est jouée, plus sa propre mesure compte.'],
           ['Compo +N', 'Points que ce pick ajoute à la note globale de ta compo (frontline, engage, peel, mix de dégâts, scaling).'],
           ['Peu fiable', 'Moins de 500 parties derrière le win rate : la valeur peut changer fortement.'],
           ['Scaling D, M, F', 'Puissance au début, au milieu et en fin de partie, de 1 à 5.']

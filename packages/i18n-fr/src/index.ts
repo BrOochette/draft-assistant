@@ -62,9 +62,9 @@ export const formatReason = (r: Reason | { sign: '+' | '-'; text: string }): str
 export const SUGGESTION_MODE_LABEL: Record<SuggestionMode, string> = { mix: 'Mix', synergy: 'Meilleure synergie', counter: 'Meilleur counter' };
 export const SUGGESTION_MODE_SHORT: Record<SuggestionMode, string> = { mix: 'Mix', synergy: 'Synergie', counter: 'Counter' };
 export const SUGGESTION_MODE_TIP: Record<SuggestionMode, string> = {
-  mix: 'Win rate attendu complet : matchups et duos (et maîtrise si le joueur a un pool).',
-  synergy: 'Win rate attendu sans les matchups : duos avec les alliés verrouillés (et maîtrise).',
-  counter: 'Win rate attendu sans les duos : matchups contre les ennemis connus (et maîtrise).'
+  mix: 'Win rate attendu complet : effet des ennemis et des alliés (et maîtrise si le joueur a un pool).',
+  synergy: "Win rate attendu sans l'effet des ennemis : alliés verrouillés seulement (et maîtrise).",
+  counter: "Win rate attendu sans l'effet des alliés : ennemis connus seulement (et maîtrise)."
 };
 
 export const VERDICT_LABEL: Record<Verdict, string> = { solid: 'Solide', fair: 'Correcte', fragile: 'Fragile', fix: 'À corriger' };

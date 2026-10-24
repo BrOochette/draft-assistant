@@ -37,8 +37,8 @@ const signed = (v: number) => {
 const Contributions = ({ x, mastery, inline = false }: { x: Expected; mastery: number | null; inline?: boolean }) => {
   const note = mastery == null ? null : mastery / 10;
   const rows = [
-    { label: C.matchups, v: x.matchups, tip: C.matchupsTip },
-    { label: C.duos, v: x.duos, tip: C.duosTip },
+    { label: C.enemies, v: x.matchups, tip: C.enemiesTip },
+    { label: C.allies, v: x.duos, tip: C.alliesTip },
     ...(note == null ? [] : [{ label: C.mastery, v: x.mastery, tip: C.masteryTip(note) }])
   ];
   return (
