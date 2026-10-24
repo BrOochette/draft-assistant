@@ -16,7 +16,7 @@ npm run ingest -- lolalytics  # environ 15 min (toutes régions) : écrit data/s
 npm run dev                   # le snapshot est réassemblé avec les stats les plus récentes
 ```
 
-Puis commiter `data/stats/` et `apps/web/public/data/snapshot.json`, et pousser : Cloudflare Pages redéploie le site. Après la sortie d'un champion, `npm run ingest -- portraits` ajoute son portrait dans `apps/web/public/champions/` (à commiter aussi).
+Puis commiter `data/stats/` et `apps/web/public/data/snapshot.json`, et pousser : Cloudflare redéploie le site. Après la sortie d'un champion, `npm run ingest -- portraits` ajoute son portrait dans `apps/web/public/champions/` (à commiter aussi).
 
 Les attributs des champions (Frontline, Engage, Peel, type de dégâts, rôles) viennent du wiki LoL. Pour les régénérer, par exemple après la sortie d'un champion :
 
@@ -53,23 +53,23 @@ Pour corriger un attribut à la main, modifier `data/champions-overrides.json` :
 - Attributs : [wiki League of Legends](https://wiki.leagueoflegends.com/en-us/Module:ChampionData/data), contenu sous licence CC BY-SA.
 - Portraits : Data Dragon de Riot Games.
 
-## Déploiement (Cloudflare Pages)
+## Déploiement (Cloudflare)
 
-Comme Blind Pick : Cloudflare Pages construit le site depuis GitHub à chaque push sur `master`. Le snapshot de stats et les portraits sont commités ; le build n'a pas besoin du réseau.
+Cloudflare construit le site depuis GitHub à chaque push sur `master` (Workers Builds, assets statiques). Le snapshot de stats et les portraits sont commités : le build n'a pas besoin du réseau. `wrangler.jsonc` indique à `wrangler deploy` d'envoyer `apps/web/dist` tel quel, sans code serveur ; sans ce fichier, Wrangler refuse de deviner quelle appli du monorepo déployer.
 
-Réglages du projet Pages (Workers & Pages, Create, Pages, Connect to Git, dépôt `draft-assistant`) :
+Réglages du projet (Workers & Pages, Create, Import a repository, dépôt `draft-assistant`) :
 
 | Réglage | Valeur |
 |---|---|
-| Framework preset | None |
+| Project name | `draft-assistant` (le même que `name` dans `wrangler.jsonc`) |
 | Build command | `npm run build` |
-| Build output directory | `apps/web/dist` |
+| Deploy command | `npx wrangler deploy` (valeur par défaut) |
 | Root directory | (vide : racine du dépôt) |
-| Variable d'environnement | `NODE_VERSION` = `22` (aussi fixé par `.node-version`) |
+| Variable de build | `NODE_VERSION` = `22` (aussi fixé par `.node-version`) |
 
-`apps/web/public/_headers` règle le cache : fichiers du build un an, portraits une semaine, stats revalidées à chaque chargement. La navigation passe par `#/`, aucune règle de redirection n'est nécessaire.
+Le site est servi sur `draft-assistant.<sous-domaine>.workers.dev`. `apps/web/public/_headers` règle le cache : fichiers du build un an, portraits une semaine, stats revalidées à chaque chargement.
 
-Les stats viennent de Lolalytics : pour ne pas les republier en accès libre, protéger le site avec Cloudflare Access (Zero Trust, Access, Applications, Self-hosted : domaine `*.pages.dev` du projet, règle « Emails » avec les adresses autorisées).
+Les stats viennent de Lolalytics : pour ne pas les republier en accès libre, protéger le site avec Cloudflare Access (Zero Trust, Access, Applications, Self-hosted : domaine `draft-assistant.<sous-domaine>.workers.dev`, règle « Emails » avec les adresses autorisées).
 
 ## Mention légale
 

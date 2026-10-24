@@ -1,0 +1,12 @@
+// Déploiement Cloudflare (Workers Builds) : site statique, sans code serveur.
+// Le build (npm run build) produit apps/web/dist ; `npx wrangler deploy` envoie ce dossier tel quel.
+{
+  // Doit être le nom du projet créé dans le dashboard Cloudflare.
+  "name": "draft-assistant",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./apps/web/dist",
+    // Navigation par #/ : toute adresse inconnue renvoie l'appli.
+    "not_found_handling": "single-page-application"
+  }
+}
