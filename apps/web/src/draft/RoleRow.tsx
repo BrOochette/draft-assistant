@@ -51,8 +51,9 @@ const RecCard = ({ e, rank, selected, onSelect, onLock, role }: { e: Evaluation;
           ))}
         </span>
       </button>
-      {/* Hors du bouton de sélection : le détail de la compo ennemie s'ouvre dans sa propre fenêtre. */}
-      <div className="row-gap wrap rec-chips">
+      {/* Hors du bouton de sélection : le détail de la compo ennemie s'ouvre dans sa propre fenêtre.
+          Un clic à côté des chips sélectionne la card, comme le bouton (accessible au clavier). */}
+      <div className="row-gap wrap rec-chips" onClick={(ev) => !(ev.target as Element).closest('button') && onSelect()}>
         <WinRateChips e={e} />
         {e.lowSample && <Chip tone="warn" title={sampleTip(e)}><Icon name="warn" />Peu fiable</Chip>}
       </div>
