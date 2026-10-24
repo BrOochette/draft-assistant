@@ -92,6 +92,8 @@ export const CARD_TEXT = {
   compoTip: 'Points que ce pick ajoute à la note de ta compo',
   expected: 'attendu',
   expectedTip: (base: number) => 'Win rate attendu : ' + fmtPct(base) + ' de base, plus les matchups, les duos et la maîtrise',
+  base: 'Base',
+  baseTip: (base: number) => 'Win rate du champion sur le rôle, lissé vers 50 % : ' + fmtPct(base),
   matchups: 'Matchups',
   duos: 'Duos',
   mastery: 'Maîtrise',

@@ -70,8 +70,8 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
           {!ally && (
             <>
               <div className="row-between wrap">
-                {/* Sans pool ou sans joueur, l'avertissement de la colonne de gauche suffit. */}
-                <span className="small soft">{row.note && row.note !== 'NO_POOL' && player ? recNoteText(row.note, player, role) : ''}</span>
+                {/* Seul le pool épuisé est signalé : sans pool, l'avertissement de la colonne de gauche suffit. */}
+                <span className="small soft">{row.note === 'POOL_EXHAUSTED' && player ? recNoteText(row.note, player, role) : ''}</span>
                 <div className="row-gap wrap">
                   {/* Mode de suggestion propre au rôle ; le sélecteur global règle les 5 d'un coup. */}
                   <div role="group" aria-label={D.roleModes(role)} className="segmented segmented-sm">

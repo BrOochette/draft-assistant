@@ -275,3 +275,17 @@ button:disabled { cursor: not-allowed; }
 .combo-option.is-active { background: var(--raise-2); box-shadow: inset 0 0 0 1px var(--accent); }
 .combo-option .portrait { border-radius: 6px; }
 .combo-empty { padding: 8px; font-size: 13px; }
+/* Contributions au win rate attendu : libellé, barre centrée sur zéro, valeur alignée à droite. */
+.contribs { display: grid; grid-template-columns: auto minmax(48px, 1fr) auto; gap: 5px 6px; align-items: center; width: 100%; font-size: 13px; }
+.contribs-inline { width: 260px; max-width: 100%; }
+.contrib { display: contents; }
+.contrib-label { color: var(--muted); white-space: nowrap; }
+.contrib-bar { position: relative; height: 8px; border-radius: 4px; background: #262c3a; }
+.contrib-bar::after { content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--muted-bar); }
+.contrib-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.contrib-fill.is-pos { background: var(--pos); }
+.contrib-fill.is-neg { background: var(--neg); }
+.contrib-value { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.contrib-value.is-pos { color: var(--pos); }
+.contrib-value.is-neg { color: var(--neg); }
+.contrib-value.is-zero { color: var(--muted); font-weight: 600; }

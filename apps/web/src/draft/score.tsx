@@ -1,6 +1,6 @@
-import type { Evaluation } from '@draft/engine';
-import { CARD_TEXT as C, fmtPct, fmtSigned } from '@draft/i18n-fr';
-import { Bar, toneOf } from '../ui';
+import type { Evaluation, Expected } from '@draft/engine';
+import { CARD_TEXT as C, fmt1, fmtPct, fmtSigned } from '@draft/i18n-fr';
+import { Bar } from '../ui';
 
 /** Grand chiffre d'une suggestion : win rate attendu (stats mesurées), sinon score sur 100 de la maquette. */
 export const ScoreValue = ({ e, className }: { e: Evaluation; className: string }) =>
@@ -10,60 +10,99 @@ export const ScoreValue = ({ e, className }: { e: Evaluation; className: string 
     <span className={className}>{e.total}</span>
   );
 
-interface ScoreItem {
-  label: string;
-  value: string;
-  tip: string;
-  /** Couleur du chiffre (écart signé). */
-  tone?: string;
-  /** Barre sur 100 (score de la maquette). */
-  bar?: { w: number; color: string };
-}
+/** Écart (en points) qui remplit la moitié de la barre : au-delà, la barre est pleine. */
+const FULL_SCALE = 2;
 
-/**
- * Détail du score. Stats mesurées : contributions en points au win rate attendu (matchups, duos, maîtrise).
- * Données d'exemple : barres Synergie, Counter et Maîtrise sur 100.
- */
-export const scoreItems = (e: Evaluation): ScoreItem[] => {
-  const x = e.expected;
-  if (x) {
-    const note = e.mastery == null ? null : e.mastery / 10;
-    return [
-      { label: C.matchups, value: fmtSigned(x.matchups), tone: toneOf(x.matchups), tip: C.matchupsTip },
-      { label: C.duos, value: fmtSigned(x.duos), tone: toneOf(x.duos), tip: C.duosTip },
-      { label: C.mastery, value: note == null ? C.masteryNone : fmtSigned(x.mastery), tone: note == null ? undefined : toneOf(x.mastery), tip: C.masteryTip(note) }
-    ];
-  }
-  return [
-    { label: C.synergy, value: String(e.synergy), tip: C.outOf100(C.synergy, e.synergy), bar: { w: e.synergy, color: 'var(--accent)' } },
-    { label: C.counter, value: String(e.counter), tip: C.outOf100(C.counter, e.counter), bar: { w: e.counter, color: 'var(--ally)' } },
-    e.mastery == null
-      ? { label: C.mastery, value: C.masteryNone, tip: C.masteryTip(null), bar: { w: 0, color: 'var(--muted-bar)' } }
-      : { label: C.mastery, value: String(e.mastery), tip: C.outOf100(C.mastery, e.mastery), bar: { w: e.mastery, color: 'var(--warn)' } }
-  ];
+/** Barre centrée sur zéro : vers la droite si positif, vers la gauche si négatif. */
+const DivergingBar = ({ v }: { v: number }) => {
+  const w = Math.min(Math.abs(v) / FULL_SCALE, 1) * 50;
+  const sign = Math.round(v * 10);
+  return (
+    <span className="contrib-bar" aria-hidden="true">
+      {sign !== 0 && <span className={'contrib-fill ' + (sign > 0 ? 'is-pos' : 'is-neg')} style={{ left: sign > 0 ? '50%' : 50 - w + '%', width: w + '%' }} />}
+    </span>
+  );
 };
 
-/** Détail compact (cards) : libellé et valeur, barre en dessous pour le score sur 100. */
-export const ScoreStats = ({ e }: { e: Evaluation }) => (
-  <span className="rec-stats">
-    {scoreItems(e).map((s) => (
-      <span key={s.label} className="col min0" title={s.tip}>
-        <span className="small muted nowrap">{s.label} <span className={'strong ' + (s.tone ?? 'text')}>{s.value}</span></span>
-        {s.bar && <Bar value={s.bar.w} color={s.bar.color} />}
+/** Valeur signée : verte, orange, ou neutre à zéro ; « n/a » sans maîtrise. */
+const signed = (v: number) => {
+  const r = Math.round(v * 10);
+  return { text: r === 0 ? fmt1(0) : fmtSigned(v), tone: r > 0 ? 'is-pos' : r < 0 ? 'is-neg' : 'is-zero' };
+};
+
+/**
+ * Contributions au win rate attendu, une ligne par effet : base, matchups, duos, maîtrise. Chaque effet a sa barre
+ * centrée sur zéro, pour lire d'un coup d'œil ce qui fait monter ou baisser le pick.
+ */
+const Contributions = ({ x, mastery, inline = false }: { x: Expected; mastery: number | null; inline?: boolean }) => {
+  const note = mastery == null ? null : mastery / 10;
+  const rows = [
+    { label: C.matchups, v: x.matchups, tip: C.matchupsTip },
+    { label: C.duos, v: x.duos, tip: C.duosTip },
+    ...(note == null ? [] : [{ label: C.mastery, v: x.mastery, tip: C.masteryTip(note) }])
+  ];
+  return (
+    <span className={'contribs' + (inline ? ' contribs-inline' : '')}>
+      <span className="contrib" title={C.baseTip(x.base)}>
+        <span className="contrib-label">{C.base}</span>
+        <span />
+        <span className="contrib-value is-zero">{fmtPct(x.base)}</span>
       </span>
-    ))}
-  </span>
-);
+      {rows.map((r) => {
+        const s = signed(r.v);
+        return (
+          <span key={r.label} className="contrib" title={r.tip}>
+            <span className="contrib-label">{r.label}</span>
+            <DivergingBar v={r.v} />
+            <span className={'contrib-value ' + s.tone}>{s.text}</span>
+          </span>
+        );
+      })}
+      {note == null && (
+        <span className="contrib" title={C.masteryTip(null)}>
+          <span className="contrib-label">{C.mastery}</span>
+          <span />
+          <span className="contrib-value is-zero">{C.masteryNone}</span>
+        </span>
+      )}
+    </span>
+  );
+};
+
+/** Barres Synergie, Counter et Maîtrise sur 100 (données d'exemple). */
+const legacyItems = (e: Evaluation) => [
+  { label: C.synergy, v: e.synergy, color: 'var(--accent)' },
+  { label: C.counter, v: e.counter, color: 'var(--ally)' },
+  { label: C.mastery, v: e.mastery, color: 'var(--warn)' }
+];
+
+/** Détail compact (cards) : contributions (stats mesurées) ou barres sur 100. */
+export const ScoreStats = ({ e }: { e: Evaluation }) =>
+  e.expected ? (
+    <Contributions x={e.expected} mastery={e.mastery} />
+  ) : (
+    <span className="rec-stats">
+      {legacyItems(e).map((s) => (
+        <span key={s.label} className="col min0" title={s.v == null ? C.masteryTip(null) : C.outOf100(s.label, s.v)}>
+          <span className="small muted nowrap">{s.label} <span className="strong text">{s.v ?? C.masteryNone}</span></span>
+          <Bar value={s.v ?? 0} color={s.v == null ? 'var(--muted-bar)' : s.color} />
+        </span>
+      ))}
+    </span>
+  );
 
 /** Détail en ligne (vue liste, rôle verrouillé). */
-export const ScoreLine = ({ e, barWidth }: { e: Evaluation; barWidth: number }) => (
-  <>
-    {scoreItems(e).map((s) => (
-      <div key={s.label} className="stat-line" title={s.tip}>
-        <span className="stat-label">{s.label}</span>
-        {s.bar && <Bar value={s.bar.w} color={s.bar.color} width={barWidth} />}
-        <span className={'strong ' + (s.tone ?? 'text')}>{s.value}</span>
-      </div>
-    ))}
-  </>
-);
+export const ScoreLine = ({ e, barWidth }: { e: Evaluation; barWidth: number }) =>
+  e.expected ? (
+    <Contributions x={e.expected} mastery={e.mastery} inline />
+  ) : (
+    <>
+      {legacyItems(e).map((s) => (
+        <div key={s.label} className="stat-line" title={s.v == null ? C.masteryTip(null) : C.outOf100(s.label, s.v)}>
+          <span className="stat-label">{s.label}</span>
+          <Bar value={s.v ?? 0} color={s.v == null ? 'var(--muted-bar)' : s.color} width={barWidth} />
+          <span className="strong text">{s.v ?? C.masteryNone}</span>
+        </div>
+      ))}
+    </>
+  );
