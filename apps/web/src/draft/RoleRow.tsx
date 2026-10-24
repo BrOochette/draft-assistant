@@ -118,6 +118,7 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                       e={e}
                       rank={i + 1}
                       role={role}
+                      avg={row.averageWr}
                       selected={selected === e.champion}
                       onSelect={() => dispatch({ type: 'select', role, champion: e.champion })}
                       onLock={() => lock(e.champion)}

@@ -40,7 +40,7 @@ export { allyWeight, DUO_WEIGHT, evaluate, LOW_SAMPLE_GAMES, MASTERY_POINT, matc
 export { ARCHETYPE_OF_CLASS } from './read';
 export { avgScal, clamp, wrScore } from './math';
 export { BANS_PER_ROLE, MAX_BANS } from './bans';
-export { MAIN_ROLE_SHARE, rankScore } from './recommend';
+export { MAIN_ROLE_SHARE, rankScore, roleAverage } from './recommend';
 export { createSession, draftReducer, type ActionMessage, type DraftAction, type DraftSession, type Side } from './reducer';
 export { createEngineData, SnapshotStatsProvider, type EngineData, type StatsProvider } from './stats-provider';
 export * from './types';

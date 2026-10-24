@@ -176,6 +176,15 @@ describe('stats réelles (format Lolalytics)', () => {
     ]);
   });
 
+  it('donne le win rate moyen du rôle, pondéré par les parties, sur les rôles principaux', () => {
+    const d = createEngineData({
+      ...snapshot,
+      candidates: { Mid: [cand('Ahri', { gameWinRate: 52, games: 3000 }), cand('Zed', { gameWinRate: 50, games: 1000 }), cand('Syndra', { gameWinRate: 60, games: 9000, laneShare: 10 })] }
+    });
+    // Syndra joue Mid dans 10 % de ses parties : hors moyenne. (52 × 3000 + 50 × 1000) / 4000 = 51,5.
+    expect(computeDraft(base, {}, d).roles[2]!.averageWr).toBe(51.5);
+  });
+
   it('classe un champion du pool joué hors de ses rôles habituels, signalé peu fiable', () => {
     const top = computeDraft(base, { A: { Top: [{ champion: 'Zed', mastery: 8 }] } }, data).roles[0]!;
     expect(top.note).toBe('POOL');

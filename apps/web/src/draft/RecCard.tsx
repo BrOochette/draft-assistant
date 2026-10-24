@@ -18,6 +18,8 @@ interface CardProps {
   e: Evaluation;
   rank: number;
   role: Role;
+  /** Win rate moyen du rôle (stats mesurées), repère de couleur du score. */
+  avg: number | null;
   selected: boolean;
   onSelect: () => void;
   onLock: () => void;
@@ -27,7 +29,7 @@ interface CardProps {
  * Card de suggestion : le cadenas en haut à droite verrouille le champion en un clic. Il apparaît au survol,
  * au clavier, ou reste affiché quand la card est présélectionnée par un clic.
  */
-export const RecCard = ({ e, rank, role, selected, onSelect, onLock }: CardProps) => (
+export const RecCard = ({ e, rank, role, avg, selected, onSelect, onLock }: CardProps) => (
   <li
     className={'rec' + (selected ? ' is-selected' : '')}
     role="group"
@@ -44,7 +46,7 @@ export const RecCard = ({ e, rank, role, selected, onSelect, onLock }: CardProps
           <span className={'rank' + (rank === 1 ? ' is-first' : '')}>{rank}</span>
         </span>
         <span className="col">
-          <ScoreValue e={e} className={'score' + (rank === 1 ? ' is-best' : '')} />
+          <ScoreValue e={e} className="score" avg={avg} best={rank === 1} />
           <Compo e={e} />
         </span>
       </span>
@@ -60,6 +62,7 @@ export const RecCard = ({ e, rank, role, selected, onSelect, onLock }: CardProps
 interface DetailProps {
   e: Evaluation;
   role: Role;
+  avg: number | null;
   best: boolean;
   selected: boolean;
   secondary?: boolean;
@@ -67,7 +70,7 @@ interface DetailProps {
 }
 
 /** Ligne de la vue liste : nom, tag, score, raisons, détail du score, scaling et chips. */
-export const DetailItem = ({ e, role, best, selected, secondary = false, onLock }: DetailProps) => (
+export const DetailItem = ({ e, role, avg, best, selected, secondary = false, onLock }: DetailProps) => (
   <div className={'detail' + (selected ? ' is-selected' : '')}>
     <div className="row-gap wrap center">
       <Portrait name={e.champion} size={48} label={e.champion} />
@@ -78,7 +81,7 @@ export const DetailItem = ({ e, role, best, selected, secondary = false, onLock 
           : <Chip tone={e.pool === 'out' ? 'warn' : 'plain'}>{POOL_TAG[e.pool]}</Chip>}
       </div>
       <div className="row-gap baseline">
-        <ScoreValue e={e} className={'score-md' + (best ? ' is-best' : '')} />
+        <ScoreValue e={e} className="score-md" avg={avg} best={best} />
         <Compo e={e} />
       </div>
       <button type="button" className="btn btn-accent" aria-label={C.lock(e.champion, role)} onClick={onLock}>{C.lockButton}</button>

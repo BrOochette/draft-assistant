@@ -185,6 +185,8 @@ export interface RoleResult {
   /** Sans pool : champions pour qui ce rôle est secondaire (moins de MAIN_ROLE_SHARE % de leurs parties), non classés. */
   secondaryRole: Evaluation[];
   note: RecNote | null;
+  /** Stats mesurées : win rate moyen du rôle (lissé, pondéré par les parties, champions dont c'est un rôle principal), null sinon. */
+  averageWr: number | null;
 }
 
 export type ScalingVerdict = 'advantage' | 'even' | 'disadvantage';

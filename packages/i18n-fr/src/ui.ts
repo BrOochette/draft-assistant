@@ -91,13 +91,17 @@ export const CARD_TEXT = {
   compo: (delta: number) => 'Compo ' + fmtDelta(delta),
   compoTip: 'Points que ce pick ajoute à la note de ta compo',
   expected: 'attendu',
-  expectedTip: (base: number) => 'Win rate attendu : ' + fmtPct(base) + " de base, plus l'effet des ennemis, des alliés et de la maîtrise",
+  expectedTip: (base: number, avg: number | null, score: number) =>
+    'Win rate attendu : ' + fmtPct(base) + " de base, plus l'effet des ennemis, des alliés et de la maîtrise" +
+    (avg != null ? '. Moyenne du rôle : ' + fmtPct(avg) + ' (' + fmtSigned(score - avg) + ' pts)' : ''),
   base: 'Base',
   baseTip: (base: number) => 'Win rate du champion sur le rôle, lissé vers 50 % : ' + fmtPct(base),
   enemies: 'Ennemis',
   allies: 'Alliés',
   mastery: 'Maîtrise',
   masteryNone: 'n/a',
+  /** Aucun ennemi ou allié connu : rien à mesurer. */
+  nobody: '—',
   enemiesTip: 'Effet de toute la compo ennemie connue (matchups), en points de win rate (détail dans « vs … »)',
   alliesTip: 'Effet de tous les alliés verrouillés (synergies de duo), en points de win rate (détail dans « avec … »)',
   masteryTip: (note: number | null) => (note == null ? "Pas de pool pour ce rôle, la maîtrise n'entre pas dans le score" : 'Maîtrise ' + note + '/10 : (note − 5) × 0,4 point'),

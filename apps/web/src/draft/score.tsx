@@ -2,13 +2,20 @@ import type { Evaluation, Expected } from '@draft/engine';
 import { CARD_TEXT as C, fmt1, fmtPct, fmtSigned } from '@draft/i18n-fr';
 import { Bar } from '../ui';
 
-/** Grand chiffre d'une suggestion : win rate attendu (stats mesurées), sinon score sur 100 de la maquette. */
-export const ScoreValue = ({ e, className }: { e: Evaluation; className: string }) =>
-  e.expected ? (
-    <span className={className} title={C.expectedTip(e.expected.base)}>{fmtPct(e.expected.score)}</span>
-  ) : (
-    <span className={className}>{e.total}</span>
-  );
+/** Écart au-dessus de la moyenne du rôle à partir duquel le win rate attendu est mis en avant (vert). */
+const GOOD_ABOVE_AVERAGE = 1.5;
+
+/**
+ * Grand chiffre d'une suggestion : win rate attendu (stats mesurées), sinon score sur 100 de la maquette.
+ * Le win rate attendu est coloré par rapport à la moyenne du rôle (environ 51,5 %) : vert nettement au-dessus,
+ * neutre autour, rouge en dessous. `best` met en avant le premier score sur 100.
+ */
+export const ScoreValue = ({ e, className, avg, best = false }: { e: Evaluation; className: string; avg: number | null; best?: boolean }) => {
+  const x = e.expected;
+  if (!x) return <span className={className + (best ? ' is-best' : '')}>{e.total}</span>;
+  const tone = avg == null ? '' : x.score >= avg + GOOD_ABOVE_AVERAGE ? ' is-best' : x.score < avg ? ' is-low' : '';
+  return <span className={className + tone} title={C.expectedTip(x.base, avg, x.score)}>{fmtPct(x.score)}</span>;
+};
 
 /** Écart (en points) qui remplit la moitié de la barre : au-delà, la barre est pleine. */
 const FULL_SCALE = 2;
@@ -24,22 +31,23 @@ const DivergingBar = ({ v }: { v: number }) => {
   );
 };
 
-/** Valeur signée : verte, orange, ou neutre à zéro ; « n/a » sans maîtrise. */
+/** Valeur signée : verte, rouge, ou neutre à zéro. */
 const signed = (v: number) => {
   const r = Math.round(v * 10);
   return { text: r === 0 ? fmt1(0) : fmtSigned(v), tone: r > 0 ? 'is-pos' : r < 0 ? 'is-neg' : 'is-zero' };
 };
 
 /**
- * Contributions au win rate attendu, une ligne par effet : base, matchups, duos, maîtrise. Chaque effet a sa barre
- * centrée sur zéro, pour lire d'un coup d'œil ce qui fait monter ou baisser le pick.
+ * Contributions au win rate attendu, une ligne par effet : base, ennemis, alliés, maîtrise. Chaque effet a sa barre
+ * centrée sur zéro, pour lire d'un coup d'œil ce qui fait monter ou baisser le pick. Sans ennemi ou allié connu,
+ * la ligne affiche « — » (rien à mesurer), à distinguer d'un effet nul « 0,0 ».
  */
-const Contributions = ({ x, mastery, inline = false }: { x: Expected; mastery: number | null; inline?: boolean }) => {
-  const note = mastery == null ? null : mastery / 10;
+const Contributions = ({ e, x, inline = false }: { e: Evaluation; x: Expected; inline?: boolean }) => {
+  const note = e.mastery == null ? null : e.mastery / 10;
   const rows = [
-    { label: C.enemies, v: x.matchups, tip: C.enemiesTip },
-    { label: C.allies, v: x.duos, tip: C.alliesTip },
-    ...(note == null ? [] : [{ label: C.mastery, v: x.mastery, tip: C.masteryTip(note) }])
+    { label: C.enemies, v: e.enemyTeam.length ? x.matchups : null, none: C.nobody, tip: C.enemiesTip },
+    { label: C.allies, v: e.allyTeam.length ? x.duos : null, none: C.nobody, tip: C.alliesTip },
+    { label: C.mastery, v: note == null ? null : x.mastery, none: C.masteryNone, tip: C.masteryTip(note) }
   ];
   return (
     <span className={'contribs' + (inline ? ' contribs-inline' : '')}>
@@ -49,22 +57,15 @@ const Contributions = ({ x, mastery, inline = false }: { x: Expected; mastery: n
         <span className="contrib-value is-zero">{fmtPct(x.base)}</span>
       </span>
       {rows.map((r) => {
-        const s = signed(r.v);
+        const s = r.v == null ? { text: r.none, tone: 'is-zero' } : signed(r.v);
         return (
           <span key={r.label} className="contrib" title={r.tip}>
             <span className="contrib-label">{r.label}</span>
-            <DivergingBar v={r.v} />
+            <DivergingBar v={r.v ?? 0} />
             <span className={'contrib-value ' + s.tone}>{s.text}</span>
           </span>
         );
       })}
-      {note == null && (
-        <span className="contrib" title={C.masteryTip(null)}>
-          <span className="contrib-label">{C.mastery}</span>
-          <DivergingBar v={0} />
-          <span className="contrib-value is-zero">{C.masteryNone}</span>
-        </span>
-      )}
     </span>
   );
 };
@@ -79,7 +80,7 @@ const legacyItems = (e: Evaluation) => [
 /** Détail compact (cards) : contributions (stats mesurées) ou barres sur 100. */
 export const ScoreStats = ({ e }: { e: Evaluation }) =>
   e.expected ? (
-    <Contributions x={e.expected} mastery={e.mastery} />
+    <Contributions e={e} x={e.expected} />
   ) : (
     <span className="rec-stats">
       {legacyItems(e).map((s) => (
@@ -94,7 +95,7 @@ export const ScoreStats = ({ e }: { e: Evaluation }) =>
 /** Détail en ligne (vue liste, rôle verrouillé). */
 export const ScoreLine = ({ e, barWidth }: { e: Evaluation; barWidth: number }) =>
   e.expected ? (
-    <Contributions x={e.expected} mastery={e.mastery} inline />
+    <Contributions e={e} x={e.expected} inline />
   ) : (
     <>
       {legacyItems(e).map((s) => (

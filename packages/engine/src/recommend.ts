@@ -18,7 +18,7 @@ export const recommendRole = (
   const allyPick = state.ally[role];
   const enemyPick = state.enemy[role];
   const multiRole = meta.player != null && ROLES.filter((r) => state.assign[r] === meta.player).length > 1;
-  const base = { role, player: meta.player, hasPool: meta.hasPool, multiRole, allyPick, enemyPick };
+  const base = { role, player: meta.player, hasPool: meta.hasPool, multiRole, allyPick, enemyPick, averageWr: roleAverage(data, role) };
 
   if (allyPick) {
     const ev = evaluate(entryFor(data, meta, role, allyPick), ctx, enemies, meta.player, state.enemy, options);
@@ -65,3 +65,20 @@ const isMainRole = (e: Evaluation) => e.laneShare == null || e.laneShare >= MAIN
 
 /** Valeur de classement : win rate attendu (stats mesurées), sinon score sur 100 de la maquette. */
 export const rankScore = (e: Evaluation): number => e.expected?.score ?? e.total;
+
+/**
+ * Win rate moyen d'un rôle (stats mesurées) : moyenne des win rates lissés, pondérée par les parties, sur les champions
+ * dont c'est un rôle principal. Sert de repère : un pick n'est bon que s'il dépasse ce niveau (environ 51,5 %, pas 50 %).
+ */
+export const roleAverage = (data: EngineData, role: Role): number | null => {
+  if (!data.measured) return null;
+  const p = data.winRatePriorGames;
+  let sum = 0;
+  let games = 0;
+  for (const c of data.stats.listCandidates(role)) {
+    if ((c.laneShare ?? 100) < MAIN_ROLE_SHARE) continue;
+    sum += (p > 0 ? (c.gameWinRate * c.games + 50 * p) / (c.games + p) : c.gameWinRate) * c.games;
+    games += c.games;
+  }
+  return games ? sum / games : null;
+};

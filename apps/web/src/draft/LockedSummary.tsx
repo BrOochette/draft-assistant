@@ -21,7 +21,7 @@ export const LockedSummary = ({ row }: { row: RoleResult }) => {
   return (
     <>
       <div className="row-gap wrap center">
-        <ScoreValue e={l} className="score is-best" />
+        <ScoreValue e={l} className="score" avg={row.averageWr} best />
         <span className="delta" title={C.compoTip}>{C.compo(l.compoDelta)}</span>
         <Chip tone={l.pool === 'out' ? 'warn' : 'plain'}>{POOL_TAG[l.pool]}</Chip>
         <WinRateChips e={l} />
