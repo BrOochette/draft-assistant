@@ -6,6 +6,7 @@ import {
   type Champion,
   type ChampionAttributes,
   type ChampionOverrides,
+  type ClassPriors,
   type Damage,
   type Role,
   type Scaling,
@@ -62,6 +63,39 @@ export const measuredScaling = (lanes: readonly LaneStats[]): Map<LaneStats, Sca
   return new Map(lanes.map((s, i) => [s, diffs[i]!.map((x, p) => level(x, p)) as Scaling]));
 };
 
+/** Clé d'une paire de classes : « Top|Diver|Jungle|Vanguard ». */
+export const classPairKey = (role: Role, cls: string, otherRole: Role, otherCls: string) => role + '|' + cls + '|' + otherRole + '|' + otherCls;
+
+/**
+ * Moyennes par paire de classes principales, pondérées par les parties : écart de duo, et écart de matchup
+ * (win rate contre l'ennemi moins win rate du champion), pour le vis-à-vis comme pour les autres lanes.
+ */
+export const classPriors = (candidates: Partial<Record<Role, Candidate[]>>, classOf: ReadonlyMap<string, string>): ClassPriors => {
+  const sums = { duo: new Map<string, [number, number]>(), matchup: new Map<string, [number, number]>() };
+  const add = (kind: keyof typeof sums, key: string, delta: number, games: number) => {
+    const cur = sums[kind].get(key) ?? [0, 0];
+    sums[kind].set(key, [cur[0] + delta * games, cur[1] + games]);
+  };
+  for (const [role, list] of Object.entries(candidates) as [Role, Candidate[]][]) {
+    for (const c of list) {
+      const cls = classOf.get(c.name);
+      if (!cls) continue;
+      const pairs = (kind: keyof typeof sums, otherRole: Role, map: Record<string, [number, number]> | undefined, toDelta: (v: number) => number) => {
+        for (const [other, [v, games]] of Object.entries(map ?? {})) {
+          const oc = classOf.get(other);
+          if (oc) add(kind, classPairKey(role, cls, otherRole, oc), toDelta(v), games);
+        }
+      };
+      for (const [r, m] of Object.entries(c.duos ?? {}) as [Role, Record<string, [number, number]>][]) pairs('duo', r, m, (d) => d);
+      pairs('matchup', role, c.matchups, (wr) => wr - c.gameWinRate);
+      for (const [r, m] of Object.entries(c.crossMatchups ?? {}) as [Role, Record<string, [number, number]>][]) pairs('matchup', r, m, (wr) => wr - c.gameWinRate);
+    }
+  }
+  const out = (m: Map<string, [number, number]>) =>
+    Object.fromEntries([...m].map(([k, [sum, games]]) => [k, [Math.round((sum / games) * 1000) / 1000, games] as [number, number]]));
+  return { duo: out(sums.duo), matchup: out(sums.matchup) };
+};
+
 const damageOf = (a: ChampionAttributes, o: ChampionOverrides[string] | undefined, s: LaneStats | undefined): Damage => {
   if (o?.damage) return o.damage;
   if (a.damage === 'TANK' || !s || s.damage.physical + s.damage.magic === 0) return a.damage;
@@ -98,7 +132,8 @@ export const assembleLolalyticsSnapshot = (
       damage,
       provides: traits,
       scaling: (main && scaling.get(main)) ?? [3, 3, 3],
-      roles: o?.roles ?? ROLES.filter((r) => a.roles.includes(r) || playedRoles.includes(r))
+      roles: o?.roles ?? ROLES.filter((r) => a.roles.includes(r) || playedRoles.includes(r)),
+      classes: a.classes
     });
     for (const [role, s] of lanes) {
       const sc = scaling.get(s);
@@ -144,6 +179,7 @@ export const assembleLolalyticsSnapshot = (
     candidates,
     matchupNotes: { matchups: {}, fixedInfo: {} },
     banSuggestions: bans,
-    winRatePriorGames: WIN_RATE_PRIOR_GAMES
+    winRatePriorGames: WIN_RATE_PRIOR_GAMES,
+    classPriors: classPriors(candidates, new Map(attributes.filter((a) => a.classes.length).map((a) => [a.name, a.classes[0]!])))
   });
 };

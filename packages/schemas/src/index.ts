@@ -28,7 +28,9 @@ export const ChampionSchema = z.object({
   roles: z.array(RoleSchema).min(1),
   ddragonId: z.string().min(1),
   /** Identifiant numérique Riot (aussi utilisé par Lolalytics). Absent des données d'exemple. */
-  key: z.number().int().positive().optional()
+  key: z.number().int().positive().optional(),
+  /** Classes Riot (Diver, Vanguard…), la première est la classe principale. Absentes des données d'exemple. */
+  classes: z.array(z.string()).optional()
 });
 export type Champion = z.infer<typeof ChampionSchema>;
 
@@ -140,6 +142,16 @@ export const SampleDraftStateSchema = z.object({
 });
 export type SampleDraftState = z.infer<typeof SampleDraftStateSchema>;
 
+/**
+ * Moyennes par paire « rôle|classe|rôle de l'autre|classe de l'autre » : [écart en points, parties].
+ * Duo : écart de win rate en duo. Matchup : win rate contre l'ennemi moins win rate du champion.
+ */
+export const ClassPriorsSchema = z.object({
+  duo: z.record(z.string(), deltaSample),
+  matchup: z.record(z.string(), deltaSample)
+});
+export type ClassPriors = z.infer<typeof ClassPriorsSchema>;
+
 export const StatsSnapshotSchema = z.object({
   version: z.literal(1),
   /** Origine des stats : données d'exemple de la maquette ou collecte Lolalytics. */
@@ -156,7 +168,9 @@ export const StatsSnapshotSchema = z.object({
   matchupNotes: MatchupNotesSchema,
   banSuggestions: z.array(BanSuggestionSchema),
   /** Parties fictives à 50 % ajoutées au win rate de chaque candidat pour le counter (0 ou absent : pas de lissage). */
-  winRatePriorGames: z.number().int().nonnegative().optional()
+  winRatePriorGames: z.number().int().nonnegative().optional(),
+  /** Moyennes par paire de classes principales, vers lesquelles un matchup ou un duo peu joué est lissé. */
+  classPriors: ClassPriorsSchema.optional()
 });
 export type StatsSnapshot = z.infer<typeof StatsSnapshotSchema>;
 

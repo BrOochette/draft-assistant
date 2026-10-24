@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { ChampionAttributes } from '@draft/schemas';
+import type { Candidate, ChampionAttributes } from '@draft/schemas';
 import type { LaneStats, LolalyticsDump } from '../src/lolalytics';
-import { assembleLolalyticsSnapshot, measuredScaling } from '../src/snapshot';
+import { assembleLolalyticsSnapshot, classPriors, measuredScaling } from '../src/snapshot';
 
 const attr = (name: string, key: number, extra: Partial<ChampionAttributes> = {}): ChampionAttributes => ({
   name,
@@ -102,5 +102,28 @@ describe('assemblage du snapshot Lolalytics', () => {
       ['Ahri', 'Mid', 77],
       ["Kai'Sa", 'ADC', 55]
     ]);
+  });
+});
+
+describe('priors de classe', () => {
+  it('moyenne les duos et les matchups par paire de classes, pondérée par les parties', () => {
+    const cand = (name: string, gameWinRate: number, extra: Partial<Candidate>): Candidate => ({
+      name, games: 1000, synergyBase: 55, laneWinRate: null, gameWinRate, scaling: [3, 3, 3], provides: [], damage: 'AD', notes: [], ...extra
+    });
+    const classOf = new Map([['Camille', 'Diver'], ['Jax', 'Diver'], ['Amumu', 'Vanguard'], ['Zac', 'Vanguard'], ['Garen', 'Juggernaut']]);
+    const priors = classPriors(
+      {
+        Top: [
+          cand('Camille', 52, { duos: { Jungle: { Amumu: [1, 100], Zac: [3, 300] } }, crossMatchups: { Jungle: { Amumu: [46, 200] } }, matchups: { Garen: [55, 1000] } }),
+          cand('Jax', 50, { crossMatchups: { Jungle: { Zac: [52, 200] } } })
+        ]
+      },
+      classOf
+    );
+    // Duo Diver avec Vanguard : (1 × 100 + 3 × 300) / 400 = 2,5.
+    expect(priors.duo['Top|Diver|Jungle|Vanguard']).toEqual([2.5, 400]);
+    // Matchup Diver contre Vanguard jungle : écarts −6 (Camille) et +2 (Jax), à poids égaux = −2.
+    expect(priors.matchup['Top|Diver|Jungle|Vanguard']).toEqual([-2, 400]);
+    expect(priors.matchup['Top|Diver|Top|Juggernaut']).toEqual([3, 1000]);
   });
 });

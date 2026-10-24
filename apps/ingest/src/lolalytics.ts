@@ -13,8 +13,8 @@ export const DEFAULT_PAIR_REGION = 'all';
 export const MIN_LANE_SHARE = 5;
 /** Matchups et duos gardés à partir de ce nombre de parties. */
 export const MIN_PAIR_GAMES = 30;
-/** Matchups contre les autres lanes gardés à partir de ce nombre de parties (ils servent moins, ils pèsent lourd). */
-export const MIN_CROSS_GAMES = 300;
+/** Matchups contre les autres lanes gardés à partir de ce nombre de parties : peu jouées, ils sont lissés vers leur classe. */
+export const MIN_CROSS_GAMES = 30;
 
 const LANE: Record<Role, string> = { Top: 'top', Jungle: 'jungle', Mid: 'middle', ADC: 'bottom', Support: 'support' };
 const ROLE_OF: Record<string, Role> = Object.fromEntries(ROLES.map((r) => [LANE[r], r]));
