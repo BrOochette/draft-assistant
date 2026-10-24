@@ -126,3 +126,16 @@ export const availability = (state: DraftState): Availability => {
     }
   };
 };
+
+/**
+ * Rôles d'un champion, du plus joué au moins joué (part de ses parties sur chaque rôle), puis ses autres rôles
+ * habituels du catalogue. Sert à proposer un rôle à la saisie rapide d'un pick.
+ */
+export const rolesByPlay = (data: EngineData, name: string): Role[] => {
+  const played = ROLES.map((r) => ({ r, share: data.stats.listCandidates(r).find((c) => c.name === name)?.laneShare }))
+    .filter((x): x is { r: Role; share: number } => x.share != null)
+    .sort((a, b) => b.share - a.share)
+    .map((x) => x.r);
+  const listed = data.catalog.get(name)?.roles ?? [];
+  return [...played, ...listed.filter((r) => !played.includes(r))];
+};

@@ -77,6 +77,30 @@ describe('écran Draft', () => {
     expect(within(screen.getByRole('region', { name: 'Rôle ADC' })).queryByText('Jinx')).not.toBeInTheDocument();
     expect(compo('enemy').score).toBe('69');
   });
+
+  it('saisit des picks au clavier avec la saisie rapide', async () => {
+    const user = userEvent.setup();
+    render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
+    // « / » place le curseur dans la saisie rapide, en mode ennemi par défaut.
+    await user.keyboard('/');
+    const input = screen.getByRole('combobox', { name: 'Saisie rapide : pick ennemi' });
+    expect(input).toHaveFocus();
+    // Zed est banni : proposé grisé, avec la raison.
+    await user.type(input, 'zed');
+    expect(screen.getByRole('option', { name: 'Zed, Banni' })).toHaveAttribute('aria-disabled', 'true');
+    await user.clear(input);
+    await user.type(input, 'amumu');
+    expect(screen.getByRole('option', { name: 'Amumu en Jungle' })).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('button', { name: 'Retirer le pick ennemi Amumu en Jungle' })).toBeInTheDocument();
+    expect(input).toHaveValue('');
+
+    // Le camp reste choisi ; en allié, Entrée verrouille le pick sur son rôle.
+    await user.click(screen.getByRole('button', { name: 'Allié' }));
+    await user.type(screen.getByRole('combobox', { name: 'Saisie rapide : pick allié' }), 'sej');
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('button', { name: 'Retirer Sejuani et rouvrir les suggestions en Jungle' })).toBeInTheDocument();
+  });
 });
 
 describe('écran Joueurs', () => {

@@ -34,7 +34,7 @@ export const computeDraft = (state: DraftState, pools: Pools, data: EngineData, 
   };
 };
 
-export { availability, type Availability, type BanBlocked, type Blocked, type GoneReason } from './context';
+export { availability, rolesByPlay, type Availability, type BanBlocked, type Blocked, type GoneReason } from './context';
 export { compScore, verdictOf } from './composition';
 export { allyWeight, DUO_WEIGHT, evaluate, LOW_SAMPLE_GAMES, MASTERY_POINT, matchupEffect, modeOf, otherEnemyWeight, totalScore } from './evaluate';
 export { ARCHETYPE_OF_CLASS } from './read';

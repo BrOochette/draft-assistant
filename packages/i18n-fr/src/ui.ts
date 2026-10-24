@@ -261,3 +261,18 @@ export const PICKER_TEXT = {
   roleFilter: 'Filtrer par rôle',
   all: 'Tous'
 };
+
+export const QUICK_TEXT = {
+  region: 'Saisie rapide',
+  sides: 'Camp de la saisie rapide',
+  enemy: 'Ennemi',
+  ally: 'Allié',
+  input: (side: 'ally' | 'enemy') => 'Saisie rapide : pick ' + (side === 'enemy' ? 'ennemi' : 'allié'),
+  placeholder: 'Champion',
+  shortcut: '/',
+  shortcutTip: 'Raccourci : /',
+  options: 'Champions',
+  place: (champion: string, role: Role) => champion + ' en ' + role,
+  replaces: (current: string) => 'remplace ' + current,
+  notFound: 'Aucun champion trouvé.'
+};

@@ -5,6 +5,7 @@ import { ROLES, type Pools, type Role } from '@draft/schemas';
 import { useData } from '../ui';
 import { BanBar } from './BanBar';
 import { CompoPanel } from './CompoPanel';
+import { QuickPick } from './QuickPick';
 import { RoleRow } from './RoleRow';
 
 interface Props {
@@ -61,6 +62,7 @@ export const DraftScreen = ({ session, dispatch, pools }: Props) => {
     <main className="draft">
       <div className="draft-main">
         <BanBar draft={session.draft} bans={result.bans} dispatch={dispatch} />
+        <QuickPick draft={session.draft} dispatch={dispatch} />
         <div className="mode-bar">
           <span className="small muted" id="mode-label">{DRAFT_TEXT.modesLabel}</span>
           <div role="group" aria-labelledby="mode-label" className="segmented">
