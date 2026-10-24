@@ -7,6 +7,8 @@ import { readQwikState } from './qwik';
 export const TIER = 'emerald_plus';
 /** Région par défaut (code Lolalytics : all, euw, eune, na, kr…). */
 export const DEFAULT_REGION = 'euw';
+/** Région des matchups et duos : plus d'échantillon qu'une seule région, et ils en dépendent peu. */
+export const DEFAULT_PAIR_REGION = 'all';
 /** Lanes secondaires collectées à partir de cette part des parties du champion (en %). */
 export const MIN_LANE_SHARE = 5;
 /** Matchups et duos gardés à partir de ce nombre de parties. */
@@ -37,6 +39,8 @@ export const LolalyticsDumpSchema = z.object({
   tier: z.string(),
   /** Région Lolalytics (« all » : toutes régions). Absente des collectes antérieures : toutes régions. */
   region: z.string().default('all'),
+  /** Région des matchups et des duos. Absente des collectes antérieures : la même que `region`. */
+  pairRegion: z.string().optional(),
   fetchedAt: z.string(),
   champions: z.record(z.string(), z.record(z.string(), LaneStatsSchema))
 });
@@ -113,15 +117,17 @@ const teamUrl = (slug: string, role: Role, patch: string, region: string) =>
   `https://a1.lolalytics.com/mega/?ep=build-team&v=1&patch=${patch}&c=${slug}&lane=${LANE[role]}&tier=${TIER}&queue=ranked&region=${region}`;
 
 /**
- * Collecte un patch : pour chaque champion, la page build de sa lane principale (lanes, win rate, durées,
- * matchups), celle de ses lanes secondaires jouées à au moins MIN_LANE_SHARE %, et les duos de chaque lane.
+ * Collecte un patch : pour chaque champion, la page build de sa lane principale dans `region` (lanes, win rate, durées),
+ * celle de ses lanes secondaires jouées à au moins MIN_LANE_SHARE %, puis pour chaque lane les matchups et les duos
+ * dans `pairRegion` (une page build et un appel `build-team` de plus).
  */
 export const crawlLolalytics = async (
   champions: readonly ChampionAttributes[],
   fetchPage: PoliteFetch,
   fetchApi: PoliteFetch,
   log: (msg: string) => void = () => {},
-  region: string = DEFAULT_REGION
+  region: string = DEFAULT_REGION,
+  pairRegion: string = DEFAULT_PAIR_REGION
 ): Promise<{ dump: LolalyticsDump; missing: string[] }> => {
   const nameOfKey = new Map(champions.map((c) => [c.key, c.name]));
   // La première page donne le patch courant et les identifiants d'URL de tous les champions.
@@ -147,7 +153,9 @@ export const crawlLolalytics = async (
         lanes[role] = parseBuildPage(await fetchPage(buildUrl(slug, region, role)), nameOfKey).stats;
       }
       for (const [role, stats] of Object.entries(lanes) as [Role, LaneStats][]) {
-        stats.duos = parseTeam(await fetchApi(teamUrl(slug, role, patch, region)), nameOfKey);
+        // Matchups et duos sur un échantillon plus large que les stats générales (toutes régions par défaut).
+        if (pairRegion !== region) stats.matchups = parseBuildPage(await fetchPage(buildUrl(slug, pairRegion, role)), nameOfKey).stats.matchups;
+        stats.duos = parseTeam(await fetchApi(teamUrl(slug, role, patch, pairRegion)), nameOfKey);
       }
       out[c.name] = lanes;
     } catch (e) {
@@ -157,5 +165,5 @@ export const crawlLolalytics = async (
       missing.push(c.name);
     }
   }
-  return { dump: { source: 'lolalytics', patch, tier: TIER, region, fetchedAt: new Date().toISOString(), champions: out }, missing };
+  return { dump: { source: 'lolalytics', patch, tier: TIER, region, pairRegion, fetchedAt: new Date().toISOString(), champions: out }, missing };
 };

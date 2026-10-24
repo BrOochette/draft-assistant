@@ -20,7 +20,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Récupération polie : une requête à la fois, un délai entre chaque, un User-Agent identifiable,
- * des reprises espacées sur 429 et 5xx, et un arrêt net sur 401 ou 403.
+ * des reprises espacées sur coupure réseau, 429 et 5xx, et un arrêt net sur 401 ou 403.
  */
 export const politeFetch = ({ delayMs = 1200, cacheDir, retries = 3, referer, log = () => {} }: Options = {}): PoliteFetch => {
   let last = 0;
@@ -34,7 +34,17 @@ export const politeFetch = ({ delayMs = 1200, cacheDir, retries = 3, referer, lo
       const wait = last + delayMs - Date.now();
       if (wait > 0) await sleep(wait);
       last = Date.now();
-      const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT, ...(referer && { Referer: referer }) } });
+      let res: Response;
+      try {
+        res = await fetch(url, { headers: { 'User-Agent': USER_AGENT, ...(referer && { Referer: referer }) } });
+      } catch (e) {
+        // Coupure réseau (pas de réponse HTTP) : nouvel essai espacé.
+        if (attempt >= retries) throw e;
+        const backoff = delayMs * 5 * 2 ** attempt;
+        log(`Erreur réseau, nouvel essai dans ${Math.round(backoff / 1000)} s : ${url}`);
+        await sleep(backoff);
+        continue;
+      }
       if (res.ok) {
         const text = await res.text();
         if (cacheFile) {

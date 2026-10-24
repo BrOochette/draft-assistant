@@ -13,7 +13,7 @@ npm run dev                   # assemble le snapshot de stats puis lance Vite su
 ## Mettre à jour les stats (à chaque patch)
 
 ```bash
-npm run ingest -- lolalytics  # environ 12 min, région EUW : écrit data/stats/lolalytics-<patch>.json
+npm run ingest -- lolalytics  # environ 18 min (EUW, matchups toutes régions) : écrit data/stats/lolalytics-<patch>.json
 npm run dev                   # le snapshot est réassemblé avec les stats les plus récentes
 ```
 
@@ -33,7 +33,7 @@ Pour corriger un attribut à la main, modifier `data/champions-overrides.json` :
 | `npm run typecheck` | TypeScript strict sur tout le dépôt |
 | `npm run build` | Build de production dans `apps/web/dist` |
 | `npm run ingest -- wiki` | Attributs des champions depuis le wiki LoL : `data/champions.json` |
-| `npm run ingest -- lolalytics [région]` | Stats du patch courant (Emerald+, EUW par défaut ; `all` pour toutes les régions, ou `kr`, `na`…) : `data/stats/lolalytics-<patch>.json` |
+| `npm run ingest -- lolalytics [région] [région des matchups]` | Stats du patch courant, Emerald+ : stats générales en EUW et matchups et duos sur toutes les régions par défaut (`all`, `euw`, `kr`, `na`…). Écrit `data/stats/lolalytics-<patch>.json` |
 | `npm run ingest -- snapshot` | Assemble `apps/web/public/data/snapshot.json` : stats Lolalytics si présentes, sinon données d'exemple |
 | `npm run ingest -- sample` | Force le snapshot sur les données d'exemple de la maquette |
 | `npm run ingest -- portraits` | Télécharge les portraits manquants dans `apps/web/public/champions/` |

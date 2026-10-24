@@ -146,6 +146,8 @@ export const StatsSnapshotSchema = z.object({
   rank: z.string(),
   /** Région des stats (« EUW »…), absente : toutes régions. */
   region: z.string().optional(),
+  /** Région des matchups et des duos si elle diffère (« all » : toutes régions). */
+  pairRegion: z.string().optional(),
   ddragonVersion: z.string(),
   champions: z.array(ChampionSchema),
   candidates: CandidatesSchema,

@@ -2,7 +2,7 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { ChampionAttributesSchema, ChampionOverridesSchema, type ChampionAttributes } from '@draft/schemas';
 import { politeFetch } from './http';
-import { crawlLolalytics, DEFAULT_REGION, LolalyticsDumpSchema } from './lolalytics';
+import { crawlLolalytics, DEFAULT_PAIR_REGION, DEFAULT_REGION, LolalyticsDumpSchema } from './lolalytics';
 import { downloadPortraits, latestDdragonVersion } from './portraits';
 import { buildSampleSnapshot, writeSnapshot } from './sample';
 import { assembleLolalyticsSnapshot } from './snapshot';
@@ -20,7 +20,8 @@ const SNAPSHOT = PUBLIC + 'data/snapshot.json';
 const USAGE = `Usage : npm run ingest -- <commande>
 
   wiki        Amorce les attributs des champions depuis le wiki LoL : data/champions.json
-  lolalytics [région]  Collecte les stats du patch courant sur Lolalytics (région euw par défaut, « all » pour toutes)
+  lolalytics [région] [région des matchups]  Collecte les stats du patch courant sur Lolalytics
+              (stats générales en euw et matchups et duos sur toutes les régions par défaut ; « all » = toutes les régions)
               : data/stats/lolalytics-<patch>.json (environ 12 min)
   snapshot    Assemble le fichier chargé par l'appli (stats Lolalytics si présentes, sinon données d'exemple)
   sample      Force le snapshot sur les données d'exemple de la maquette
@@ -60,17 +61,19 @@ const main = async (cmd: string | undefined): Promise<number> => {
       const cacheDir = STATS + '.cache/' + new Date().toISOString().slice(0, 10);
       const log = (m: string) => console.log(m);
       const region = (process.argv[3] ?? DEFAULT_REGION).toLowerCase();
-      if (!/^[a-z]+$/.test(region)) throw new Error('Région invalide : ' + region);
+      const pairRegion = (process.argv[4] ?? DEFAULT_PAIR_REGION).toLowerCase();
+      for (const r of [region, pairRegion]) if (!/^[a-z]+$/.test(r)) throw new Error('Région invalide : ' + r);
       const { dump, missing } = await crawlLolalytics(
         attributes,
         politeFetch({ delayMs: 1500, cacheDir, log }),
         politeFetch({ delayMs: 1500, cacheDir, log, referer: 'https://lolalytics.com/' }),
         log,
-        region
+        region,
+        pairRegion
       );
       const file = STATS + `lolalytics-${dump.patch}.json`;
       await writeFile(file, JSON.stringify(dump) + '\n', 'utf8');
-      console.log(`Stats écrites (région ${region}) : ${file} (${Object.keys(dump.champions).length} champions).` + (missing.length ? ` Absents de Lolalytics : ${missing.join(', ')}.` : ''));
+      console.log(`Stats écrites (région ${region}, matchups et duos ${pairRegion}) : ${file} (${Object.keys(dump.champions).length} champions).` + (missing.length ? ` Absents de Lolalytics : ${missing.join(', ')}.` : ''));
       return 0;
     }
     case 'snapshot': {
