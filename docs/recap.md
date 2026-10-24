@@ -329,3 +329,12 @@ Principes :
 
 - Formule réelle des suggestions de bans (une formule provisoire est en place, section 5).
 - Coefficients à ajuster sur de vraies drafts : poids des duos dans la synergie, seuils de candidat (5 % de la lane, 300 parties), lissage du win rate (3 000 parties), seuil de rôle principal (20 %).
+
+### Ajustements d'interface (24/10/2026)
+
+- **Décidé** : malus en rouge doux (`--neg`), l'orange reste réservé à l'équipe ennemie. « Compo +N » est affiché en gris, plus discret.
+- **Décidé** : sans ennemi ou sans allié connu, la ligne Ennemis ou Alliés affiche « — » (rien à mesurer), à distinguer d'un effet nul « 0,0 ».
+- **Décidé** : le win rate attendu est coloré par rapport à la moyenne du rôle (moyenne des win rates lissés, pondérée par les parties, champions dont c'est un rôle principal ; environ 51,5 % sur le patch 16.21, pas 50 %) : vert à partir de 1,5 point au-dessus, neutre autour, rouge en dessous. L'infobulle donne la moyenne et l'écart.
+- **Décidé** : saisie rapide des picks, sous la barre des bans. Camp Ennemi ou Allié (gardé d'une saisie à l'autre), raccourci « / », recherche ; Entrée place le champion sur son rôle le plus joué encore libre (part des parties Lolalytics), flèches gauche et droite pour un autre rôle, ou clic sur un rôle. Un champion banni ou déjà pris est grisé avec la raison. Allié : le pick est verrouillé.
+- **Décidé** : les 3 bans les plus utiles, tous rôles confondus, en petits portraits dans l'en-tête de la barre des bans (« Suggérés ») : un clic bannit. Le panneau « Suggestions de bans » garde le détail par rôle.
+- **Écarté** : alléger les cards en retirant les chips WR, « vs … » et « avec … ». Le porteur du projet préfère voir les infos sans interagir.

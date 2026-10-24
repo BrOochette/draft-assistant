@@ -63,14 +63,36 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
   };
 
   const sideFull = picker && (picker === 'ally' ? draft.allyBans : draft.enemyBans).length >= MAX_BANS;
+  // Tous rôles confondus, les 3 plus fortes valeurs (ou menaces avec les données d'exemple).
+  const top = [...bans.suggestions].sort((a, b) => b.threat - a.threat).slice(0, 3);
 
   return (
     <section aria-label={B.title} className="card bans">
-      <div className="row-between">
+      <div className="row-between wrap">
         <h2 className="h2">{B.title}</h2>
-        <button type="button" className="btn btn-sm" aria-expanded={open} onClick={() => setOpen(!open)}>
-          {B.suggestions} <Icon name="chevron" size={14} rotate={open} />
-        </button>
+        <div className="row-gap wrap">
+          {/* Les 3 bans les plus utiles, bannis en un clic ; le panneau garde le détail par rôle. */}
+          {!bans.allyFull && top.length > 0 && (
+            <div className="row-gap ban-top" role="group" aria-label={B.topGroup}>
+              <span className="small muted">{B.topLabel}</span>
+              {top.map((c) => (
+                <button
+                  key={c.champion}
+                  type="button"
+                  className="ban-top-btn"
+                  aria-label={B.banChampion(c.champion)}
+                  title={B.topTip(c.champion, c.role, c.impact ? B.impact(c.impact.value) : c.reason ?? B.threatTip(c.threat))}
+                  onClick={() => dispatch({ type: 'addBan', side: 'ally', champion: c.champion })}
+                >
+                  <Portrait name={c.champion} size={34} />
+                </button>
+              ))}
+            </div>
+          )}
+          <button type="button" className="btn btn-sm" aria-expanded={open} onClick={() => setOpen(!open)}>
+            {B.suggestions} <Icon name="chevron" size={14} rotate={open} />
+          </button>
+        </div>
       </div>
       {/* Alliés à gauche, ennemis collés à droite, en miroir comme les lignes de rôle. */}
       <div className="bans-row">

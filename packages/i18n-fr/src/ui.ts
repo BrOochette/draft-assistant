@@ -151,6 +151,9 @@ export const POPOVER_TEXT = {
 export const BANS_TEXT = {
   title: 'Bans',
   suggestions: 'Suggestions de bans',
+  topLabel: 'Suggérés',
+  topGroup: 'Bans suggérés les plus utiles',
+  topTip: (champion: string, role: Role, detail: string) => champion + ' (' + role + ') : ' + detail,
   allies: 'Alliés',
   enemies: 'Ennemis',
   allyGroup: 'Bans de ton équipe',
