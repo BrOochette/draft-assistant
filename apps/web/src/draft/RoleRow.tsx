@@ -27,18 +27,15 @@ const ReasonChip =({ r }: { r: Parameters<typeof formatReason>[0] }) => (
 const sampleText = (e: Evaluation) => fmtInt(e.games) + ' parties' + (e.lowSample ? ' : peu fiable' : '');
 const sampleTip = (e: Evaluation) => 'Échantillon de ' + fmtInt(e.games) + ' parties : sous 500 parties, le win rate est peu fiable';
 
-const RecCard = ({ e, rank, selected, onSelect, onLock, role }: { e: Evaluation; rank: number; selected: boolean; onSelect: () => void; onLock: () => void; role: string }) => {
+/** Card de suggestion : le cadenas en haut à droite verrouille le champion en un clic. */
+const RecCard = ({ e, rank, onLock, role }: { e: Evaluation; rank: number; onLock: () => void; role: string }) => {
   const stats = scoreStats(e);
   return (
-    <li className={'rec' + (selected ? ' is-selected' : '')}>
-      <button
-        type="button"
-        className="rec-body"
-        aria-pressed={selected}
-        aria-label={e.champion + ', score ' + e.total + ' sur 100. ' + (selected ? 'Sélectionné.' : 'Sélectionner.')}
-        title={e.champion + ' : ' + stats.map((s) => s.label + ' ' + s.v).join(', ')}
-        onClick={onSelect}
-      >
+    <li className="rec" role="group" aria-label={e.champion + ', score ' + e.total + ' sur 100'}>
+      <button type="button" className="rec-lock" aria-label={'Verrouiller ' + e.champion + ' en ' + role} title="Verrouiller" onClick={onLock}>
+        <Icon name="lock" size={16} />
+      </button>
+      <div className="rec-body" title={e.champion + ' : ' + stats.map((s) => s.label + ' ' + s.v).join(', ')}>
         <span className="rec-top">
           <span className="rec-face">
             <Portrait name={e.champion} size={56} />
@@ -57,18 +54,11 @@ const RecCard = ({ e, rank, selected, onSelect, onLock, role }: { e: Evaluation;
             </span>
           ))}
         </span>
-      </button>
-      {/* Hors du bouton de sélection : le détail de la compo ennemie s'ouvre dans sa propre fenêtre.
-          Un clic à côté des chips sélectionne la card, comme le bouton (accessible au clavier). */}
-      <div className="row-gap wrap rec-chips" onClick={(ev) => !(ev.target as Element).closest('button') && onSelect()}>
+      </div>
+      <div className="row-gap wrap rec-chips">
         <WinRateChips e={e} />
         {e.lowSample && <Chip tone="warn" title={sampleTip(e)}><Icon name="warn" />Peu fiable</Chip>}
       </div>
-      {selected && (
-        <button type="button" className="lock-btn" aria-label={'Verrouiller ' + e.champion + ' en ' + role} onClick={onLock}>
-          <Icon name="lock" size={16} />Verrouiller
-        </button>
-      )}
     </li>
   );
 };
@@ -107,8 +97,11 @@ const DetailItem = ({ e, best, selected, onLock, role, secondary = false }: { e:
     </div>
     <div className="row-gap wrap center gap-lg">
       <StatLine e={e} barWidth={64} />
-      <WinRateChips e={e} />
-      <span className={'small ' + (e.lowSample ? 'warn-text' : 'muted')} title={sampleTip(e)}>{sampleText(e)}</span>
+      {/* Chips et nombre de parties dans un même groupe : écarts égaux entre eux. */}
+      <span className="row-gap wrap chip-group">
+        <WinRateChips e={e} />
+        <span className={'small ' + (e.lowSample ? 'warn-text' : 'muted')} title={sampleTip(e)}>{sampleText(e)}</span>
+      </span>
     </div>
   </div>
 );
@@ -299,8 +292,6 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                     e={e}
                     rank={i + 1}
                     role={role}
-                    selected={selected === e.champion}
-                    onSelect={() => dispatch({ type: 'select', role, champion: e.champion })}
                     onLock={() => lock(e.champion)}
                   />
                 ))}

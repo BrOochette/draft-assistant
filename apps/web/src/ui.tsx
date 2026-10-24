@@ -280,12 +280,10 @@ const AllyPopover = ({ e }: { e: Evaluation }) => {
  */
 export const WinRateChips = ({ e }: { e: Evaluation }) => (
   <>
-    <span className="wr-line">
-      <Chip title={'Win rate de partie sur ce rôle, tous adversaires' + (e.laneWinRate == null ? '' : ', puis win rate de lane')}>
-        WR {fmtPct(e.gameWinRate)}{e.laneWinRate != null && <> · lane {fmtPct(e.laneWinRate)}</>}
-      </Chip>
-      {(e.matchup || e.enemyTeam.length > 0) && <MatchupPopover e={e} />}
-    </span>
-    {e.allyTeam.length > 0 && <span className="wr-line"><AllyPopover e={e} /></span>}
+    <Chip title={'Win rate de partie sur ce rôle, tous adversaires' + (e.laneWinRate == null ? '' : ', puis win rate de lane')}>
+      WR {fmtPct(e.gameWinRate)}{e.laneWinRate != null && <> · lane {fmtPct(e.laneWinRate)}</>}
+    </Chip>
+    {(e.matchup || e.enemyTeam.length > 0) && <MatchupPopover e={e} />}
+    {e.allyTeam.length > 0 && <AllyPopover e={e} />}
   </>
 );

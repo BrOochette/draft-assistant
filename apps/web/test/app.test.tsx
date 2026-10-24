@@ -8,7 +8,7 @@ import { sampleAppData } from './fixtures';
 
 const jungleRecs = () =>
   within(screen.getByRole('region', { name: 'Rôle Jungle' }))
-    .getAllByRole('button', { pressed: false })
+    .queryAllByRole('group')
     .map((b) => b.getAttribute('aria-label') ?? '')
     .filter((l) => l.includes('score'));
 
@@ -24,7 +24,6 @@ describe('écran Draft', () => {
     expect(compo('ally')).toEqual({ score: '29', verdict: 'À corriger' });
     expect(compo('enemy')).toEqual({ score: '69', verdict: 'Correcte' });
 
-    await user.click(screen.getByRole('button', { name: 'Sejuani, score 74 sur 100. Sélectionner.' }));
     await user.click(screen.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' }));
     expect(compo('ally')).toEqual({ score: '68', verdict: 'Correcte' });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -106,7 +105,7 @@ describe('écran Joueurs', () => {
     await user.click(screen.getByRole('button', { name: 'Meilleure synergie' }));
     expect(screen.getByRole('button', { name: 'Meilleure synergie' })).toHaveAttribute('aria-pressed', 'true');
     // Synergie 82 et maîtrise 80 : 0,75 × 82 + 0,25 × 80 = 81,5.
-    expect(screen.getByRole('button', { name: /^Orianna, score 82 sur 100/ })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /^Orianna, score 82 sur 100/ })).toBeInTheDocument();
     const saved = () => JSON.parse(localStorage.getItem('draft-assistant:suggestion-modes')!);
     expect(saved()).toEqual({ Top: 'synergy', Jungle: 'synergy', Mid: 'synergy', ADC: 'synergy', Support: 'synergy' });
     // Le sélecteur global a réglé chaque rôle.
@@ -117,7 +116,7 @@ describe('écran Joueurs', () => {
     const user = userEvent.setup();
     render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
     await user.click(screen.getByRole('button', { name: 'Synergie en Mid' }));
-    expect(screen.getByRole('button', { name: /^Orianna, score 82 sur 100/ })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /^Orianna, score 82 sur 100/ })).toBeInTheDocument();
     // Les autres rôles restent en mix : le sélecteur global n'est plus allumé.
     expect(screen.getByRole('button', { name: 'Mix en Jungle' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Mix' })).toHaveAttribute('aria-pressed', 'false');
@@ -134,7 +133,7 @@ describe('écran Joueurs', () => {
     expect(jungle.getByRole('button', { name: 'Vue top 3 en Jungle' })).toHaveAttribute('aria-pressed', 'true');
     await user.click(jungle.getByRole('button', { name: 'Vue liste en Jungle' }));
     expect(jungle.getByRole('button', { name: 'Vue liste en Jungle' })).toHaveAttribute('aria-pressed', 'true');
-    expect(jungle.queryAllByRole('button', { name: /score .* Sélectionner/ })).toHaveLength(0);
+    expect(jungle.queryAllByRole('group', { name: /score/ })).toHaveLength(0);
     expect(jungle.getByText('Pool', { selector: '.detail-head' })).toBeInTheDocument();
     expect(jungle.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' })).toBeInTheDocument();
 
