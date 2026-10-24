@@ -92,33 +92,46 @@ interface MatchupRow {
   weight: number;
 }
 
+/** Durée du loader affiché avant le contenu de la fenêtre flottante. */
+export const POPOVER_LOADER_MS = 300;
+
 /**
  * Chip « vs adversaire » : survol, focus ou clic ouvre une fenêtre flottante avec l'effet de chaque ennemi
- * connu sur le counter, vis-à-vis en tête. Sans matchup de lane retenu, le chip résume la compo ennemie.
+ * connu sur le counter, vis-à-vis en tête, après un loader de POPOVER_LOADER_MS. Sans matchup de lane retenu,
+ * le chip résume la compo ennemie.
  */
 const MatchupPopover = ({ e }: { e: Evaluation }) => {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const anchor = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const closeTimer = useRef<number | undefined>(undefined);
+  const loadTimer = useRef<number | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
   const rows: MatchupRow[] = [
     ...(e.matchup ? [{ ...e.matchup, label: 'Vis-à-vis', weight: 1 }] : []),
     ...e.enemyTeam.map((m) => ({ ...m, label: m.role }))
   ];
   const total = rows.reduce((s, r) => s + r.delta * r.weight, 0);
+  const close = () => {
+    window.clearTimeout(loadTimer.current);
+    setLoading(false);
+    setPos(null);
+  };
   const open = () => {
     window.clearTimeout(closeTimer.current);
+    if (pos) return;
     const r = anchor.current?.getBoundingClientRect();
     if (!r) return;
     const width = 340;
     setPos({ top: r.bottom + 6, left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)) });
+    setLoading(true);
+    loadTimer.current = window.setTimeout(() => setLoading(false), POPOVER_LOADER_MS);
   };
   const closeSoon = () => {
-    closeTimer.current = window.setTimeout(() => setPos(null), 120);
+    closeTimer.current = window.setTimeout(close, 120);
   };
   useEffect(() => {
     if (!pos) return;
-    const close = () => setPos(null);
     const onKey = (ev: KeyboardEvent) => ev.key === 'Escape' && close();
     window.addEventListener('scroll', close, true);
     window.addEventListener('resize', close);
@@ -129,7 +142,13 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
       window.removeEventListener('keydown', onKey);
     };
   }, [pos]);
-  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(closeTimer.current);
+      window.clearTimeout(loadTimer.current);
+    },
+    []
+  );
 
   return (
     <>
@@ -143,11 +162,26 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
         onMouseLeave={closeSoon}
         onFocus={open}
         onBlur={closeSoon}
-        onClick={() => (pos ? setPos(null) : open())}
+        onClick={() => (pos ? close() : open())}
       >
         {e.matchup ? `vs ${e.matchup.opponent} ${fmtPct(e.matchup.winRate)}` : `vs compo ennemie ${fmtSigned(total)} pts`}
       </button>
-      {pos &&
+      {pos && loading &&
+        createPortal(
+          <div
+            id={panelId}
+            role="status"
+            aria-label="Chargement"
+            className="popover popover-loading"
+            style={{ top: pos.top, left: pos.left }}
+            onMouseEnter={open}
+            onMouseLeave={closeSoon}
+          >
+            <span className="spinner" aria-hidden="true" />
+          </div>,
+          document.body
+        )}
+      {pos && !loading &&
         createPortal(
           <div
             id={panelId}
