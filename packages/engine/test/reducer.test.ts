@@ -19,6 +19,18 @@ describe('draftReducer', () => {
     expect(computeDraft(u.draft, samplePools(), sampleData()).composition.ally.total).toBe(29);
   });
 
+  it('inverse les picks allié et ennemi d’un rôle, annulable', () => {
+    // État d'exemple : Aurora alliée et Ornn ennemi en Top.
+    const s = run(start(), { type: 'swapRole', role: 'Top' });
+    expect([s.draft.ally.Top, s.draft.enemy.Top]).toEqual(['Ornn', 'Aurora']);
+    expect(s.toast).toEqual({ code: 'SWAPPED', role: 'Top' });
+    const back = run(s, { type: 'undo' });
+    expect([back.draft.ally.Top, back.draft.enemy.Top]).toEqual(['Aurora', 'Ornn']);
+    // Rien à échanger : état inchangé.
+    const empty = run(start(), { type: 'swapRole', role: 'ADC' });
+    expect(empty).toEqual(start());
+  });
+
   it('retirer un pick rouvre le rôle', () => {
     const s = run(start(), { type: 'unlock', role: 'Top' });
     expect(s.draft.ally.Top).toBeNull();

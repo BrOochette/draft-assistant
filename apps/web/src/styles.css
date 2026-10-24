@@ -359,3 +359,5 @@ button:disabled { cursor: not-allowed; }
   .compo-mini-score { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; }
   .app { padding-bottom: 72px; }
 }
+.swap-btn { padding: 0; width: 32px; height: 32px; margin-top: 14px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border); background: var(--raise); color: var(--muted); cursor: pointer; }
+.swap-btn:hover, .swap-btn:focus-visible { color: var(--accent); border-color: var(--accent); }

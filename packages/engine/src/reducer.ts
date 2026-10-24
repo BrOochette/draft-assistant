@@ -12,6 +12,7 @@ export type ActionMessage =
   | { code: 'ENEMY_CLEARED'; role: Role }
   | { code: 'BANNED'; champion: string }
   | { code: 'BAN_REMOVED'; champion: string }
+  | { code: 'SWAPPED'; role: Role }
   | { code: 'RESET' };
 
 interface Snapshot {
@@ -31,6 +32,8 @@ export type DraftAction =
   | { type: 'unlock'; role: Role }
   | { type: 'setEnemy'; role: Role; champion: string }
   | { type: 'clearEnemy'; role: Role }
+  /** Échange le pick allié et le pick ennemi d'un rôle (saisie du mauvais côté, ou vue de l'autre équipe). */
+  | { type: 'swapRole'; role: Role }
   | { type: 'addBan'; side: Side; champion: string }
   | { type: 'removeBan'; side: Side; champion: string }
   | { type: 'assignPlayer'; role: Role; player: string | null }
@@ -74,6 +77,13 @@ export const draftReducer = (s: DraftSession, a: DraftAction): DraftSession => {
     case 'clearEnemy': {
       if (!d.enemy[a.role]) return s;
       return commit(s, { code: 'ENEMY_CLEARED', role: a.role }, { ...d, enemy: { ...d.enemy, [a.role]: null } });
+    }
+    case 'swapRole': {
+      const ally = d.ally[a.role];
+      const enemy = d.enemy[a.role];
+      if (!ally && !enemy) return s;
+      const { [a.role]: _, ...selected } = s.selected;
+      return commit(s, { code: 'SWAPPED', role: a.role }, { ...d, ally: { ...d.ally, [a.role]: enemy }, enemy: { ...d.enemy, [a.role]: ally } }, selected);
     }
     case 'addBan': {
       const key = banKey(a.side);

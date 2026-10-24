@@ -54,6 +54,8 @@ export const DRAFT_TEXT = {
   removeAlly: (champion: string, role: Role) => 'Retirer ' + champion + ' et rouvrir les suggestions en ' + role,
   removeEnemy: (champion: string, role: Role) => 'Retirer le pick ennemi ' + champion + ' en ' + role,
   removeTip: (champion: string) => 'Retirer ' + champion,
+  swap: (role: Role) => 'Inverser les picks allié et ennemi en ' + role,
+  swapTip: 'Inverser les picks',
   player: 'Joueur',
   noPlayer: 'Aucun joueur',
   noPoolWarn: (hasPlayer: boolean) => (hasPlayer ? 'Sans pool' : 'Sans joueur') + ' : tous les champions',

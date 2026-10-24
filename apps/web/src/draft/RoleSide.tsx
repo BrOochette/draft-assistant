@@ -43,7 +43,14 @@ export const RoleSide = ({ row, players, picker, onOpenPicker, dispatch }: Props
           </div>
           <span className="small strong center-text">{ally ?? D.toChoose}</span>
         </div>
-        <span className="vs">{D.vs}</span>
+        {/* « VS » devient un bouton d'échange dès qu'un des deux picks est saisi. */}
+        {ally || enemy ? (
+          <button type="button" className="vs swap-btn" aria-label={D.swap(role)} title={D.swapTip} onClick={() => dispatch({ type: 'swapRole', role })}>
+            <Icon name="swap" size={16} />
+          </button>
+        ) : (
+          <span className="vs">{D.vs}</span>
+        )}
         <div className="face-col">
           <div className="face-wrap">
             <button

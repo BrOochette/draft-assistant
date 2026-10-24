@@ -142,6 +142,7 @@ export const actionMessageText = (m: ActionMessage): string => {
     case 'ENEMY_CLEARED': return 'Pick ennemi effacé en ' + m.role;
     case 'BANNED': return m.champion + ' banni';
     case 'BAN_REMOVED': return 'Ban de ' + m.champion + ' retiré';
+    case 'SWAPPED': return 'Picks inversés en ' + m.role;
     case 'RESET': return 'Draft réinitialisée';
   }
 };
