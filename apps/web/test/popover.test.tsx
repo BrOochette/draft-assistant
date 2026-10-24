@@ -15,15 +15,27 @@ const e = {
 afterEach(() => vi.useRealTimers());
 
 describe('fenêtre flottante du matchup', () => {
-  it('affiche un loader de 0,3 s avant le détail', () => {
+  it('affiche un seul chip de win rate', () => {
+    render(
+      <DataContext.Provider value={sampleAppData()}>
+        <WinRateChips e={e} />
+      </DataContext.Provider>
+    );
+    expect(screen.getByText('Win rate 51,0 %')).toBeInTheDocument();
+    expect(screen.queryByText(/Lane/)).not.toBeInTheDocument();
+  });
+
+  it('affiche un loader de 0,3 s sous la souris avant le détail', () => {
     vi.useFakeTimers();
     render(
       <DataContext.Provider value={sampleAppData()}>
         <WinRateChips e={e} />
       </DataContext.Provider>
     );
-    fireEvent.mouseEnter(screen.getByRole('button', { name: 'vs Jinx 54,9 %' }));
-    expect(screen.getByRole('status', { name: 'Chargement' })).toBeInTheDocument();
+    fireEvent.mouseEnter(screen.getByRole('button', { name: 'vs Jinx 54,9 %' }), { clientX: 200, clientY: 100 });
+    const loader = screen.getByRole('status', { name: 'Chargement' });
+    expect(loader.style.left).toBe('212px');
+    expect(loader.style.top).toBe('112px');
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
 
     act(() => vi.advanceTimersByTime(POPOVER_LOADER_MS - 1));

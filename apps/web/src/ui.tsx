@@ -39,7 +39,6 @@ const PATHS = {
   warn: 'M8 2.5l6 10.5H2zM8 7v3M8 11.5v.01',
   chevron: 'M3 6l5 5 5-5',
   close: 'M4 4l8 8M12 4L4 12',
-  lane: 'M13 3L6 10M4.5 8.5l3 3M6 10L3 13M3 3l7 7M8.5 11.5l3-3M10 10l3 3',
   flag: 'M4 14V2M4 3h8l-2.5 3L12 9H4'
 } as const;
 
@@ -107,6 +106,8 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
   const closeTimer = useRef<number | undefined>(undefined);
   const loadTimer = useRef<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  /** Position du loader : sous le curseur à la souris, sur le chip au clavier. */
+  const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const rows: MatchupRow[] = [
     ...(e.matchup ? [{ ...e.matchup, label: 'Vis-à-vis', weight: 1 }] : []),
     ...e.enemyTeam.map((m) => ({ ...m, label: m.role }))
@@ -117,13 +118,14 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
     setLoading(false);
     setPos(null);
   };
-  const open = () => {
+  const open = (at?: { x: number; y: number }) => {
     window.clearTimeout(closeTimer.current);
     if (pos) return;
     const r = anchor.current?.getBoundingClientRect();
     if (!r) return;
     const width = 340;
     setPos({ top: r.bottom + 6, left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)) });
+    setCursor(at ?? { x: r.left + r.width / 2, y: r.top + r.height / 2 });
     setLoading(true);
     loadTimer.current = window.setTimeout(() => setLoading(false), POPOVER_LOADER_MS);
   };
@@ -158,25 +160,18 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
         className="chip chip-info chip-btn"
         aria-expanded={!!pos}
         aria-controls={pos ? panelId : undefined}
-        onMouseEnter={open}
+        onMouseEnter={(ev) => open({ x: ev.clientX, y: ev.clientY })}
+        onMouseMove={(ev) => loading && setCursor({ x: ev.clientX, y: ev.clientY })}
         onMouseLeave={closeSoon}
-        onFocus={open}
+        onFocus={() => open()}
         onBlur={closeSoon}
-        onClick={() => (pos ? close() : open())}
+        onClick={(ev) => (pos ? close() : open(ev.detail > 0 ? { x: ev.clientX, y: ev.clientY } : undefined))}
       >
         {e.matchup ? `vs ${e.matchup.opponent} ${fmtPct(e.matchup.winRate)}` : `vs compo ennemie ${fmtSigned(total)} pts`}
       </button>
-      {pos && loading &&
+      {pos && loading && cursor &&
         createPortal(
-          <div
-            id={panelId}
-            role="status"
-            aria-label="Chargement"
-            className="popover popover-loading"
-            style={{ top: pos.top, left: pos.left }}
-            onMouseEnter={open}
-            onMouseLeave={closeSoon}
-          >
+          <div id={panelId} role="status" aria-label="Chargement" className="cursor-loader" style={{ top: cursor.y + 12, left: cursor.x + 12 }}>
             <span className="spinner" aria-hidden="true" />
           </div>,
           document.body
@@ -189,7 +184,7 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
             aria-label={'Effet des ennemis sur le counter de ' + e.champion}
             className="popover"
             style={{ top: pos.top, left: pos.left }}
-            onMouseEnter={open}
+            onMouseEnter={() => open()}
             onMouseLeave={closeSoon}
           >
             <div className="popover-head">
@@ -224,13 +219,12 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
   );
 };
 
-/** Chips Lane et Partie, plus le matchup contre l'adversaire de lane quand il est connu. */
+/** Chip du win rate de partie (et de lane s'il est connu), plus le matchup contre l'adversaire de lane. */
 export const WinRateChips = ({ e }: { e: Evaluation }) => (
   <>
-    {e.laneWinRate == null
-      ? <Chip title="Win rate de lane indisponible avec la source actuelle"><Icon name="lane" />Lane —</Chip>
-      : <Chip title="Win rate de lane"><Icon name="lane" />Lane {fmtPct(e.laneWinRate)}</Chip>}
-    <Chip title="Win rate de partie sur la lane, tous adversaires"><Icon name="flag" />Partie {fmtPct(e.gameWinRate)}</Chip>
+    <Chip title={'Win rate de partie sur ce rôle, tous adversaires' + (e.laneWinRate == null ? '' : ', puis win rate de lane')}>
+      <Icon name="flag" />Win rate {fmtPct(e.gameWinRate)}{e.laneWinRate != null && <> · lane {fmtPct(e.laneWinRate)}</>}
+    </Chip>
     {(e.matchup || e.enemyTeam.length > 0) && <MatchupPopover e={e} />}
   </>
 );

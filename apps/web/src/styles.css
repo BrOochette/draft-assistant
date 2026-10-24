@@ -243,7 +243,7 @@ button:disabled { cursor: not-allowed; }
 .popover-table tr:last-child td { border-bottom: 0; }
 .popover-table .portrait { border-radius: 6px; }
 .popover-foot { margin: 0; font-size: 13px; }
-.popover-loading { width: auto; padding: 10px; align-items: center; }
+.cursor-loader { position: fixed; z-index: 30; pointer-events: none; padding: 6px; border-radius: 50%; background: var(--raise); border: 1px solid var(--border); box-shadow: 0 6px 16px rgba(0, 0, 0, .45); display: flex; }
 .spinner { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 1.5s; } }
