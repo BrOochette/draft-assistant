@@ -45,6 +45,16 @@ export interface MatchupStat {
   delta: number;
 }
 
+/** Ennemi connu dont le matchup n'a pas assez de parties pour compter dans le counter. */
+export interface EnemyNoData {
+  opponent: string;
+  role: Role;
+  /** Adversaire de lane (vis-à-vis), sinon ennemi d'une autre lane. */
+  lane: boolean;
+  /** Parties mesurées sous le seuil, null si la paire n'est pas dans les données. */
+  games: number | null;
+}
+
 /** Duo mesuré avec un allié verrouillé. */
 export interface AllyDuo {
   ally: string;
@@ -118,6 +128,8 @@ export interface Evaluation {
   enemyTeam: EnemyTeamMatchup[];
   /** Effet total de ces matchups sur le win rate du counter, en points (pondéré). */
   enemyTeamDelta: number;
+  /** Ennemis connus (vis-à-vis compris) ignorés faute de parties. */
+  enemyNoData: EnemyNoData[];
   /** Duos mesurés avec les alliés verrouillés. */
   allyTeam: AllyDuo[];
   /** Points de synergie ajoutés par ces duos (avant le plafond de 0 à 100). */

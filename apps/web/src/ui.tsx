@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { DUO_WEIGHT, type Evaluation } from '@draft/engine';
+import { DUO_WEIGHT, MATCHUP_MIN_GAMES, type Evaluation } from '@draft/engine';
 import { fmtDelta, fmtInt, fmtPct, fmtSigned, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
-import type { Scaling } from '@draft/schemas';
+import { ROLES, type Role, type Scaling } from '@draft/schemas';
 import type { AppData } from './data';
 
 export const DataContext = createContext<AppData | null>(null);
@@ -194,6 +194,8 @@ const FloatingChip = ({ name, value, label, panelLabel, children }: { name: stri
 };
 
 const tone = (v: number) => (v >= 0 ? 'pos-text' : 'neg-text');
+/** Ordre des lignes : vis-à-vis, puis Top à Support. */
+const rank = (label: string) => (label === 'Vis-à-vis' ? -1 : ROLES.indexOf(label as Role));
 
 /** Portrait, nom et sous-titre d'un champion dans une ligne de fenêtre flottante. */
 const PopoverChamp = ({ name, sub }: { name: string; sub: string }) => (
@@ -209,6 +211,11 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
     ...(e.matchup ? [{ ...e.matchup, label: 'Vis-à-vis', weight: 1 }] : []),
     ...e.enemyTeam.map((m) => ({ ...m, label: m.role }))
   ];
+  // Ennemis connus sans assez de parties : affichés avec un effet nul, vis-à-vis en tête, puis ordre des rôles.
+  const noData = e.enemyNoData.map((m) => ({ ...m, label: m.lane ? 'Vis-à-vis' : m.role }));
+  const ordered = [...rows.map((r) => ({ kind: 'data' as const, r })), ...noData.map((r) => ({ kind: 'none' as const, r }))].sort(
+    (a, b) => rank(a.r.label) - rank(b.r.label)
+  );
   const total = rows.reduce((s, r) => s + r.delta * r.weight, 0);
   const [name, value] = e.matchup ? ['vs ' + e.matchup.opponent, fmtPct(e.matchup.winRate)] : ['vs compo', fmtSigned(total)];
   return (
@@ -222,15 +229,26 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
           <tr><th>Ennemi</th><th>Win rate</th><th>Écart</th><th>Poids</th><th>Effet</th></tr>
         </thead>
         <tbody>
-          {rows.map((m) => (
-            <tr key={m.label}>
-              <td><PopoverChamp name={m.opponent} sub={m.label} /></td>
-              <td>{fmtPct(m.winRate)}<br /><span className="muted">{fmtInt(m.games)} parties</span></td>
-              <td className={tone(m.delta)}>{fmtSigned(m.delta)}</td>
-              <td>{weightLabel(m.weight)}</td>
-              <td className={'strong ' + tone(m.delta)}>{fmtSigned(m.delta * m.weight)}</td>
-            </tr>
-          ))}
+          {ordered.map(({ kind, r }) =>
+            kind === 'data' ? (
+              <tr key={r.label}>
+                <td><PopoverChamp name={r.opponent} sub={r.label} /></td>
+                <td>{fmtPct(r.winRate)}<br /><span className="muted">{fmtInt(r.games)} parties</span></td>
+                <td className={tone(r.delta)}>{fmtSigned(r.delta)}</td>
+                <td>{weightLabel(r.weight)}</td>
+                <td className={'strong ' + tone(r.delta)}>{fmtSigned(r.delta * r.weight)}</td>
+              </tr>
+            ) : (
+              <tr key={r.label} className="no-data">
+                <td><PopoverChamp name={r.opponent} sub={r.label} /></td>
+                <td colSpan={3} className="muted">
+                  Pas assez de parties<br />
+                  <span className="small">{r.games == null ? 'Paire absente des données' : fmtInt(r.games) + ' parties sur ' + fmtInt(MATCHUP_MIN_GAMES) + ' requises'}</span>
+                </td>
+                <td className="strong muted">{fmtSigned(0)}</td>
+              </tr>
+            )
+          )}
         </tbody>
       </table>
       <p className="popover-foot muted">
@@ -283,7 +301,7 @@ export const WinRateChips = ({ e }: { e: Evaluation }) => (
     <Chip title={'Win rate de partie sur ce rôle, tous adversaires' + (e.laneWinRate == null ? '' : ', puis win rate de lane')}>
       WR {fmtPct(e.gameWinRate)}{e.laneWinRate != null && <> · lane {fmtPct(e.laneWinRate)}</>}
     </Chip>
-    {(e.matchup || e.enemyTeam.length > 0) && <MatchupPopover e={e} />}
+    {(e.matchup || e.enemyTeam.length > 0 || e.enemyNoData.length > 0) && <MatchupPopover e={e} />}
     {e.allyTeam.length > 0 && <AllyPopover e={e} />}
   </>
 );

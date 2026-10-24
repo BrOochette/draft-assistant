@@ -60,6 +60,7 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(e.laneWinRate).toBeNull();
     expect(e.matchup).toBeNull();
     expect(e.counter).toBe(wrScore(52));
+    expect(e.enemyNoData).toEqual([]);
   });
 
   it("avec l'adversaire de lane connu, le counter utilise le matchup lissé", () => {
@@ -97,6 +98,7 @@ describe('stats réelles (format Lolalytics)', () => {
     const e = computeDraft({ ...base, enemy: { ...base.enemy, Mid: 'Zed' } }, {}, d).roles[2]!.recommendations[0]!;
     expect(e.matchup).toBeNull();
     expect(e.counter).toBe(wrScore(52));
+    expect(e.enemyNoData).toEqual([{ opponent: 'Zed', role: 'Mid', lane: true, games: 219 }]);
   });
 
   it("compte les ennemis des autres lanes : un quart, trois quarts pour le duo bot", () => {
@@ -119,6 +121,9 @@ describe('stats réelles (format Lolalytics)', () => {
     // Un matchup de moins de 500 parties (Sejuani, 100) n'est pas compté.
     const vsSej = computeDraft({ ...base, enemy: { ...base.enemy, Jungle: 'Sejuani' } }, {}, d).roles[3]!.recommendations[0]!;
     expect(vsSej.enemyTeam).toEqual([]);
+    // Signalé dans la fenêtre flottante, avec un effet nul.
+    expect(vsSej.enemyNoData).toEqual([{ opponent: 'Sejuani', role: 'Jungle', lane: false, games: 100 }]);
+    expect(vsSej.counter).toBe(wrScore(52));
   });
 
   it("ne propose plus de bans sur un rôle où l'ennemi a déjà pick", () => {

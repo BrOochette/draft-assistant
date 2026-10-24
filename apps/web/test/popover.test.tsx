@@ -10,6 +10,7 @@ const e = {
   gameWinRate: 51,
   matchup: { opponent: 'Jinx', winRate: 54.9, games: 3115, delta: 2.2 },
   allyTeam: [],
+  enemyNoData: [],
   duoBonus: 0,
   enemyTeam: [{ opponent: 'Leona', role: 'Support', winRate: 47.5, games: 1419, delta: -2.7, weight: 0.75 }]
 } as unknown as Evaluation;
@@ -80,5 +81,24 @@ describe('fenêtre flottante des alliés', () => {
     expect(panel).toHaveTextContent('1 800 parties');
     expect(panel).toHaveTextContent('×4');
     expect(panel).toHaveTextContent('+9,0');
+  });
+});
+
+describe('ennemis sans assez de parties', () => {
+  it('les liste avec un effet nul', () => {
+    vi.useFakeTimers();
+    const withNoData = { ...e, enemyNoData: [{ opponent: 'Amumu', role: 'Jungle', lane: false, games: null }] } as unknown as Evaluation;
+    render(
+      <DataContext.Provider value={sampleAppData()}>
+        <WinRateChips e={withNoData} />
+      </DataContext.Provider>
+    );
+    fireEvent.mouseEnter(screen.getByRole('button', { name: 'vs Jinx 54,9 %' }), { clientX: 10, clientY: 10 });
+    act(() => vi.advanceTimersByTime(POPOVER_LOADER_MS));
+    const rows = screen.getAllByRole('row').map((r) => r.textContent);
+    // Vis-à-vis, puis Jungle (Amumu), puis Support (Leona).
+    expect(rows.slice(1).map((t) => t!.match(/Jinx|Amumu|Leona/)![0])).toEqual(['Jinx', 'Amumu', 'Leona']);
+    expect(screen.getByText('Pas assez de parties')).toBeInTheDocument();
+    expect(screen.getByText('Paire absente des données')).toBeInTheDocument();
   });
 });

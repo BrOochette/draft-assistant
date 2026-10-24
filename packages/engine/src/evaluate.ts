@@ -1,7 +1,7 @@
 import type { Role, Trait } from '@draft/schemas';
 import { compScore } from './composition';
 import { avgScal, clamp, wrScore } from './math';
-import type { AllyDuo, CompMember, EnemyTeamMatchup, Entry, Evaluation, Phase, Reason, ScoringOptions } from './types';
+import type { AllyDuo, CompMember, EnemyNoData, EnemyTeamMatchup, Entry, Evaluation, Phase, Reason, ScoringOptions } from './types';
 
 export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
 export const LOW_SAMPLE_GAMES = 500;
@@ -132,9 +132,16 @@ export const evaluate = (
   const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1], delta: laneWr - baseWr } : null;
   // Ennemis des autres lanes : chacun ajoute son écart au win rate général, avec moins de poids que le vis-à-vis.
   const enemyTeam: EnemyTeamMatchup[] = [];
+  const enemyNoData: EnemyNoData[] = [];
+  // Seulement avec des matchups mesurés (Lolalytics) : les données d'exemple n'en ont pas du tout.
+  if (laneOpponent && !m && c.matchups) enemyNoData.push({ opponent: laneOpponent, role: c.role, lane: true, games: found?.[1] ?? null });
   for (const [role, name] of Object.entries(foes) as [Role, string | null][]) {
-    const x = name && role !== c.role ? c.crossMatchups?.[role]?.[name] : undefined;
-    if (!name || !x || x[1] < MATCHUP_MIN_GAMES) continue;
+    if (!name || role === c.role || !c.crossMatchups) continue;
+    const x = c.crossMatchups?.[role]?.[name];
+    if (!x || x[1] < MATCHUP_MIN_GAMES) {
+      enemyNoData.push({ opponent: name, role, lane: false, games: x?.[1] ?? null });
+      continue;
+    }
     const delta = smooth(x[0], x[1], baseWr, MATCHUP_PRIOR_GAMES) - baseWr;
     enemyTeam.push({ opponent: name, role, winRate: x[0], games: x[1], weight: otherEnemyWeight(c.role, role), delta });
   }
@@ -161,6 +168,7 @@ export const evaluate = (
     matchup,
     enemyTeam,
     enemyTeamDelta,
+    enemyNoData,
     allyTeam,
     duoBonus,
     laneShare: c.laneShare,
