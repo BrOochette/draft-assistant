@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { masteryLevel } from '@draft/i18n-fr';
 import { ROLES, type Champion, type PoolEntry, type Pools, type Role } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, useData } from '../ui';
@@ -23,6 +23,9 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
   const [sel, setSel] = useState(names[0] ?? '');
   const [role, setRole] = useState<Role>('Top');
   const [newChamp, setNewChamp] = useState('');
+  /** Liste de champions ouverte, et option active au clavier. */
+  const [listOpen, setListOpen] = useState(false);
+  const [active, setActive] = useState(0);
   const [newPlayer, setNewPlayer] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const player = pools[sel] ? sel : names[0] ?? '';
@@ -47,12 +50,18 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
     [engine, role]
   );
   const addable = roleChampions.filter((n) => !pool.some((p) => p.champion === n));
-  const match = addable.find((n) => n.toLowerCase() === newChamp.trim().toLowerCase());
+  const q = newChamp.trim().toLowerCase();
+  const options = addable.filter((n) => n.toLowerCase().includes(q)).sort((a, b) => a.localeCompare(b, 'fr'));
 
-  const addChampion = () => {
-    if (!match) return;
-    setPool((list) => [...list, { champion: match, mastery: 5 }]);
+  // Au clavier, l'option active reste visible dans la liste.
+  useEffect(() => {
+    if (listOpen) document.getElementById('champ-option-' + active)?.scrollIntoView?.({ block: 'nearest' });
+  }, [active, listOpen]);
+
+  const addChampion = (name: string) => {
+    setPool((list) => [...list, { champion: name, mastery: 5 }]);
     setNewChamp('');
+    setActive(0);
   };
 
   const addPlayer = () => {
@@ -172,11 +181,64 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
         <aside className="col gap-16 players-right">
           <section className="card col gap-10">
             <h2 className="h3">Ajouter un champion</h2>
-            <label htmlFor="champ-name" className="small muted">Champion pour {player}, rôle {role}</label>
-            <input id="champ-name" className="input" list="champ-options" placeholder="Rechercher un champion" value={newChamp}
-              onChange={(e) => setNewChamp(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addChampion()} />
-            <datalist id="champ-options">{addable.map((n) => <option key={n} value={n} />)}</datalist>
-            <button type="button" className="btn btn-accent" disabled={!match} onClick={addChampion}>Ajouter au pool avec la note 5</button>
+            <label htmlFor="champ-name" className="small muted">Champion pour {player}, rôle {role}, ajouté avec la note 5</label>
+            <div className="combo">
+              <input
+                id="champ-name"
+                className="input"
+                role="combobox"
+                autoComplete="off"
+                aria-expanded={listOpen}
+                aria-controls="champ-options"
+                aria-activedescendant={listOpen && options[active] ? 'champ-option-' + active : undefined}
+                placeholder="Rechercher un champion"
+                value={newChamp}
+                onChange={(e) => {
+                  setNewChamp(e.target.value);
+                  setActive(0);
+                  setListOpen(true);
+                }}
+                onFocus={() => setListOpen(true)}
+                onBlur={() => setListOpen(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setListOpen(true);
+                    setActive(Math.min(active + 1, options.length - 1));
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setActive(Math.max(active - 1, 0));
+                  } else if (e.key === 'Enter' && listOpen && options[active]) {
+                    addChampion(options[active]);
+                  } else if (e.key === 'Escape') {
+                    setListOpen(false);
+                  }
+                }}
+              />
+              {listOpen && (
+                <ul id="champ-options" role="listbox" aria-label={'Champions ' + role} className="combo-list">
+                  {options.length === 0 && <li className="combo-empty muted">Aucun champion trouvé.</li>}
+                  {options.map((n, i) => (
+                    <li
+                      key={n}
+                      id={'champ-option-' + i}
+                      role="option"
+                      aria-selected={i === active}
+                      className={'combo-option' + (i === active ? ' is-active' : '')}
+                      // mousedown : avant le blur du champ, qui fermerait la liste.
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        addChampion(n);
+                      }}
+                      onMouseEnter={() => setActive(i)}
+                    >
+                      <Portrait name={n} size={28} />
+                      <span>{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </section>
 
           <section className="card col gap-10">

@@ -190,4 +190,21 @@ describe('écran Joueurs', () => {
       expect(lux?.mastery).toBe(8);
     });
   });
+
+  it('ajoute un champion au pool depuis la liste de recherche', async () => {
+    const user = userEvent.setup();
+    location.hash = '#/joueurs';
+    render(<App initialData={sampleAppData()} />);
+    await user.click(await screen.findByRole('button', { name: /^Noa/ }));
+    await user.click(screen.getByRole('button', { name: /^Mid/ }));
+    const input = screen.getByRole('combobox', { name: /Champion pour Noa, rôle Mid/ });
+    await user.click(input);
+    const options = within(screen.getByRole('listbox')).getAllByRole('option');
+    // Lux est déjà dans le pool : elle n'est pas proposée.
+    expect(options.map((o) => o.textContent)).not.toContain('Lux');
+    const first = options[0]!.textContent!;
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('button', { name: 'Retirer ' + first + ' du pool' })).toBeInTheDocument();
+    expect(input).toHaveValue('');
+  });
 });

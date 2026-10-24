@@ -270,3 +270,9 @@ button:disabled { cursor: not-allowed; }
 .up-btn { grid-column: 3; justify-self: end; width: 32px; padding: 0; }
 .role-row { scroll-margin-top: 12px; }
 .role-row:focus { outline: none; }
+.combo { position: relative; }
+.combo-list { position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0; max-height: 296px; overflow-y: auto; margin: 0; padding: 4px; list-style: none; border-radius: 10px; background: var(--raise); border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0, 0, 0, .55); }
+.combo-option { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 4px 8px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+.combo-option.is-active { background: var(--raise-2); box-shadow: inset 0 0 0 1px var(--accent); }
+.combo-option .portrait { border-radius: 6px; }
+.combo-empty { padding: 8px; font-size: 13px; }

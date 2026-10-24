@@ -84,7 +84,7 @@ Les fichiers sont dans `maquettes/`. Voir `maquettes/README.md` pour le format.
 
 | Fichier | Statut | Contenu |
 |---|---|---|
-| `1-joueurs.dc.html` | Référence | Liste des joueurs, pools par rôle, notes de maîtrise (boutons + et -), ajout d'un champion, couverture du pool par trait, échelle de maîtrise. |
+| `1-joueurs.dc.html` | Référence | Liste des joueurs, pools par rôle, notes de maîtrise (boutons + et -), ajout d'un champion (liste déroulante maison avec portraits, filtrée sur le rôle, sans les champions déjà dans le pool : un clic ou Entrée l'ajoute avec la note 5, décidé le 24/10/2026), couverture du pool par trait, échelle de maîtrise. |
 | `2-composition-obsolete.dc.html` | Obsolète | Placement des joueurs sur les rôles. Fusionné dans la Draft v2. |
 | `3-draft-v1.dc.html` | Historique | Première version de la draft, gardée pour comparaison. Rails de bans à gauche et à droite, double clic pour verrouiller. |
 | `4-draft-v2.dc.html` | **Référence principale** | La version retenue. Décrite ci-dessous. |
