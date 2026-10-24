@@ -93,8 +93,7 @@ export const CRITERION_TIP: Record<CriterionKey, string> = {
   scaling: "Puissance de chaque compo face à l'autre sur les trois phases de la partie."
 };
 
-export const recNoteText = (note: RecNote, player: string | null, role: Role): string => {
-  if (!player) return 'Aucun joueur placé en ' + role + ' : tous les champions sont classés.';
+export const recNoteText = (note: RecNote, player: string, role: Role): string => {
   switch (note) {
     case 'POOL': return 'Les 3 meilleurs du pool de ' + player + ', classés par score.';
     case 'NO_POOL': return player + " n'a pas de pool " + role + ' : tous les champions sont classés.';

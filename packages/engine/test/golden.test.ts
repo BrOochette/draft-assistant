@@ -78,7 +78,7 @@ describe('scénarios de référence de la maquette', () => {
   it(golden[3].scenario, () => {
     const expected = golden[3].roles[0];
     const mid = computeDraft(states[3]!, pools, data).roles.find((r) => r.role === 'Mid')!;
-    expect(recNoteText(mid.note!, mid.player, mid.role)).toBe(expected.note);
+    expect(recNoteText(mid.note!, mid.player!, mid.role)).toBe(expected.note);
     expect(mid.recommendations.map((e) => ({ champion: e.champion, score: e.total, mastery: mastery(e) }))).toEqual(expected.recommendations);
   });
 });

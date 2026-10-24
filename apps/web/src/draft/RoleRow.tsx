@@ -186,16 +186,23 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
             </div>
             <span className="vs">VS</span>
             <div className="face-col">
-              <button
-                type="button"
-                className={'face ' + (enemy ? 'is-enemy' : 'is-waiting')}
-                aria-expanded={picker === 'enemy'}
-                aria-label={(enemy ? 'Saisie manuelle : changer le pick ennemi en ' : 'Saisie manuelle : pick ennemi en ') + role}
-                title={enemy ? 'Changer à la main' : 'Saisir à la main'}
-                onClick={() => openPicker('enemy')}
-              >
-                {enemy ? <Portrait name={enemy} size={58} /> : '?'}
-              </button>
+              <div className="face-wrap">
+                <button
+                  type="button"
+                  className={'face ' + (enemy ? 'is-enemy' : 'is-waiting')}
+                  aria-expanded={picker === 'enemy'}
+                  aria-label={(enemy ? 'Saisie manuelle : changer le pick ennemi en ' : 'Saisie manuelle : pick ennemi en ') + role}
+                  title={enemy ? 'Changer à la main' : 'Saisir à la main'}
+                  onClick={() => openPicker('enemy')}
+                >
+                  {enemy ? <Portrait name={enemy} size={58} /> : '?'}
+                </button>
+                {enemy && (
+                  <button type="button" className="remove" aria-label={'Retirer le pick ennemi ' + enemy + ' en ' + role} title={'Retirer ' + enemy} onClick={() => dispatch({ type: 'clearEnemy', role })}>
+                    <Icon name="close" size={12} />
+                  </button>
+                )}
+              </div>
               <span className={'small strong center-text' + (enemy ? '' : ' muted')}>{enemy ?? 'En attente'}</span>
             </div>
           </div>
@@ -216,7 +223,8 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
           {active && (
             <>
               <div className="row-between wrap">
-                <span className="small soft">{row.note ? recNoteText(row.note, player, role) : ''}</span>
+                {/* Sans pool ou sans joueur, l'avertissement de la colonne de gauche suffit. */}
+                <span className="small soft">{row.note && row.note !== 'NO_POOL' && player ? recNoteText(row.note, player, role) : ''}</span>
                 <button type="button" className="btn btn-sm" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
                   {expanded ? 'Réduire' : 'Plus de détails'} <Icon name="chevron" size={14} rotate={expanded} />
                 </button>

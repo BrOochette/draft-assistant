@@ -67,6 +67,11 @@ describe('écran Draft', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Rôle ADC' })).getByText('Jinx')).toBeInTheDocument();
     expect(compo('enemy').score).not.toBe('69');
+
+    // La croix retire le pick ennemi.
+    await user.click(screen.getByRole('button', { name: 'Retirer le pick ennemi Jinx en ADC' }));
+    expect(within(screen.getByRole('region', { name: 'Rôle ADC' })).queryByText('Jinx')).not.toBeInTheDocument();
+    expect(compo('enemy').score).toBe('69');
   });
 });
 
@@ -90,7 +95,7 @@ describe('écran Joueurs', () => {
     await user.click(screen.getByRole('link', { name: 'Draft' }));
     const adc = within(await screen.findByRole('region', { name: 'Rôle ADC' }));
     expect(adc.getByRole('combobox', { name: 'Joueur' })).toHaveValue('');
-    expect(adc.getByText('Aucun joueur placé en ADC : tous les champions sont classés.')).toBeInTheDocument();
+    expect(adc.queryByText(/tous les champions sont classés/)).not.toBeInTheDocument();
     expect(adc.queryByRole('option', { name: 'Lou' })).not.toBeInTheDocument();
   });
 
