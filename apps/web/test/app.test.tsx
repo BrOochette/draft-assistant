@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { seedPools } from '../src/data';
 import { loadPools } from '../src/store';
@@ -145,6 +145,13 @@ describe('écran Joueurs', () => {
       await user.click(more);
       expect(listed()).toBeGreaterThan(10);
     }
+
+    // jsdom n'implémente pas le défilement.
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    await user.click(jungle.getByRole('button', { name: 'Remonter en haut du rôle Jungle' }));
+    expect(scroll).toHaveBeenCalledOnce();
+    expect(screen.getByRole('region', { name: 'Rôle Jungle' })).toHaveFocus();
 
     await user.type(jungle.getByRole('searchbox', { name: 'Rechercher un champion dans la liste Jungle' }), 'fid');
     expect(jungle.getAllByRole('button', { name: /^Verrouiller .* en Jungle$/ }).map((b) => b.getAttribute('aria-label'))).toEqual(['Verrouiller Fiddlesticks en Jungle']);

@@ -1,4 +1,4 @@
-import { useMemo, useState, type Dispatch } from 'react';
+import { useMemo, useRef, useState, type Dispatch } from 'react';
 import { availability, MAIN_ROLE_SHARE, type DraftAction, type Evaluation, type RoleResult, type Side, type SuggestionMode } from '@draft/engine';
 import { blockedLabel, fmtDelta, fmtInt, formatReason, POOL_TAG, recNoteText, SUGGESTION_MODE_SHORT, SUGGESTION_MODE_TIP } from '@draft/i18n-fr';
 import type { DraftState, Note } from '@draft/schemas';
@@ -164,6 +164,13 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
 
   const shown = active ? row.recommendations : [];
 
+  const section = useRef<HTMLElement>(null);
+  const scrollToTop = () => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    section.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    section.current?.focus({ preventScroll: true });
+  };
+
   // Vue liste : les listCount premiers (pool, hors pool, rôle secondaire) ; la recherche porte sur tous.
   const listed = useMemo(() => {
     const q = listQuery.trim().toLowerCase();
@@ -178,7 +185,7 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
   }, [row, listQuery, listCount]);
 
   return (
-    <section className="card role-row" aria-label={'Rôle ' + role}>
+    <section ref={section} tabIndex={-1} className="card role-row" aria-label={'Rôle ' + role}>
       <div className="role-main">
         <div className="role-side">
           <div className="row-between">
@@ -323,10 +330,17 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                       </li>
                     ))}
                   </ul>
-                  {listed.more && (
-                    <button type="button" className="btn btn-sm more-btn" aria-label={'Voir plus de champions en ' + role} onClick={() => setListCount(listCount + LIST_LIMIT)}>
-                      Voir plus <Icon name="chevron" size={14} />
-                    </button>
+                  {listed.items.length > 0 && (
+                    <div className="row-gap list-end">
+                      {listed.more && (
+                        <button type="button" className="btn btn-sm" aria-label={'Voir plus de champions en ' + role} onClick={() => setListCount(listCount + LIST_LIMIT)}>
+                          Voir plus <Icon name="chevron" size={14} />
+                        </button>
+                      )}
+                      <button type="button" className="btn btn-sm" aria-label={'Remonter en haut du rôle ' + role} onClick={scrollToTop}>
+                        Remonter <Icon name="chevron" size={14} rotate />
+                      </button>
+                    </div>
                   )}
                 </>
               )}
