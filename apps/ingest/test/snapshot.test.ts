@@ -29,6 +29,7 @@ const lane = (winRate: number, phases: [number, number, number], extra: Partial<
       4: [g, (g * phases[2]) / 100]
     },
     matchups: {},
+    crossMatchups: {},
     duos: {},
     ...extra
   };

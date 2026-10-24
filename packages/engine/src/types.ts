@@ -22,10 +22,20 @@ export interface Entry {
   matchups?: Record<string, [number, number]>;
   /** Rôle de l'allié, puis allié vers [écart de win rate en duo, parties]. */
   duos?: Partial<Record<Role, Record<string, [number, number]>>>;
+  /** Rôle de l'ennemi (autre lane), puis ennemi vers [win rate, parties]. */
+  crossMatchups?: Partial<Record<Role, Record<string, [number, number]>>>;
   /** Part des parties du champion jouées sur ce rôle (%), null si inconnue. */
   laneShare: number | null;
   /** Parties fictives à 50 % pour lisser le win rate dans le counter (0 : pas de lissage). */
   priorGames: number;
+}
+
+/** Matchup contre un ennemi d'une autre lane, et son poids dans le counter. */
+export interface EnemyTeamMatchup extends MatchupStat {
+  role: Role;
+  weight: number;
+  /** Écart, en points, entre le win rate lissé contre lui et le win rate général lissé du champion. */
+  delta: number;
 }
 
 /** Win rate mesuré contre l'adversaire de lane connu. */
@@ -91,6 +101,10 @@ export interface Evaluation {
   gameWinRate: number;
   /** Matchup contre l'adversaire de lane, s'il est connu et mesuré. */
   matchup: MatchupStat | null;
+  /** Matchups pris en compte contre les ennemis des autres lanes. */
+  enemyTeam: EnemyTeamMatchup[];
+  /** Effet total de ces matchups sur le win rate du counter, en points (pondéré). */
+  enemyTeamDelta: number;
   /** Part des parties du champion jouées sur ce rôle (%), null si inconnue. */
   laneShare: number | null;
   scaling: Scaling;

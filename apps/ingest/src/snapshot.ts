@@ -115,7 +115,8 @@ export const assembleLolalyticsSnapshot = (
         notes: [],
         matchups: s.matchups,
         duos: s.duos,
-        laneShare: s.laneShare
+        laneShare: s.laneShare,
+        crossMatchups: s.crossMatchups
       });
     }
   }

@@ -75,7 +75,9 @@ export const CandidateSchema = z.object({
   /** Écart de win rate en duo avec chaque allié, par rôle de l'allié. */
   duos: z.record(RoleSchema, z.record(z.string(), deltaSample)).optional(),
   /** Part des parties du champion jouées sur ce rôle, en %. Absente : rôle principal supposé. */
-  laneShare: z.number().min(0).max(100).optional()
+  laneShare: z.number().min(0).max(100).optional(),
+  /** Rôle de l'ennemi (autre lane), puis ennemi vers [win rate de ce champion, parties]. */
+  crossMatchups: z.record(RoleSchema, z.record(z.string(), rateSample)).optional()
 });
 export type Candidate = z.infer<typeof CandidateSchema>;
 

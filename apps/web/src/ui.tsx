@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { Evaluation } from '@draft/engine';
-import { fmtInt, fmtPct, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
+import { fmtInt, fmtPct, fmtSigned, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
 import type { Scaling } from '@draft/schemas';
 import type { AppData } from './data';
 
@@ -88,6 +88,17 @@ export const WinRateChips = ({ e }: { e: Evaluation }) => (
     {e.matchup && (
       <Chip tone="info" title={'Win rate de partie contre ' + e.matchup.opponent + ', ' + fmtInt(e.matchup.games) + ' parties'}>
         vs {e.matchup.opponent} {fmtPct(e.matchup.winRate)}
+      </Chip>
+    )}
+    {e.enemyTeam.length > 0 && (
+      <Chip
+        tone="info"
+        title={
+          'Effet des autres ennemis sur le win rate du counter : ' +
+          e.enemyTeam.map((m) => `${m.opponent} (${m.role}, ${fmtPct(m.winRate)} sur ${fmtInt(m.games)} parties) ${fmtSigned(m.delta)} pts × ${m.weight === 0.5 ? '1/2' : '1/4'}`).join(' ; ')
+        }
+      >
+        Compo ennemie {fmtSigned(e.enemyTeamDelta)} pts
       </Chip>
     )}
   </>

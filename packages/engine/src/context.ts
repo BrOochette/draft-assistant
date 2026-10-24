@@ -36,6 +36,7 @@ export const entryFor = (data: EngineData, meta: RowMeta, role: Role, name: stri
     notes: s.notes,
     ...(s.matchups && { matchups: s.matchups }),
     ...(s.duos && { duos: s.duos }),
+    ...(s.crossMatchups && { crossMatchups: s.crossMatchups }),
     laneShare: s.laneShare ?? null,
     priorGames: data.winRatePriorGames,
     ...poolStatus(meta, name)

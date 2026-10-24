@@ -98,6 +98,28 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(e.counter).toBe(wrScore(52));
   });
 
+  it("compte les ennemis des autres lanes : un quart, la moitié pour le duo bot", () => {
+    const d = createEngineData({
+      ...snapshot,
+      champions: [...snapshot.champions, champ('Jinx', ['ADC'], 'AD'), champ('Leona', ['Support'], 'TANK'), champ('Lee Sin', ['Jungle'], 'AD'), champ('Ezreal', ['ADC'], 'AD')],
+      candidates: {
+        ADC: [cand('Jinx', { gameWinRate: 52, crossMatchups: { Support: { Leona: [48, 1000] }, Jungle: { 'Lee Sin': [55, 1000], Sejuani: [60, 100] } } })]
+      }
+    });
+    const foes = { ...base.enemy, Support: 'Leona', Jungle: 'Lee Sin' };
+    const jinx = computeDraft({ ...base, enemy: foes }, {}, d).roles[3]!.recommendations[0]!;
+    // Écarts lissés vers 52 % avec 1 000 parties : Leona (48×1000 + 52×1000)/2000 − 52 = −2, Lee Sin +1,5.
+    expect(jinx.enemyTeam.map((m) => [m.opponent, m.weight, m.delta])).toEqual([
+      ['Lee Sin', 0.25, 1.5],
+      ['Leona', 0.5, -2]
+    ]);
+    expect(jinx.enemyTeamDelta).toBe(0.25 * 1.5 + 0.5 * -2);
+    expect(jinx.counter).toBe(wrScore(52 + 0.25 * 1.5 + 0.5 * -2));
+    // Un matchup de moins de 500 parties (Sejuani, 100) n'est pas compté.
+    const vsSej = computeDraft({ ...base, enemy: { ...base.enemy, Jungle: 'Sejuani' } }, {}, d).roles[3]!.recommendations[0]!;
+    expect(vsSej.enemyTeam).toEqual([]);
+  });
+
   it('ajoute la synergie de duo avec un allié verrouillé', () => {
     const without = mid(base);
     const withSej = mid({ ...base, ally: { ...base.ally, Jungle: 'Sejuani' } });

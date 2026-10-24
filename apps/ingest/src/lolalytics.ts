@@ -13,6 +13,8 @@ export const DEFAULT_PAIR_REGION = 'all';
 export const MIN_LANE_SHARE = 5;
 /** Matchups et duos gardés à partir de ce nombre de parties. */
 export const MIN_PAIR_GAMES = 30;
+/** Matchups contre les autres lanes gardés à partir de ce nombre de parties (ils servent moins, ils pèsent lourd). */
+export const MIN_CROSS_GAMES = 300;
 
 const LANE: Record<Role, string> = { Top: 'top', Jungle: 'jungle', Mid: 'middle', ADC: 'bottom', Support: 'support' };
 const ROLE_OF: Record<string, Role> = Object.fromEntries(ROLES.map((r) => [LANE[r], r]));
@@ -28,7 +30,9 @@ export const LaneStatsSchema = z.object({
   byDuration: z.record(z.string(), pair),
   /** Adversaire de la même lane vers [win rate de ce champion, parties]. */
   matchups: z.record(z.string(), pair),
-  /** Rôle de l'allié, puis allié vers [écart de win rate normalisé en duo, parties]. */
+  /** Rôle de l'ennemi (autre lane), puis ennemi vers [win rate de ce champion, parties]. */
+  crossMatchups: z.record(z.string(), z.record(z.string(), pair)).default({}),
+    /** Rôle de l'allié, puis allié vers [écart de win rate normalisé en duo, parties]. */
   duos: z.record(z.string(), z.record(z.string(), pair))
 });
 export type LaneStats = z.infer<typeof LaneStatsSchema>;
@@ -69,11 +73,22 @@ export const parseBuildPage = (html: string, nameOfKey: ReadonlyMap<number, stri
   for (const k of Object.keys(t)) byDuration[k] = [t[k] ?? 0, w[k] ?? 0];
 
   // Ligne d'adversaire : [clé, win rate de ce champion contre lui, delta 1, delta 2, part, parties].
-  const matchups: Record<string, [number, number]> = {};
-  for (const r of rows((data.enemy as Record<string, unknown>)[lane])) {
-    const name = nameOfKey.get(r[0]);
-    const games = r[5] ?? 0;
-    if (name && games >= MIN_PAIR_GAMES) matchups[name] = [r[1]!, games];
+  const pairs = (list: unknown, min: number) => {
+    const out: Record<string, [number, number]> = {};
+    for (const r of rows(list)) {
+      const name = nameOfKey.get(r[0]);
+      const games = r[5] ?? 0;
+      if (name && games >= min) out[name] = [r[1]!, games];
+    }
+    return out;
+  };
+  const enemy = data.enemy as Record<string, unknown>;
+  const matchups = pairs(enemy[lane], MIN_PAIR_GAMES);
+  // Même ligne de données pour les ennemis des autres lanes : win rate de ce champion quand l'ennemi joue X.
+  const crossMatchups: LaneStats['crossMatchups'] = {};
+  for (const [otherLane, list] of Object.entries(enemy)) {
+    const otherRole = ROLE_OF[otherLane];
+    if (otherRole && otherLane !== lane) crossMatchups[otherRole] = pairs(list, MIN_CROSS_GAMES);
   }
   const dmg = (header.damage ?? {}) as { physical?: number; magic?: number };
   return {
@@ -88,6 +103,7 @@ export const parseBuildPage = (html: string, nameOfKey: ReadonlyMap<number, stri
       damage: { physical: dmg.physical ?? 0, magic: dmg.magic ?? 0 },
       byDuration,
       matchups,
+      crossMatchups,
       duos: {}
     } satisfies LaneStats
   };
@@ -154,7 +170,11 @@ export const crawlLolalytics = async (
       }
       for (const [role, stats] of Object.entries(lanes) as [Role, LaneStats][]) {
         // Matchups et duos sur un échantillon plus large que les stats générales (toutes régions par défaut).
-        if (pairRegion !== region) stats.matchups = parseBuildPage(await fetchPage(buildUrl(slug, pairRegion, role)), nameOfKey).stats.matchups;
+        if (pairRegion !== region) {
+          const wide = parseBuildPage(await fetchPage(buildUrl(slug, pairRegion, role)), nameOfKey).stats;
+          stats.matchups = wide.matchups;
+          stats.crossMatchups = wide.crossMatchups;
+        }
         stats.duos = parseTeam(await fetchApi(teamUrl(slug, role, patch, pairRegion)), nameOfKey);
       }
       out[c.name] = lanes;

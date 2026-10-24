@@ -1,7 +1,7 @@
 import type { Role, Trait } from '@draft/schemas';
 import { compScore } from './composition';
 import { avgScal, clamp, wrScore } from './math';
-import type { CompMember, Entry, Evaluation, Phase, Reason, ScoringOptions } from './types';
+import type { CompMember, EnemyTeamMatchup, Entry, Evaluation, Phase, Reason, ScoringOptions } from './types';
 
 export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
 export const LOW_SAMPLE_GAMES = 500;
@@ -40,7 +40,14 @@ export const totalScore = (
   return mastery == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + mastery * 0.25);
 };
 
-const smooth =(value: number, games: number, prior: number, priorGames: number) => (value * games + prior * priorGames) / (games + priorGames);
+/**
+ * Poids d'un ennemi d'une autre lane par rapport au vis-à-vis (1) : un quart, sauf en botlane où l'ADC
+ * et le support ennemis jouent la même lane à deux (la moitié).
+ */
+export const otherEnemyWeight = (role: Role, enemyRole: Role): number =>
+  (role === 'ADC' && enemyRole === 'Support') || (role === 'Support' && enemyRole === 'ADC') ? 0.5 : 0.25;
+
+const smooth = (value: number, games: number, prior: number, priorGames: number) => (value * games + prior * priorGames) / (games + priorGames);
 
 /**
  * Évalue un candidat face au contexte allié `ctx` (les autres picks) et aux ennemis connus.
@@ -52,9 +59,11 @@ export const evaluate = (
   ctx: readonly Entry[],
   enemies: readonly CompMember[],
   player: string | null,
-  laneOpponent: string | null = null,
+  /** Picks ennemis connus par rôle : le vis-à-vis et, avec moins de poids, les autres lanes. */
+  foes: Partial<Record<Role, string | null>> = {},
   options: ScoringOptions = {}
 ): Evaluation => {
+  const laneOpponent = foes[c.role] ?? null;
   const met = new Map<Trait, string>();
   for (const x of ctx) for (const g of x.provides) if (!met.has(g)) met.set(g, x.name);
   const apCount = ctx.filter((x) => x.damage === 'AP').length;
@@ -117,7 +126,17 @@ export const evaluate = (
   const found = laneOpponent ? c.matchups?.[laneOpponent] : undefined;
   const m = found && found[1] >= MATCHUP_MIN_GAMES ? found : undefined;
   const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1] } : null;
-  const gameWr = m ? smooth(m[0], m[1], baseWr, MATCHUP_PRIOR_GAMES) : baseWr;
+  const laneWr = m ? smooth(m[0], m[1], baseWr, MATCHUP_PRIOR_GAMES) : baseWr;
+  // Ennemis des autres lanes : chacun ajoute son écart au win rate général, avec moins de poids que le vis-à-vis.
+  const enemyTeam: EnemyTeamMatchup[] = [];
+  for (const [role, name] of Object.entries(foes) as [Role, string | null][]) {
+    const x = name && role !== c.role ? c.crossMatchups?.[role]?.[name] : undefined;
+    if (!name || !x || x[1] < MATCHUP_MIN_GAMES) continue;
+    const delta = smooth(x[0], x[1], baseWr, MATCHUP_PRIOR_GAMES) - baseWr;
+    enemyTeam.push({ opponent: name, role, winRate: x[0], games: x[1], weight: otherEnemyWeight(c.role, role), delta });
+  }
+  const enemyTeamDelta = enemyTeam.reduce((s, e) => s + e.weight * e.delta, 0);
+  const gameWr = laneWr + enemyTeamDelta;
   // Sans win rate de lane (Lolalytics), le counter repose sur le win rate de partie seul.
   const ctr = c.laneWinRate == null ? wrScore(gameWr) : Math.round(wrScore(c.laneWinRate) * 0.4 + wrScore(gameWr) * 0.6);
   const total = totalScore(syn, ctr, c.mastery, c.role, laneOpponent != null, options);
@@ -137,6 +156,8 @@ export const evaluate = (
     laneWinRate: c.laneWinRate,
     gameWinRate: c.gameWinRate,
     matchup,
+    enemyTeam,
+    enemyTeamDelta,
     laneShare: c.laneShare,
     scaling: c.scaling
   };

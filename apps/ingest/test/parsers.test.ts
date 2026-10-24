@@ -99,6 +99,7 @@ describe('page build Lolalytics', () => {
       byDuration: { 1: [464, 218], 2: [3618, 1864] },
       // Clé inconnue (999) et matchup trop rare (Lee Sin, 12 parties) écartés.
       matchups: { Zed: [50.57, 2017] },
+      crossMatchups: {},
       duos: {}
     });
   });
