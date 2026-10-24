@@ -6,7 +6,7 @@ import { readQwikState } from './qwik';
 /** Rangs analysés : Emerald et au-dessus, toutes régions, classé solo. */
 export const TIER = 'emerald_plus';
 /** Région par défaut (code Lolalytics : all, euw, eune, na, kr…). */
-export const DEFAULT_REGION = 'euw';
+export const DEFAULT_REGION = 'all';
 /** Région des matchups et duos : plus d'échantillon qu'une seule région, et ils en dépendent peu. */
 export const DEFAULT_PAIR_REGION = 'all';
 /** Lanes secondaires collectées à partir de cette part des parties du champion (en %). */
