@@ -8,7 +8,6 @@ import type {
   EnemyReadItem,
   GoneReason,
   Phase,
-  PoolStatus,
   Reason,
   RecNote,
   ScalingVerdict,
@@ -19,16 +18,10 @@ import type {
 } from '@draft/engine';
 import type { Role, Trait } from '@draft/schemas';
 
-export const fmt1 = (n: number): string => n.toFixed(1).replace('.', ',');
-export const fmtPct = (n: number): string => fmt1(n) + ' %';
-/** 14200 devient « 14 200 ». */
-export const fmtInt = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-/** Signe calculé sur la valeur arrondie : -0,02 donne « +0,0 », pas « -0,0 ». */
-export const fmtSigned = (n: number): string => {
-  const r = Math.round(n * 10) / 10;
-  return (r >= 0 ? '+' : '') + fmt1(r === 0 ? 0 : r);
-};
-export const fmtDelta = (n: number): string => (n >= 0 ? '+' : '') + n;
+import { fmtInt, fmtSigned } from './format';
+
+export * from './format';
+export * from './ui';
 
 export const TRAIT_LABEL: Record<Trait, string> = {
   Frontline: 'Frontline',
@@ -69,12 +62,10 @@ export const formatReason = (r: Reason | { sign: '+' | '-'; text: string }): str
 export const SUGGESTION_MODE_LABEL: Record<SuggestionMode, string> = { mix: 'Mix', synergy: 'Meilleure synergie', counter: 'Meilleur counter' };
 export const SUGGESTION_MODE_SHORT: Record<SuggestionMode, string> = { mix: 'Mix', synergy: 'Synergie', counter: 'Counter' };
 export const SUGGESTION_MODE_TIP: Record<SuggestionMode, string> = {
-  mix: "Synergie et counter. Quand l'adversaire de lane est connu, le counter pèse plus en top, puis mid et support, puis ADC, puis jungle.",
-  synergy: 'Classement par synergie avec ta compo (et maîtrise si le joueur a un pool).',
-  counter: "Classement par counter : win rate contre l'adversaire de lane s'il est connu, sinon win rate général (et maîtrise si le joueur a un pool)."
+  mix: 'Win rate attendu complet : matchups et duos (et maîtrise si le joueur a un pool).',
+  synergy: 'Win rate attendu sans les matchups : duos avec les alliés verrouillés (et maîtrise).',
+  counter: 'Win rate attendu sans les duos : matchups contre les ennemis connus (et maîtrise).'
 };
-
-export const POOL_TAG: Record<PoolStatus, string> ={ in: 'Pool', out: 'Hors pool', all: 'Tous les champions' };
 
 export const VERDICT_LABEL: Record<Verdict, string> = { solid: 'Solide', fair: 'Correcte', fragile: 'Fragile', fix: 'À corriger' };
 export const SCALING_VERDICT_LABEL: Record<ScalingVerdict, string> = {

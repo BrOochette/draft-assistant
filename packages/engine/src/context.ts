@@ -40,7 +40,22 @@ export const entryFor = (data: EngineData, meta: RowMeta, role: Role, name: stri
     laneShare: s.laneShare ?? null,
     priorGames: data.winRatePriorGames,
     measured: data.measured,
+    classPrior: classPriorLookup(data, role, name),
     ...poolStatus(meta, name)
+  };
+};
+
+const mainClass = (data: EngineData, name: string) => data.catalog.get(name)?.classes?.[0] ?? null;
+
+/** Moyenne de la paire de classes principales de `name` (joué en `role`) avec un autre champion. */
+const classPriorLookup = (data: EngineData, role: Role, name: string): Entry['classPrior'] => {
+  const priors = data.classPriors;
+  const cls = mainClass(data, name);
+  if (!priors || !cls) return () => null;
+  return (kind, otherRole, other) => {
+    const oc = mainClass(data, other);
+    const p = oc ? priors[kind][role + '|' + cls + '|' + otherRole + '|' + oc] : undefined;
+    return p ? { classes: [cls, oc!], delta: p[0], games: p[1] } : null;
   };
 };
 

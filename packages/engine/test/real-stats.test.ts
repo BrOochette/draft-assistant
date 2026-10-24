@@ -55,20 +55,21 @@ const base: DraftState = {
 const mid = (state: DraftState) => computeDraft(state, {}, data).roles[2]!.recommendations[0]!;
 
 describe('stats réelles (format Lolalytics)', () => {
-  it('sans adversaire connu, le counter vient du win rate de partie seul', () => {
+  it('sans ennemi connu, le win rate attendu est le win rate du champion', () => {
     const e = mid(base);
     expect(e.laneWinRate).toBeNull();
     expect(e.matchup).toBeNull();
-    expect(e.counter).toBe(wrScore(52));
-    expect(e.enemyNoData).toEqual([]);
+    expect(e.enemyTeam).toEqual([]);
+    expect(e.expected).toEqual({ base: 52, matchups: 0, duos: 0, mastery: 0, score: 52 });
   });
 
-  it("avec l'adversaire de lane connu, le counter utilise le matchup lissé", () => {
+  it("avec l'adversaire de lane connu, ajoute l'écart du matchup lissé", () => {
     const e = mid({ ...base, enemy: { ...base.enemy, Mid: 'Zed' } });
-    // Écart : (56 × 2000 + 52 × 1000) / 3000 − 52 = 2,67 points.
-    expect(e.matchup).toEqual({ opponent: 'Zed', winRate: 56, games: 2000, delta: (56 * 2000 + 52 * 1000) / 3000 - 52 });
-    // (56 × 2000 + 52 × 1000) / 3000 = 54,67 %
-    expect(e.counter).toBe(wrScore((56 * 2000 + 52 * 1000) / 3000));
+    // Écart : (56 − 52) × 2000 / (2000 + 1000) = 2,67 points, sans prior de classe (lissé vers 0).
+    const delta = (4 * 2000) / 3000;
+    expect(e.matchup).toEqual({ opponent: 'Zed', role: 'Mid', lane: true, weight: 1, winRate: 56, games: 2000, prior: null, delta });
+    expect(e.expected!.score).toBeCloseTo(52 + delta);
+    expect(e.counter).toBe(wrScore(52 + delta));
   });
 
   it('lisse le win rate vers 50 % et ne classe sans pool que les rôles principaux', () => {
@@ -90,15 +91,22 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(malphite.gameWinRate).toBe(53.13);
   });
 
-  it('ignore un matchup de moins de 500 parties', () => {
-    const d = createEngineData({
-      ...snapshot,
-      candidates: { Mid: [cand('Ahri', { gameWinRate: 52, matchups: { Zed: [63, 219] } })] }
-    });
-    const e = computeDraft({ ...base, enemy: { ...base.enemy, Mid: 'Zed' } }, {}, d).roles[2]!.recommendations[0]!;
-    expect(e.matchup).toBeNull();
-    expect(e.counter).toBe(wrScore(52));
-    expect(e.enemyNoData).toEqual([{ opponent: 'Zed', role: 'Mid', lane: true, games: 219 }]);
+  it('lisse un matchup peu joué vers la moyenne de sa paire de classes', () => {
+    const withMatchups = (matchups: Record<string, [number, number]>) =>
+      createEngineData({
+        ...snapshot,
+        champions: snapshot.champions.map((c) => ({ ...c, classes: c.name === 'Ahri' ? ['Burst'] : ['Assassin'] })),
+        candidates: { Mid: [cand('Ahri', { gameWinRate: 52, matchups })] },
+        classPriors: { duo: {}, matchup: { 'Mid|Burst|Mid|Assassin': [-1.5, 50000] } }
+      });
+    const vsZed = (d: ReturnType<typeof createEngineData>) =>
+      computeDraft({ ...base, enemy: { ...base.enemy, Mid: 'Zed' } }, {}, d).roles[2]!.recommendations[0]!.matchup!;
+    // (11 × 219 − 1,5 × 1000) / 1219 : les 219 parties comptent, tirées vers la moyenne Burst contre Assassin.
+    const rare = vsZed(withMatchups({ Zed: [63, 219] }));
+    expect(rare).toMatchObject({ games: 219, winRate: 63, prior: { classes: ['Burst', 'Assassin'], delta: -1.5, games: 50000 } });
+    expect(rare.delta).toBeCloseTo((11 * 219 - 1.5 * 1000) / 1219);
+    // Paire absente des données : la moyenne de classe seule.
+    expect(vsZed(withMatchups({}))).toMatchObject({ games: 0, winRate: null, delta: -1.5 });
   });
 
   it("compte les ennemis des autres lanes : un quart, trois quarts pour le duo bot", () => {
@@ -106,24 +114,30 @@ describe('stats réelles (format Lolalytics)', () => {
       ...snapshot,
       champions: [...snapshot.champions, champ('Jinx', ['ADC'], 'AD'), champ('Leona', ['Support'], 'TANK'), champ('Lee Sin', ['Jungle'], 'AD'), champ('Ezreal', ['ADC'], 'AD')],
       candidates: {
-        ADC: [cand('Jinx', { gameWinRate: 52, crossMatchups: { Support: { Leona: [48, 1000] }, Jungle: { 'Lee Sin': [55, 1000], Sejuani: [60, 100] } } })]
+        ADC: [cand('Jinx', { gameWinRate: 52, crossMatchups: { Support: { Leona: [48, 1000] }, Jungle: { 'Lee Sin': [55, 1000] } } })]
       }
     });
-    const foes = { ...base.enemy, Support: 'Leona', Jungle: 'Lee Sin' };
+    const foes = { ...base.enemy, Support: 'Leona', Jungle: 'Lee Sin', Mid: 'Zed' };
     const jinx = computeDraft({ ...base, enemy: foes }, {}, d).roles[3]!.recommendations[0]!;
-    // Écarts lissés vers 52 % avec 1 000 parties : Leona (48×1000 + 52×1000)/2000 − 52 = −2, Lee Sin +1,5.
-    expect(jinx.enemyTeam.map((m) => [m.opponent, m.weight, m.delta])).toEqual([
-      ['Lee Sin', 0.25, 1.5],
-      ['Leona', 0.75, -2]
+    // Écarts lissés vers 0 avec 1 000 parties : Leona −4 × 1/2 = −2, Lee Sin +3 × 1/2 = +1,5 ; Zed sans données : 0.
+    expect(jinx.enemyTeam.map((m) => [m.opponent, m.weight, m.games, m.delta])).toEqual([
+      ['Lee Sin', 0.25, 1000, 1.5],
+      ['Zed', 0.25, 0, 0],
+      ['Leona', 0.75, 1000, -2]
     ]);
-    expect(jinx.enemyTeamDelta).toBe(0.25 * 1.5 + 0.75 * -2);
+    expect(jinx.expected!.matchups).toBe(0.25 * 1.5 + 0.75 * -2);
     expect(jinx.counter).toBe(wrScore(52 + 0.25 * 1.5 + 0.75 * -2));
-    // Un matchup de moins de 500 parties (Sejuani, 100) n'est pas compté.
-    const vsSej = computeDraft({ ...base, enemy: { ...base.enemy, Jungle: 'Sejuani' } }, {}, d).roles[3]!.recommendations[0]!;
-    expect(vsSej.enemyTeam).toEqual([]);
-    // Signalé dans la fenêtre flottante, avec un effet nul.
-    expect(vsSej.enemyNoData).toEqual([{ opponent: 'Sejuani', role: 'Jungle', lane: false, games: 100 }]);
-    expect(vsSej.counter).toBe(wrScore(52));
+  });
+
+  it('ajoute la maîtrise en points et suit le mode du rôle', () => {
+    const pools = { C: { Mid: [{ champion: 'Ahri', mastery: 10 }] } };
+    const state = { ...base, enemy: { ...base.enemy, Mid: 'Zed' }, ally: { ...base.ally, Jungle: 'Sejuani' } };
+    const ahri = (modeByRole = {}) => computeDraft(state, pools, data, { modeByRole }).roles[2]!.inPool[0]!.expected!;
+    const all = ahri();
+    expect(all.mastery).toBe(2);
+    expect(all.score).toBeCloseTo(all.base + all.matchups + all.duos + 2);
+    expect(ahri({ Mid: 'synergy' }).score).toBeCloseTo(all.base + all.duos + 2);
+    expect(ahri({ Mid: 'counter' }).score).toBeCloseTo(all.base + all.matchups + 2);
   });
 
   it("ne propose plus de bans sur un rôle où l'ennemi a déjà pick", () => {
@@ -134,18 +148,32 @@ describe('stats réelles (format Lolalytics)', () => {
         { champion: 'Ahri', role: 'Mid', threat: 80 }
       ]
     });
-    const bans = (state: DraftState) => computeDraft(state, {}, d).bans.suggestions.map((b) => b.champion);
+    // Nos options (pools) ne sont jamais proposées en ban : ici Zed, joué hors rôle, en jungle et en mid.
+    const pools = { B: { Jungle: [{ champion: 'Zed', mastery: 5 }] }, C: { Mid: [{ champion: 'Zed', mastery: 5 }] } };
+    const bans = (state: DraftState) => computeDraft(state, pools, d).bans.suggestions.map((b) => b.champion);
     expect(bans(base)).toEqual(['Sejuani', 'Ahri']);
     // Lee Sin pick en jungle : Sejuani ne peut plus être jouée par l'ennemi à ce poste.
     expect(bans({ ...base, enemy: { ...base.enemy, Jungle: 'Lee Sin' } })).toEqual(['Ahri']);
   });
 
-  it('propose au plus 3 bans par rôle, la réserve remplace un champion déjà pris', () => {
-    const jgl = (champion: string, threat: number) => ({ champion, role: 'Jungle' as const, threat });
-    const d = createEngineData({ ...snapshot, banSuggestions: [jgl('Sejuani', 90), jgl('Lee Sin', 85), jgl('Viego', 80), jgl('Zac', 75)] });
-    const bans = (state: DraftState) => computeDraft(state, {}, d).bans.suggestions.map((b) => b.champion);
-    expect(bans(base)).toEqual(['Sejuani', 'Lee Sin', 'Viego']);
-    expect(bans({ ...base, enemyBans: ['Sejuani'] })).toEqual(['Lee Sin', 'Viego', 'Zac']);
+  it('valeur d’un ban : force du champion plus la baisse de notre meilleure option du rôle', () => {
+    const d = createEngineData({
+      ...snapshot,
+      champions: [...snapshot.champions, champ('Syndra', ['Mid'])],
+      candidates: {
+        Mid: [
+          cand('Ahri', { gameWinRate: 52, matchups: { Zed: [44, 3000], Syndra: [52, 3000] } }),
+          cand('Zed', { gameWinRate: 52, games: 5000 }),
+          cand('Syndra', { gameWinRate: 53, games: 5000 })
+        ]
+      }
+    });
+    const bans = computeDraft(base, { C: { Mid: [{ champion: 'Ahri', mastery: 5 }] } }, d).bans.suggestions.filter((b) => b.role === 'Mid');
+    // Zed : force +2, et Ahri (notre seule option, 52 %) perd (44 − 52) × 3000 / 4000 = 6 pts contre lui. Ahri, notre option, n'est pas proposée.
+    expect(bans.map((b) => [b.champion, b.impact])).toEqual([
+      ['Zed', { value: 8, strength: 2, drop: 6, ours: 'Ahri' }],
+      ['Syndra', { value: 3, strength: 3, drop: 0, ours: 'Ahri' }]
+    ]);
   });
 
   it('classe un champion du pool joué hors de ses rôles habituels, signalé peu fiable', () => {
@@ -155,16 +183,15 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(zed).toMatchObject({ champion: 'Zed', pool: 'in', games: 0, lowSample: true, laneWinRate: null, gameWinRate: 50 });
   });
 
-  it('ajoute la synergie de duo avec un allié verrouillé', () => {
+  it('ajoute le duo avec un allié verrouillé, à moitié hors botlane', () => {
     const without = mid(base);
     const withSej = mid({ ...base, ally: { ...base.ally, Jungle: 'Sejuani' } });
     const smoothed = (2.5 * 1800) / 2000;
-    // Sejuani n'apporte ici ni trait ni écart de scaling : seule la synergie de duo change.
+    // Score de la maquette : seule la synergie de duo change (Sejuani n'apporte ni trait ni écart de scaling).
     expect(withSej.synergy - without.synergy).toBe(Math.round(4 * smoothed));
     expect(withSej.reasons).toContainEqual({ sign: '+', code: 'DUO', ally: 'Sejuani', delta: smoothed });
-    expect(withSej.allyTeam).toEqual([{ ally: 'Sejuani', role: 'Jungle', delta: 2.5, games: 1800, smoothed }]);
-    expect(withSej.duoBonus).toBe(Math.round(4 * smoothed));
+    expect(withSej.allyTeam).toEqual([{ ally: 'Sejuani', role: 'Jungle', weight: 0.5, raw: 2.5, games: 1800, prior: null, delta: smoothed }]);
+    expect(withSej.expected!.duos).toBeCloseTo(0.5 * smoothed);
     expect(without.allyTeam).toEqual([]);
-    expect(without.duoBonus).toBe(0);
   });
 });

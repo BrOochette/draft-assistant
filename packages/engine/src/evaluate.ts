@@ -1,59 +1,95 @@
-import type { Role, Trait } from '@draft/schemas';
+import { ROLES, type Role, type Trait } from '@draft/schemas';
 import { compScore } from './composition';
 import { avgScal, clamp, wrScore } from './math';
-import type { AllyDuo, CompMember, EnemyNoData, EnemyTeamMatchup, Entry, Evaluation, Phase, Reason, ScoringOptions } from './types';
+import type { AllyEffect, CompMember, EnemyEffect, Entry, Evaluation, Expected, Phase, Reason, ScoringOptions, SuggestionMode } from './types';
 
 export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
 export const LOW_SAMPLE_GAMES = 500;
-/** Parties « fictives » à écart nul, pour lisser un duo peu joué. */
+/** Parties « fictives » à la moyenne de la paire de classes, pour lisser un duo peu joué. */
 const DUO_PRIOR_GAMES = 200;
-/** Parties « fictives » au win rate lissé du champion, pour lisser un matchup peu joué. */
+/** Parties « fictives » à la moyenne de la paire de classes, pour lisser un matchup peu joué. */
 const MATCHUP_PRIOR_GAMES = 1000;
-/** Un matchup de moins de parties est ignoré : le counter utilise alors le win rate lissé du champion. */
-export const MATCHUP_MIN_GAMES = 500;
-/** Points de synergie par point d'écart moyen de win rate en duo. */
+/** Points de synergie par point d'écart moyen de win rate en duo (score sur 100 de la maquette). */
 export const DUO_WEIGHT = 4;
 /** Écart de duo (lissé) à partir duquel une raison est affichée. */
 const DUO_REASON_MIN = 1;
+/** Points de win rate attendu par point de maîtrise au-dessus de 5 (note 10 : +2, note 1 : −1,6, hors pool : −2). */
+export const MASTERY_POINT = 0.4;
 
-/**
- * Part du counter dans le score « mix » quand l'adversaire de lane est connu : le matchup pèse plus en top
- * qu'en jungle (choix du porteur du projet : top > mid = support > ADC > jungle).
- */
-export const LANE_COUNTER_WEIGHT: Record<Role, number> = { Top: 0.65, Mid: 0.55, Support: 0.55, ADC: 0.45, Jungle: 0.35 };
+/** Mode de suggestion d'un rôle. */
+export const modeOf = (role: Role, { mode = 'mix', modeByRole }: ScoringOptions): SuggestionMode => modeByRole?.[role] ?? mode;
 
-/** Score total. La maîtrise compte pour 25 % quand le joueur a un pool ; le reste dépend du mode. */
-export const totalScore = (
-  syn: number,
-  ctr: number,
-  mastery: number | null,
-  role: Role,
-  laneOpponentKnown: boolean,
-  { mode: globalMode = 'mix', modeByRole, laneCounterWeight }: ScoringOptions
-): number => {
-  const mode = modeByRole?.[role] ?? globalMode;
+/** Score sur 100 de la maquette (données d'exemple). La maîtrise compte pour 25 % avec un pool ; le reste dépend du mode. */
+export const totalScore = (syn: number, ctr: number, mastery: number | null, role: Role, options: ScoringOptions): number => {
+  const mode = modeOf(role, options);
   const withMastery = (v: number) => (mastery == null ? Math.round(v) : Math.round(v * 0.75 + mastery * 0.25));
   if (mode === 'synergy') return withMastery(syn);
   if (mode === 'counter') return withMastery(ctr);
-  const k = laneOpponentKnown ? laneCounterWeight?.[role] : undefined;
-  if (k != null) return withMastery(syn * (1 - k) + ctr * k);
-  // Poids de la maquette (scénarios de référence).
   return mastery == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + mastery * 0.25);
 };
+
+const isBotPair = (a: Role, b: Role) => (a === 'ADC' && b === 'Support') || (a === 'Support' && b === 'ADC');
 
 /**
  * Poids d'un ennemi d'une autre lane par rapport au vis-à-vis (1) : un quart, sauf en botlane où l'ADC
  * et le support ennemis jouent la même lane à deux (trois quarts).
  */
-export const otherEnemyWeight = (role: Role, enemyRole: Role): number =>
-  (role === 'ADC' && enemyRole === 'Support') || (role === 'Support' && enemyRole === 'ADC') ? 0.75 : 0.25;
+export const otherEnemyWeight = (role: Role, enemyRole: Role): number => (isBotPair(role, enemyRole) ? 0.75 : 0.25);
+
+/** Poids d'un duo allié : entier entre ADC et support, la moitié sinon (provisoire). */
+export const allyWeight = (role: Role, allyRole: Role): number => (isBotPair(role, allyRole) ? 1 : 0.5);
 
 const smooth = (value: number, games: number, prior: number, priorGames: number) => (value * games + prior * priorGames) / (games + priorGames);
 
 /**
+ * Effets des ennemis connus, vis-à-vis en tête : écart entre le win rate de ce champion contre eux et son win
+ * rate, lissé vers la moyenne de la paire de classes. Sans aucune donnée (données d'exemple), pas de ligne.
+ */
+const enemyEffects = (c: Entry, foes: Partial<Record<Role, string | null>>): EnemyEffect[] => {
+  const out: EnemyEffect[] = [];
+  for (const role of [c.role, ...ROLES.filter((r) => r !== c.role)]) {
+    const name = foes[role];
+    const effect = name ? matchupEffect(c, role, name) : null;
+    if (effect) out.push(effect);
+  }
+  return out;
+};
+
+/**
+ * Effet d'un ennemi `name` joué en `role` sur le champion `c` : écart lissé vers la moyenne de la paire de classes.
+ * null sans aucune donnée avec les données d'exemple.
+ */
+export const matchupEffect = (c: Entry, role: Role, name: string): EnemyEffect | null => {
+  const lane = role === c.role;
+  const m = lane ? c.matchups?.[name] : c.crossMatchups?.[role]?.[name];
+  const prior = c.classPrior('matchup', role, name);
+  if (!m && !prior && !c.measured) return null;
+  const games = m?.[1] ?? 0;
+  const delta = smooth(m ? m[0] - c.gameWinRate : 0, games, prior?.delta ?? 0, MATCHUP_PRIOR_GAMES);
+  return { opponent: name, role, lane, weight: lane ? 1 : otherEnemyWeight(c.role, role), winRate: m?.[0] ?? null, games, prior, delta };
+};
+
+/** Effets des alliés verrouillés : écart de win rate en duo, lissé vers la moyenne de la paire de classes. */
+const allyEffects = (c: Entry, ctx: readonly Entry[]): AllyEffect[] => {
+  const out: AllyEffect[] = [];
+  for (const x of ctx) {
+    const d = c.duos?.[x.role]?.[x.name];
+    const prior = c.classPrior('duo', x.role, x.name);
+    if (!d && !prior && !c.measured) continue;
+    const games = d?.[1] ?? 0;
+    const delta = smooth(d?.[0] ?? 0, games, prior?.delta ?? 0, DUO_PRIOR_GAMES);
+    out.push({ ally: x.name, role: x.role, weight: allyWeight(c.role, x.role), raw: d?.[0] ?? null, games, prior, delta });
+  }
+  return out;
+};
+
+const weighted = (rows: readonly { weight: number; delta: number }[]) => rows.reduce((s, r) => s + r.weight * r.delta, 0);
+
+/**
  * Évalue un candidat face au contexte allié `ctx` (les autres picks) et aux ennemis connus.
- * Portage ligne par ligne de `evalChamp` (maquette Draft v2) : ordre des opérations et arrondis identiques.
- * Avec des stats réelles, la synergie ajoute les duos mesurés et le counter utilise le matchup de lane.
+ * Avec des stats mesurées, le classement suit le win rate attendu : win rate lissé du champion, plus les écarts
+ * pondérés des matchups et des duos, plus la maîtrise. Avec les données d'exemple, c'est le portage ligne par ligne
+ * de `evalChamp` (maquette Draft v2) : ordre des opérations et arrondis identiques.
  */
 export const evaluate = (
   c: Entry,
@@ -64,7 +100,6 @@ export const evaluate = (
   foes: Partial<Record<Role, string | null>> = {},
   options: ScoringOptions = {}
 ): Evaluation => {
-  const laneOpponent = foes[c.role] ?? null;
   const met = new Map<Trait, string>();
   for (const x of ctx) for (const g of x.provides) if (!met.has(g)) met.set(g, x.name);
   const apCount = ctx.filter((x) => x.damage === 'AP').length;
@@ -87,19 +122,13 @@ export const evaluate = (
       reasons.push({ sign: '+', code: 'PROVIDES', trait: g });
     }
   }
-  const allyTeam: AllyDuo[] = [];
-  let duoBonus = 0;
-  if (c.duos) {
-    for (const x of ctx) {
-      const d = c.duos[x.role]?.[x.name];
-      if (d) allyTeam.push({ ally: x.name, role: x.role, delta: d[0], games: d[1], smoothed: smooth(d[0], d[1], 0, DUO_PRIOR_GAMES) });
-    }
-    if (allyTeam.length) {
-      duoBonus = Math.round((DUO_WEIGHT * allyTeam.reduce((s, d) => s + d.smoothed, 0)) / allyTeam.length);
-      syn += duoBonus;
-      for (const d of allyTeam) {
-        if (Math.abs(d.smoothed) >= DUO_REASON_MIN) reasons.push({ sign: d.smoothed > 0 ? '+' : '-', code: 'DUO', ally: d.ally, delta: d.smoothed });
-      }
+  const allyTeam = allyEffects(c, ctx);
+  // Score de la maquette : moyenne des duos mesurés, en points de synergie.
+  const measuredDuos = allyTeam.filter((d) => d.raw != null);
+  if (measuredDuos.length) {
+    syn += Math.round((DUO_WEIGHT * measuredDuos.reduce((s, d) => s + d.delta, 0)) / measuredDuos.length);
+    for (const d of measuredDuos) {
+      if (Math.abs(d.delta) >= DUO_REASON_MIN) reasons.push({ sign: d.delta > 0 ? '+' : '-', code: 'DUO', ally: d.ally, delta: d.delta });
     }
   }
   if (c.damage === 'AP' && apCount >= 2) {
@@ -124,33 +153,24 @@ export const evaluate = (
   if (c.games < LOW_SAMPLE_GAMES) reasons.push({ sign: '-', code: 'LOW_SAMPLE', games: c.games });
 
   syn = clamp(syn);
-  // Win rate lissé vers 50 % : un pick peu joué au win rate élevé ne sature plus le counter.
+  // Win rate lissé vers 50 % : un pick peu joué au win rate élevé ne sature plus le classement.
   const baseWr = c.priorGames > 0 ? (c.gameWinRate * c.games + 50 * c.priorGames) / (c.games + c.priorGames) : c.gameWinRate;
-  const found = laneOpponent ? c.matchups?.[laneOpponent] : undefined;
-  const m = found && found[1] >= MATCHUP_MIN_GAMES ? found : undefined;
-  const laneWr = m ? smooth(m[0], m[1], baseWr, MATCHUP_PRIOR_GAMES) : baseWr;
-  const matchup = m && laneOpponent ? { opponent: laneOpponent, winRate: m[0], games: m[1], delta: laneWr - baseWr } : null;
-  // Ennemis des autres lanes : chacun ajoute son écart au win rate général, avec moins de poids que le vis-à-vis.
-  const enemyTeam: EnemyTeamMatchup[] = [];
-  const enemyNoData: EnemyNoData[] = [];
-  // Seulement avec des stats mesurées (Lolalytics) : les données d'exemple n'ont aucun matchup.
-  if (laneOpponent && !m && c.measured) enemyNoData.push({ opponent: laneOpponent, role: c.role, lane: true, games: found?.[1] ?? null });
-  for (const [role, name] of Object.entries(foes) as [Role, string | null][]) {
-    if (!name || role === c.role || !c.measured) continue;
-    const x = c.crossMatchups?.[role]?.[name];
-    if (!x || x[1] < MATCHUP_MIN_GAMES) {
-      enemyNoData.push({ opponent: name, role, lane: false, games: x?.[1] ?? null });
-      continue;
-    }
-    const delta = smooth(x[0], x[1], baseWr, MATCHUP_PRIOR_GAMES) - baseWr;
-    enemyTeam.push({ opponent: name, role, winRate: x[0], games: x[1], weight: otherEnemyWeight(c.role, role), delta });
-  }
-  const enemyTeamDelta = enemyTeam.reduce((s, e) => s + e.weight * e.delta, 0);
-  const gameWr = laneWr + enemyTeamDelta;
+  const enemyTeam = enemyEffects(c, foes);
+  const matchups = weighted(enemyTeam);
   // Sans win rate de lane (Lolalytics), le counter repose sur le win rate de partie seul.
+  const gameWr = baseWr + matchups;
   const ctr = c.laneWinRate == null ? wrScore(gameWr) : Math.round(wrScore(c.laneWinRate) * 0.4 + wrScore(gameWr) * 0.6);
-  const total = totalScore(syn, ctr, c.mastery, c.role, laneOpponent != null, options);
+  const total = totalScore(syn, ctr, c.mastery, c.role, options);
   const delta = compScore([...ctx, c], enemies).total - compScore(ctx, enemies).total;
+
+  let expected: Expected | null = null;
+  if (c.measured) {
+    const duos = weighted(allyTeam);
+    const mastery = c.mastery == null ? 0 : (c.mastery / 10 - 5) * MASTERY_POINT;
+    const mode = modeOf(c.role, options);
+    const score = baseWr + (mode === 'synergy' ? 0 : matchups) + (mode === 'counter' ? 0 : duos) + mastery;
+    expected = { base: baseWr, matchups, duos, mastery, score };
+  }
 
   return {
     champion: c.name,
@@ -165,12 +185,10 @@ export const evaluate = (
     lowSample: c.games < LOW_SAMPLE_GAMES,
     laneWinRate: c.laneWinRate,
     gameWinRate: c.gameWinRate,
-    matchup,
+    matchup: enemyTeam[0]?.lane ? enemyTeam[0] : null,
     enemyTeam,
-    enemyTeamDelta,
-    enemyNoData,
     allyTeam,
-    duoBonus,
+    expected,
     laneShare: c.laneShare,
     scaling: c.scaling
   };

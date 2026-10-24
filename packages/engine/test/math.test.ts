@@ -12,27 +12,19 @@ describe('wrScore', () => {
 
 describe('totalScore', () => {
   it('garde les poids de la maquette par défaut', () => {
-    expect(totalScore(80, 60, null, 'Top', true, {})).toBe(Math.round(80 * 0.55 + 60 * 0.45));
-    expect(totalScore(80, 60, 70, 'Top', true, {})).toBe(Math.round(80 * 0.4 + 60 * 0.35 + 70 * 0.25));
+    expect(totalScore(80, 60, null, 'Top', {})).toBe(Math.round(80 * 0.55 + 60 * 0.45));
+    expect(totalScore(80, 60, 70, 'Top', {})).toBe(Math.round(80 * 0.4 + 60 * 0.35 + 70 * 0.25));
   });
 
   it('classe par synergie ou par counter selon le mode, maîtrise comprise', () => {
-    expect(totalScore(80, 60, null, 'Mid', false, { mode: 'synergy' })).toBe(80);
-    expect(totalScore(80, 60, 40, 'Mid', false, { mode: 'counter' })).toBe(Math.round(60 * 0.75 + 40 * 0.25));
+    expect(totalScore(80, 60, null, 'Mid', { mode: 'synergy' })).toBe(80);
+    expect(totalScore(80, 60, 40, 'Mid', { mode: 'counter' })).toBe(Math.round(60 * 0.75 + 40 * 0.25));
   });
 
   it('le mode propre à un rôle remplace le mode global', () => {
     const options = { mode: 'synergy' as const, modeByRole: { Top: 'counter' as const } };
-    expect(totalScore(80, 60, null, 'Top', false, options)).toBe(60);
-    expect(totalScore(80, 60, null, 'Mid', false, options)).toBe(80);
-  });
-
-  it("en mix, pondère le counter par rôle quand l'adversaire de lane est connu", () => {
-    const w = { Top: 0.65, Jungle: 0.35 };
-    expect(totalScore(80, 60, null, 'Top', true, { laneCounterWeight: w })).toBe(Math.round(80 * 0.35 + 60 * 0.65));
-    expect(totalScore(80, 60, null, 'Jungle', true, { laneCounterWeight: w })).toBe(Math.round(80 * 0.65 + 60 * 0.35));
-    // Adversaire inconnu : poids de la maquette.
-    expect(totalScore(80, 60, null, 'Top', false, { laneCounterWeight: w })).toBe(Math.round(80 * 0.55 + 60 * 0.45));
+    expect(totalScore(80, 60, null, 'Top', options)).toBe(60);
+    expect(totalScore(80, 60, null, 'Mid', options)).toBe(80);
   });
 });
 

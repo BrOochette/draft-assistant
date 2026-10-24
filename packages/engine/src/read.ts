@@ -1,7 +1,7 @@
-import { ROLES, type DraftState, type Pools, type Trait } from '@draft/schemas';
+import { ROLES, type Champion, type DraftState, type Pools, type Trait } from '@draft/schemas';
 import { rowMeta } from './context';
 import { avgScal } from './math';
-import { PHASES, type AllyReadItem, type CompMember, type EnemyReadItem, type PhaseResult, type TeamNote } from './types';
+import { PHASES, type AllyReadItem, type Archetype, type ArchetypeGroup, type CompMember, type EnemyReadItem, type PhaseResult, type TeamNote } from './types';
 
 export const scalingPhases = (ally: readonly CompMember[], enemies: readonly CompMember[]): PhaseResult[] => {
   const a = avgScal(ally);
@@ -66,4 +66,35 @@ export const teamNotes = (state: DraftState, pools: Pools): TeamNote[] => {
     if (roles.length > 1) out.push({ code: 'MULTI_ROLE', player, roles });
   }
   return out;
+};
+
+/**
+ * Archétype de compo par classe principale Riot (provisoire). Marksman n'en a pas : un tireur va dans toutes les compos.
+ */
+export const ARCHETYPE_OF_CLASS: Readonly<Record<string, Archetype>> = {
+  Diver: 'dive',
+  Assassin: 'dive',
+  Vanguard: 'engage',
+  Artillery: 'poke',
+  Enchanter: 'protect',
+  Warden: 'protect',
+  Catcher: 'pick',
+  Burst: 'pick',
+  Battlemage: 'teamfight',
+  Juggernaut: 'split',
+  Skirmisher: 'split',
+  Specialist: 'split'
+};
+
+/** Archétypes partagés par au moins 2 champions de la compo, du plus fourni au moins fourni. */
+export const archetypes = (names: readonly string[], catalog: ReadonlyMap<string, Champion>): ArchetypeGroup[] => {
+  const groups = new Map<Archetype, string[]>();
+  for (const name of names) {
+    const a = ARCHETYPE_OF_CLASS[catalog.get(name)?.classes?.[0] ?? ''];
+    if (a) groups.set(a, [...(groups.get(a) ?? []), name]);
+  }
+  return [...groups]
+    .filter(([, list]) => list.length >= 2)
+    .map(([archetype, list]) => ({ archetype, names: list }))
+    .sort((x, y) => y.names.length - x.names.length);
 };

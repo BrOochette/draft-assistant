@@ -3,6 +3,7 @@ import {
   type BanSuggestion,
   type Candidate,
   type Champion,
+  type ClassPriors,
   type MatchupNotes,
   type Role,
   type StatsSnapshot
@@ -25,8 +26,10 @@ export interface EngineData {
   banSuggestions: readonly BanSuggestion[];
   /** Lissage du win rate des candidats vers 50 % (parties fictives), 0 sans lissage. */
   winRatePriorGames: number;
-  /** Stats mesurées (Lolalytics) : matchups et duos connus, une paire absente veut dire « pas assez de parties ». */
+  /** Stats mesurées (Lolalytics) : le classement suit le win rate attendu. */
   measured: boolean;
+  /** Moyennes par paire de classes principales (stats mesurées), null sinon. */
+  classPriors: ClassPriors | null;
 }
 
 /** Valeurs par défaut de la maquette pour un pick sans stats (données d'exemple). */
@@ -74,6 +77,7 @@ export const createEngineData = (snapshot: StatsSnapshot): EngineData => {
   return {
     stats: new SnapshotStatsProvider(snapshot.candidates, catalog, measured),
     measured,
+    classPriors: snapshot.classPriors ?? null,
     catalog,
     matchupNotes: snapshot.matchupNotes,
     winRatePriorGames: snapshot.winRatePriorGames ?? 0,

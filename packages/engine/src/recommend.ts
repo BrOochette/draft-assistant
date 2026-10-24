@@ -34,8 +34,8 @@ export const recommendRole = (
   const evals = [...candidates, ...offRole]
     .filter((name) => !avail.gone(name, role))
     .map((name) => evaluate(entryFor(data, meta, role, name), ctx, enemies, meta.player, state.enemy, options));
-  // Array.prototype.sort est stable : à égalité, l'ordre de la source est conservé.
-  evals.sort((a, b) => b.total - a.total);
+  // Tri stable : à égalité, l'ordre de la source est conservé. Win rate attendu avec des stats mesurées, score sur 100 sinon.
+  evals.sort((a, b) => rankScore(b) - rankScore(a));
 
   if (!meta.hasPool) {
     // Sans pool, seuls les champions dont c'est un rôle principal sont classés ; les autres restent consultables.
@@ -62,3 +62,6 @@ export const recommendRole = (
 /** Part minimale des parties d'un champion sur un rôle pour qu'il y soit classé sans pool (en %). */
 export const MAIN_ROLE_SHARE = 20;
 const isMainRole = (e: Evaluation) => e.laneShare == null || e.laneShare >= MAIN_ROLE_SHARE;
+
+/** Valeur de classement : win rate attendu (stats mesurées), sinon score sur 100 de la maquette. */
+export const rankScore = (e: Evaluation): number => e.expected?.score ?? e.total;
