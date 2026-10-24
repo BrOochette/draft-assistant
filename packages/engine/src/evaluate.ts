@@ -1,7 +1,7 @@
-import type { Trait } from '@draft/schemas';
+import type { Role, Trait } from '@draft/schemas';
 import { compScore } from './composition';
 import { avgScal, clamp, wrScore } from './math';
-import type { CompMember, Entry, Evaluation, Phase, Reason } from './types';
+import type { CompMember, Entry, Evaluation, Phase, Reason, ScoringOptions } from './types';
 
 export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
 export const LOW_SAMPLE_GAMES = 500;
@@ -16,7 +16,31 @@ const DUO_WEIGHT = 4;
 /** Écart de duo (lissé) à partir duquel une raison est affichée. */
 const DUO_REASON_MIN = 1;
 
-const smooth = (value: number, games: number, prior: number, priorGames: number) => (value * games + prior * priorGames) / (games + priorGames);
+/**
+ * Part du counter dans le score « mix » quand l'adversaire de lane est connu : le matchup pèse plus en top
+ * qu'en jungle (choix du porteur du projet : top > mid = support > ADC > jungle).
+ */
+export const LANE_COUNTER_WEIGHT: Record<Role, number> = { Top: 0.65, Mid: 0.55, Support: 0.55, ADC: 0.45, Jungle: 0.35 };
+
+/** Score total. La maîtrise compte pour 25 % quand le joueur a un pool ; le reste dépend du mode. */
+export const totalScore = (
+  syn: number,
+  ctr: number,
+  mastery: number | null,
+  role: Role,
+  laneOpponentKnown: boolean,
+  { mode = 'mix', laneCounterWeight }: ScoringOptions
+): number => {
+  const withMastery = (v: number) => (mastery == null ? Math.round(v) : Math.round(v * 0.75 + mastery * 0.25));
+  if (mode === 'synergy') return withMastery(syn);
+  if (mode === 'counter') return withMastery(ctr);
+  const k = laneOpponentKnown ? laneCounterWeight?.[role] : undefined;
+  if (k != null) return withMastery(syn * (1 - k) + ctr * k);
+  // Poids de la maquette (scénarios de référence).
+  return mastery == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + mastery * 0.25);
+};
+
+const smooth =(value: number, games: number, prior: number, priorGames: number) => (value * games + prior * priorGames) / (games + priorGames);
 
 /**
  * Évalue un candidat face au contexte allié `ctx` (les autres picks) et aux ennemis connus.
@@ -28,7 +52,8 @@ export const evaluate = (
   ctx: readonly Entry[],
   enemies: readonly CompMember[],
   player: string | null,
-  laneOpponent: string | null = null
+  laneOpponent: string | null = null,
+  options: ScoringOptions = {}
 ): Evaluation => {
   const met = new Map<Trait, string>();
   for (const x of ctx) for (const g of x.provides) if (!met.has(g)) met.set(g, x.name);
@@ -95,7 +120,7 @@ export const evaluate = (
   const gameWr = m ? smooth(m[0], m[1], baseWr, MATCHUP_PRIOR_GAMES) : baseWr;
   // Sans win rate de lane (Lolalytics), le counter repose sur le win rate de partie seul.
   const ctr = c.laneWinRate == null ? wrScore(gameWr) : Math.round(wrScore(c.laneWinRate) * 0.4 + wrScore(gameWr) * 0.6);
-  const total = c.mastery == null ? Math.round(syn * 0.55 + ctr * 0.45) : Math.round(syn * 0.4 + ctr * 0.35 + c.mastery * 0.25);
+  const total = totalScore(syn, ctr, c.mastery, c.role, laneOpponent != null, options);
   const delta = compScore([...ctx, c], enemies).total - compScore(ctx, enemies).total;
 
   return {

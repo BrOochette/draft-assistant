@@ -13,6 +13,7 @@ import type {
   RecNote,
   ScalingVerdict,
   Side,
+  SuggestionMode,
   TeamNote,
   Verdict
 } from '@draft/engine';
@@ -61,7 +62,14 @@ export const reasonText = (r: Reason): string => {
 export const formatReason = (r: Reason | { sign: '+' | '-'; text: string }): string =>
   r.sign + ' ' + ('code' in r ? reasonText(r) : r.text);
 
-export const POOL_TAG: Record<PoolStatus, string> = { in: 'Pool', out: 'Hors pool', all: 'Tous les champions' };
+export const SUGGESTION_MODE_LABEL: Record<SuggestionMode, string> = { mix: 'Mix', synergy: 'Meilleure synergie', counter: 'Meilleur counter' };
+export const SUGGESTION_MODE_TIP: Record<SuggestionMode, string> = {
+  mix: "Synergie et counter. Quand l'adversaire de lane est connu, le counter pèse plus en top, puis mid et support, puis ADC, puis jungle.",
+  synergy: 'Classement par synergie avec ta compo (et maîtrise si le joueur a un pool).',
+  counter: "Classement par counter : win rate contre l'adversaire de lane s'il est connu, sinon win rate général (et maîtrise si le joueur a un pool)."
+};
+
+export const POOL_TAG: Record<PoolStatus, string> ={ in: 'Pool', out: 'Hors pool', all: 'Tous les champions' };
 
 export const VERDICT_LABEL: Record<Verdict, string> = { solid: 'Solide', fair: 'Correcte', fragile: 'Fragile', fix: 'À corriger' };
 export const SCALING_VERDICT_LABEL: Record<ScalingVerdict, string> = {

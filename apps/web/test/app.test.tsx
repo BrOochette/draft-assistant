@@ -94,6 +94,17 @@ describe('écran Joueurs', () => {
     expect(adc.queryByRole('option', { name: 'Lou' })).not.toBeInTheDocument();
   });
 
+  it('change le type de suggestion', async () => {
+    const user = userEvent.setup();
+    render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
+    expect(screen.getByRole('button', { name: 'Mix' })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(screen.getByRole('button', { name: 'Meilleure synergie' }));
+    expect(screen.getByRole('button', { name: 'Meilleure synergie' })).toHaveAttribute('aria-pressed', 'true');
+    // Synergie 82 et maîtrise 80 : 0,75 × 82 + 0,25 × 80 = 81,5.
+    expect(screen.getByRole('button', { name: /^Orianna, score 82 sur 100/ })).toBeInTheDocument();
+    expect(localStorage.getItem('draft-assistant:suggestion-mode')).toBe('synergy');
+  });
+
   it('permet de ne placer aucun joueur sur un rôle', async () => {
     const user = userEvent.setup();
     render(<App initialData={sampleAppData()} initialPools={seedPools()} />);

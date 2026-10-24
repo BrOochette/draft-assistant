@@ -92,7 +92,7 @@ export const CompoPanel = ({ result }: { result: DraftResult }) => {
         </button>
         {help && (
           <dl className="help">
-            <div><dt>Score sur 100</dt><dd>Combine synergie avec ta compo, counter face à l'ennemi et maîtrise du joueur. Sans pool, la maîtrise est ignorée.</dd></div>
+            <div><dt>Score sur 100</dt><dd>Selon le mode choisi : synergie avec ta compo, counter face à l'ennemi, ou les deux (Mix). La maîtrise du joueur compte pour un quart quand il a un pool. En Mix, quand l'adversaire de lane est connu, le counter pèse 65 % en top, 55 % en mid et en support, 45 % en ADC et 35 % en jungle.</dd></div>
             <div><dt>Compo +N</dt><dd>Points que ce pick ajoute à la note globale de ta compo.</dd></div>
             <div><dt>Lane et Partie</dt><dd>Win rate du champion dans ce matchup en lane, et sur la partie entière.</dd></div>
             <div><dt>Peu fiable</dt><dd>Moins de 500 parties derrière le win rate : la valeur peut changer fortement.</dd></div>

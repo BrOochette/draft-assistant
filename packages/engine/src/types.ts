@@ -43,6 +43,19 @@ export interface CompMember {
   scaling: Scaling;
 }
 
+/** Ce qui classe les suggestions : synergie, counter, ou le mélange des deux. */
+export type SuggestionMode = 'mix' | 'synergy' | 'counter';
+
+export interface ScoringOptions {
+  /** Absent : « mix » avec les poids de la maquette. */
+  mode?: SuggestionMode;
+  /**
+   * En « mix », part du counter dans (synergie + counter) quand l'adversaire de lane est connu, par rôle.
+   * Absente pour un rôle : poids de la maquette.
+   */
+  laneCounterWeight?: Partial<Record<Role, number>>;
+}
+
 export type Phase = 0 | 1 | 2;
 export const PHASES: readonly Phase[] = [0, 1, 2];
 

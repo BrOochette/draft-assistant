@@ -6,4 +6,5 @@ import { afterEach } from 'vitest';
 afterEach(() => {
   cleanup();
   location.hash = '';
+  localStorage.clear();
 });

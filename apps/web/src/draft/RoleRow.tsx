@@ -217,8 +217,8 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
             <>
               <div className="row-between wrap">
                 <span className="small soft">{row.note ? recNoteText(row.note, player, role) : ''}</span>
-                <button type="button" className="btn" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
-                  {expanded ? 'Réduire' : 'Plus de détails'} <Icon name="chevron" size={16} rotate={expanded} />
+                <button type="button" className="btn btn-sm" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+                  {expanded ? 'Réduire' : 'Plus de détails'} <Icon name="chevron" size={14} rotate={expanded} />
                 </button>
               </div>
               {shown.length === 0 && <span className="empty-box">Aucun champion disponible pour ce rôle.</span>}

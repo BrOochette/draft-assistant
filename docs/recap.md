@@ -158,6 +158,13 @@ Ces formules sont celles de la maquette, **Proposé** comme point de départ. Le
 - **Décidé** (23/10/2026) : le win rate de partie d'un candidat est lissé vers 50 % avec 3 000 parties fictives, `(win rate × parties + 50 × 3 000) / (parties + 3 000)`, avant le calcul du counter. Le matchup contre l'adversaire de lane est ensuite lissé vers cette valeur avec 1 000 parties fictives (décidé le 23/10/2026 : avec 200, Karthus ADC à 56,2 % sur 153 parties contre Miss Fortune montait à 92 de counter). **Décidé** (23/10/2026) : un matchup de moins de 500 parties est ignoré, le counter utilise alors le win rate lissé du champion et le chip « vs Adversaire » n'est pas affiché (Yasuo ADC à 63 % sur 219 parties contre Miss Fortune restait en tête). Sans ce lissage, des picks peu joués à fort win rate (Rek'Sai Top : 517 parties à 55,5 %) saturaient le counter. Le chip « Partie » affiche toujours le win rate brut.
 - **Décidé** (23/10/2026) : sans pool (ou sans joueur), seuls les champions qui jouent ce rôle dans au moins 20 % de leurs parties sont classés. Les autres apparaissent dans « Plus de détails », section « Rôle secondaire, non classés ». Avec un pool, ses champions restent classés quel que soit leur rôle principal.
 
+**Type de suggestion** (**Décidé** le 24/10/2026) : un sélecteur au-dessus des rôles choisit ce qui classe les suggestions, et le choix est mémorisé sur l'appareil.
+- **Meilleure synergie** : synergie seule (0,75 × synergie + 0,25 × maîtrise avec un pool).
+- **Meilleur counter** : counter seul (0,75 × counter + 0,25 × maîtrise avec un pool).
+- **Mix** (par défaut) : les poids ci-dessous. Quand l'adversaire de lane est connu, la part du counter dans (synergie + counter) dépend du rôle, car le matchup compte plus sur certaines lanes : top 65 %, mid et support 55 %, ADC 45 %, jungle 35 %. Avec un pool, cette part s'applique aux 75 % hors maîtrise. Les scénarios de référence du moteur gardent les poids de la maquette.
+
+Le bouton « Plus de détails » est réduit à 32 px de haut, à la demande du porteur du projet. C'est une exception à la règle des cibles tactiles de 44 px.
+
 **Score total** :
 - avec pool : `0,40 × synergie + 0,35 × counter + 0,25 × maîtrise`, où la maîtrise vaut note × 10 et un hors pool compte 0 ;
 - sans pool : `0,55 × synergie + 0,45 × counter`.
