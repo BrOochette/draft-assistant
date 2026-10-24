@@ -67,15 +67,17 @@ interface DetailProps {
   best: boolean;
   selected: boolean;
   secondary?: boolean;
-  /** Reçoit l'élément cliqué, d'où part le vol du portrait. */
-  onLock: (from: Element) => void;
+  /** Reçoit l'élément cliqué, d'où part le vol du portrait ; absent pour le rôle verrouillé (pas de bouton). */
+  onLock?: (from: Element) => void;
+  /** Chips du pied de ligne à la place des 3 premières raisons (rôle verrouillé : notes de matchup). */
+  chips?: { sign: '+' | '-' | null; text: string }[];
 }
 
 /**
  * Ligne de la vue liste, en grille : identité et raisons, contributions au score, scaling et chips, puis score et
  * bouton à droite. Sur petit écran, les blocs passent les uns sous les autres.
  */
-export const DetailItem = ({ e, role, avg, best, selected, secondary = false, onLock }: DetailProps) => (
+export const DetailItem = ({ e, role, avg, best, selected, secondary = false, onLock, chips }: DetailProps) => (
   <div className={'detail' + (selected ? ' is-selected' : '')}>
     <div className="detail-id">
       <Portrait name={e.champion} size={48} label={e.champion} />
@@ -95,7 +97,7 @@ export const DetailItem = ({ e, role, avg, best, selected, secondary = false, on
       <ScoreLine e={e} barWidth={64} />
     </div>
     <div className="detail-score">
-      <button type="button" className="btn btn-accent btn-sm" aria-label={C.lock(e.champion, role)} onClick={(ev) => onLock(ev.currentTarget)}>{C.lockButton}</button>
+      {onLock && <button type="button" className="btn btn-accent btn-sm" aria-label={C.lock(e.champion, role)} onClick={(ev) => onLock(ev.currentTarget)}>{C.lockButton}</button>}
       <div className="col detail-score-value">
         <ScoreValue e={e} className="score-md" avg={avg} best={best} />
         <Compo e={e} />
@@ -103,7 +105,9 @@ export const DetailItem = ({ e, role, avg, best, selected, secondary = false, on
     </div>
     {/* Pied de ligne : raisons et chips « vs » et « avec » sur une ligne, nombre de parties à droite. */}
     <div className="detail-foot">
-      {e.reasons.slice(0, 3).map((r, i) => <ReasonChip key={i} r={r} />)}
+      {chips
+        ? chips.map((c, i) => <Chip key={i} tone={c.sign === '+' ? 'pos' : c.sign === '-' ? 'neg' : 'plain'}>{c.text}</Chip>)
+        : e.reasons.slice(0, 3).map((r, i) => <ReasonChip key={i} r={r} />)}
       <WinRateChips e={e} wr={false} />
       <span className="detail-games"><SampleText e={e} /></span>
     </div>

@@ -38,7 +38,7 @@ const signed = (v: number) => {
 };
 
 /**
- * Contributions au win rate attendu, une ligne par effet : base, ennemis, alliés, maîtrise. Chaque effet a sa barre
+ * Contributions au win rate attendu, une ligne par effet : ennemis, alliés, maîtrise (la base est dans le chip WR). Chaque effet a sa barre
  * centrée sur zéro, pour lire d'un coup d'œil ce qui fait monter ou baisser le pick. Sans ennemi ou allié connu,
  * la ligne affiche « — » (rien à mesurer), à distinguer d'un effet nul « 0,0 ».
  */
@@ -51,11 +51,6 @@ const Contributions = ({ e, x, inline = false }: { e: Evaluation; x: Expected; i
   ];
   return (
     <span className={'contribs' + (inline ? ' contribs-inline' : '')}>
-      <span className="contrib" title={C.baseTip(x.base)}>
-        <span className="contrib-label">{C.base}</span>
-        <span />
-        <span className="contrib-value is-zero">{fmtPct(x.base)}</span>
-      </span>
       {rows.map((r) => {
         const s = r.v == null ? { text: r.none, tone: 'is-zero' } : signed(r.v);
         return (

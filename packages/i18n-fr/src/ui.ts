@@ -101,8 +101,6 @@ export const CARD_TEXT = {
   expectedTip: (base: number, avg: number | null, score: number) =>
     'Win rate attendu : ' + fmtPct(base) + " de base, plus l'effet des ennemis, des alliés et de la maîtrise" +
     (avg != null ? '. Moyenne du rôle : ' + fmtPct(avg) + ' (' + fmtSigned(score - avg) + ' pts)' : ''),
-  base: 'Base',
-  baseTip: (base: number) => 'Win rate du champion sur le rôle, lissé vers 50 % : ' + fmtPct(base),
   enemies: 'Ennemis',
   allies: 'Alliés',
   mastery: 'Maîtrise',
@@ -121,7 +119,9 @@ export const CARD_TEXT = {
   secondary: (share: number) => 'Rôle secondaire · ' + fmtInt(Math.round(share)) + ' %',
   secondaryTip: (role: Role) => 'Part des parties du champion jouées en ' + role,
   wr: (wr: number, lane: number | null) => 'WR ' + fmtPct(wr) + (lane != null ? ' · lane ' + fmtPct(lane) : ''),
-  wrTip: (hasLane: boolean) => 'Win rate de partie sur ce rôle, tous adversaires' + (hasLane ? ', puis win rate de lane' : ''),
+  wrTip: (hasLane: boolean, base: number | null = null) =>
+    'Win rate de partie sur ce rôle, tous adversaires' + (hasLane ? ', puis win rate de lane' : '') +
+    (base != null ? '. Base du win rate attendu : ' + fmtPct(base) + ' (lissé vers 50 % selon le nombre de parties)' : ''),
   scaling: 'Scaling',
   scalingTip: 'Puissance au début, au milieu et en fin de partie',
   phaseTip: (phase: string, v: number) => phase + ' : ' + v + ' sur 5'
