@@ -201,7 +201,8 @@ button:disabled { cursor: not-allowed; }
 .detail-score-value { align-items: flex-end; }
 .detail-foot { grid-area: foot; display: flex; align-items: flex-end; gap: 10px; }
 .detail-chips { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap-reverse; align-items: center; gap: 6px; }
-.detail-games { flex: none; margin-left: auto; padding-bottom: 6px; }
+/* Même hauteur que les chips (28 px) : le texte reste centré sur la ligne du bas. */
+.detail-games { flex: none; margin-left: auto; min-height: 28px; display: flex; align-items: center; }
 /* Téléphone : identité et score, puis contributions, puis le pied de ligne. */
 @container (max-width: 480px) {
   .detail { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "id score" "contrib contrib" "foot foot"; }
