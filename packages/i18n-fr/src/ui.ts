@@ -31,6 +31,11 @@ export const APP_TEXT = {
   cancel: 'Annuler',
   newDraft: 'Nouvelle draft',
   loading: 'Chargement…',
+  /** Mention exigée par Riot pour un projet de fan (texte officiel, en anglais). */
+  legalRiot:
+    "Draft Assistant isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+  legalSources: 'Projet de fan non commercial. Stats : Lolalytics. Attributs des champions : wiki League of Legends. Portraits : Data Dragon (Riot Games).',
+  footer: 'Mentions',
   snapshotMissing: (status: number) => 'Snapshot introuvable (' + status + '). Lancer « npm run ingest -- sample ».'
 };
 

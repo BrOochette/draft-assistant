@@ -104,6 +104,10 @@ export const App = ({ initialData, initialPools }: Props) => {
             : <PlayersScreen pools={pools} onChange={changePools} />}
         </DataContext.Provider>
       )}
+      <footer className="footer" aria-label={T.footer}>
+        <p>{T.legalSources}</p>
+        <p lang="en">{T.legalRiot}</p>
+      </footer>
     </div>
   );
 };

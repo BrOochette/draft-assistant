@@ -1,0 +1,12 @@
+# En-têtes Cloudflare Pages.
+# Fichiers du build, nommés par leur contenu : mis en cache longtemps.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Portraits : changent rarement (nouveau champion).
+/champions/*
+  Cache-Control: public, max-age=604800
+
+# Stats du patch : revalidées à chaque chargement, pour suivre les mises à jour.
+/data/*
+  Cache-Control: public, max-age=0, must-revalidate

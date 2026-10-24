@@ -6,7 +6,6 @@ Aide à la draft sur League of Legends, pour un usage personnel. L'application t
 
 ```bash
 npm install
-npm run ingest -- portraits   # une fois : portraits Data Dragon en local
 npm run dev                   # assemble le snapshot de stats puis lance Vite sur http://localhost:5173
 ```
 
@@ -16,6 +15,8 @@ npm run dev                   # assemble le snapshot de stats puis lance Vite su
 npm run ingest -- lolalytics  # environ 15 min (toutes régions) : écrit data/stats/lolalytics-<patch>.json
 npm run dev                   # le snapshot est réassemblé avec les stats les plus récentes
 ```
+
+Puis commiter `data/stats/` et `apps/web/public/data/snapshot.json`, et pousser : Cloudflare Pages redéploie le site. Après la sortie d'un champion, `npm run ingest -- portraits` ajoute son portrait dans `apps/web/public/champions/` (à commiter aussi).
 
 Les attributs des champions (Frontline, Engage, Peel, type de dégâts, rôles) viennent du wiki LoL. Pour les régénérer, par exemple après la sortie d'un champion :
 
@@ -51,3 +52,27 @@ Pour corriger un attribut à la main, modifier `data/champions-overrides.json` :
 - Stats : [Lolalytics](https://lolalytics.com). Pages publiques des champions, plus l'API interne du site pour les duos (non publique, elle peut changer). Collecte légère et identifiée, une fois par patch, pour un usage personnel non commercial.
 - Attributs : [wiki League of Legends](https://wiki.leagueoflegends.com/en-us/Module:ChampionData/data), contenu sous licence CC BY-SA.
 - Portraits : Data Dragon de Riot Games.
+
+## Déploiement (Cloudflare Pages)
+
+Comme Blind Pick : Cloudflare Pages construit le site depuis GitHub à chaque push sur `master`. Le snapshot de stats et les portraits sont commités ; le build n'a pas besoin du réseau.
+
+Réglages du projet Pages (Workers & Pages, Create, Pages, Connect to Git, dépôt `draft-assistant`) :
+
+| Réglage | Valeur |
+|---|---|
+| Framework preset | None |
+| Build command | `npm run build` |
+| Build output directory | `apps/web/dist` |
+| Root directory | (vide : racine du dépôt) |
+| Variable d'environnement | `NODE_VERSION` = `22` (aussi fixé par `.node-version`) |
+
+`apps/web/public/_headers` règle le cache : fichiers du build un an, portraits une semaine, stats revalidées à chaque chargement. La navigation passe par `#/`, aucune règle de redirection n'est nécessaire.
+
+Les stats viennent de Lolalytics : pour ne pas les republier en accès libre, protéger le site avec Cloudflare Access (Zero Trust, Access, Applications, Self-hosted : domaine `*.pages.dev` du projet, règle « Emails » avec les adresses autorisées).
+
+## Mention légale
+
+Draft Assistant isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+
+Projet de fan non commercial. Pas de publicité, pas de monétisation.
