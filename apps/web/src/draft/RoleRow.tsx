@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type Dispatch } from 'react';
 import { availability, type DraftAction, type RoleResult, type Side, type SuggestionMode } from '@draft/engine';
 import { blockedLabel, DRAFT_TEXT as D, recNoteText, SUGGESTION_MODE_SHORT, SUGGESTION_MODE_TIP } from '@draft/i18n-fr';
 import type { DraftState } from '@draft/schemas';
-import { Icon, useData } from '../ui';
+import { Icon, launchFrom, slotKey, useData } from '../ui';
 import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
 import { LockedSummary } from './LockedSummary';
 import { RecCard } from './RecCard';
@@ -20,6 +20,9 @@ interface Props {
 }
 
 const MODES: SuggestionMode[] = ['mix', 'synergy', 'counter'];
+
+/** Portrait de la card, de la ligne ou de la case du sélecteur cliquée. */
+const portraitOf = (from?: Element) => from?.closest('.rec, .detail, .picker-item')?.querySelector('.portrait');
 
 /** Ligne d'un rôle : colonne des picks, puis suggestions (3 cards ou liste) ou résumé du pick verrouillé. */
 export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dispatch }: Props) => {
@@ -50,7 +53,8 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
     });
   }, [picker, query, roleFilter, draft, engine, role, ally, enemy]);
 
-  const lock = (champion: string) => {
+  const lock = (champion: string, from?: Element) => {
+    launchFrom(portraitOf(from), slotKey('ally', role, champion));
     dispatch({ type: 'lock', role, champion });
     setPicker(null);
   };
@@ -108,10 +112,13 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                 </div>
               </div>
               {row.recommendations.length === 0 && <span className="empty-box">{D.noChampion}</span>}
+              {/* Changer de vue ou de mode rejoue l'entrée des suggestions. */}
               {expanded ? (
-                <SuggestionList row={row} selected={selected} onLock={lock} onScrollTop={scrollToTop} />
+                <div key="list" className="col gap-10 view-in">
+                  <SuggestionList row={row} selected={selected} onLock={lock} onScrollTop={scrollToTop} />
+                </div>
               ) : (
-                <ul className="recs">
+                <ul key={'cards-' + mode} className="recs view-in">
                   {row.recommendations.map((e, i) => (
                     <RecCard
                       key={e.champion}
@@ -121,7 +128,7 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                       avg={row.averageWr}
                       selected={selected === e.champion}
                       onSelect={() => dispatch({ type: 'select', role, champion: e.champion })}
-                      onLock={() => lock(e.champion)}
+                      onLock={(from) => lock(e.champion, from)}
                     />
                   ))}
                 </ul>
@@ -129,7 +136,11 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
             </>
           )}
 
-          {row.locked && <LockedSummary row={row} />}
+          {row.locked && (
+            <div key={row.locked.champion} className="col gap-10 locked-in">
+              <LockedSummary row={row} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -141,9 +152,10 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
           onQuery={setQuery}
           items={items}
           actionLabel={(n) => (picker === 'ally' ? D.chooseIn(n, role) : D.enterIn(n, role))}
-          onChoose={(n) => {
-            if (picker === 'ally') lock(n);
+          onChoose={(n, from) => {
+            if (picker === 'ally') lock(n, from);
             else {
+              launchFrom(portraitOf(from), slotKey('enemy', role, n));
               dispatch({ type: 'setEnemy', role, champion: n });
               setPicker(null);
             }

@@ -52,7 +52,7 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
     return Array.from({ length: MAX_BANS }, (_, i) => {
       const n = list[i];
       return n ? (
-        <button key={i} type="button" className={'ban-slot is-' + side} aria-label={B.remove(n)} title={B.remove(n)} onClick={() => dispatch({ type: 'removeBan', side, champion: n })}>
+        <button key={'ban-' + n} type="button" className={'ban-slot is-' + side} aria-label={B.remove(n)} title={B.remove(n)} onClick={() => dispatch({ type: 'removeBan', side, champion: n })}>
           <Portrait name={n} size={46} />
           <svg aria-hidden="true" className="strike" viewBox="0 0 48 48"><line x1="6" y1="42" x2="42" y2="6" /></svg>
         </button>

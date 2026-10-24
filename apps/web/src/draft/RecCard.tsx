@@ -22,7 +22,8 @@ interface CardProps {
   avg: number | null;
   selected: boolean;
   onSelect: () => void;
-  onLock: () => void;
+  /** Reçoit l'élément cliqué, d'où part le vol du portrait. */
+  onLock: (from: Element) => void;
 }
 
 /**
@@ -36,7 +37,7 @@ export const RecCard = ({ e, rank, role, avg, selected, onSelect, onLock }: Card
     aria-label={C.group(e.champion, e.expected?.score ?? null, e.total, selected)}
     onClick={(ev) => !(ev.target as Element).closest('button') && onSelect()}
   >
-    <button type="button" className="rec-lock" aria-label={C.lock(e.champion, role)} title={C.lockTip} onClick={onLock}>
+    <button type="button" className="rec-lock" aria-label={C.lock(e.champion, role)} title={C.lockTip} onClick={(ev) => onLock(ev.currentTarget)}>
       <Icon name="lock" size={16} />
     </button>
     <div className="rec-body">
@@ -66,7 +67,8 @@ interface DetailProps {
   best: boolean;
   selected: boolean;
   secondary?: boolean;
-  onLock: () => void;
+  /** Reçoit l'élément cliqué, d'où part le vol du portrait. */
+  onLock: (from: Element) => void;
 }
 
 /**
@@ -93,7 +95,7 @@ export const DetailItem = ({ e, role, avg, best, selected, secondary = false, on
       <ScoreLine e={e} barWidth={64} />
     </div>
     <div className="detail-score">
-      <button type="button" className="btn btn-accent btn-sm" aria-label={C.lock(e.champion, role)} onClick={onLock}>{C.lockButton}</button>
+      <button type="button" className="btn btn-accent btn-sm" aria-label={C.lock(e.champion, role)} onClick={(ev) => onLock(ev.currentTarget)}>{C.lockButton}</button>
       <div className="col detail-score-value">
         <ScoreValue e={e} className="score-md" avg={avg} best={best} />
         <Compo e={e} />

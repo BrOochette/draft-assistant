@@ -10,7 +10,7 @@ export const LIST_LIMIT = 10;
 interface Props {
   row: RoleResult;
   selected: string | undefined;
-  onLock: (champion: string) => void;
+  onLock: (champion: string, from: Element) => void;
   onScrollTop: () => void;
 }
 
@@ -42,7 +42,7 @@ export const SuggestionList = ({ row, selected, onLock, onScrollTop }: Props) =>
             {first && kind === 'pool' && <span className="detail-head accent-text">{row.hasPool ? D.headPool : D.headAll(role, !!player)}</span>}
             {first && kind === 'out' && <span className="detail-head warn-text">{D.headOut}</span>}
             {first && kind === 'secondary' && <span className="detail-head muted" title={D.secondaryTip(MAIN_ROLE_SHARE, role)}>{D.headSecondary}</span>}
-            <DetailItem e={e} role={role} avg={row.averageWr} best={best} secondary={kind === 'secondary'} selected={selected === e.champion} onLock={() => onLock(e.champion)} />
+            <DetailItem e={e} role={role} avg={row.averageWr} best={best} secondary={kind === 'secondary'} selected={selected === e.champion} onLock={(from) => onLock(e.champion, from)} />
           </li>
         ))}
       </ul>

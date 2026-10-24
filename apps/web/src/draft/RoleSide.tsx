@@ -1,7 +1,19 @@
-import type { Dispatch } from 'react';
+import { useLayoutEffect, useRef, type Dispatch } from 'react';
 import type { DraftAction, RoleResult, Side } from '@draft/engine';
 import { DRAFT_TEXT as D } from '@draft/i18n-fr';
-import { Icon, Portrait } from '../ui';
+import { Icon, land, Portrait, slotKey } from '../ui';
+
+/** Portrait d'un emplacement : quand le champion change, il arrive en vol depuis le portrait cliqué. */
+const SlotPortrait = ({ name, landing }: { name: string; landing: string }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const first = useRef(true);
+  useLayoutEffect(() => {
+    // À l'apparition, seulement un vol (pas de rebond au chargement de la page) ; au changement, vol ou rebond.
+    land(landing, ref.current, !first.current);
+    first.current = false;
+  }, [landing]);
+  return <span ref={ref} className="face-img"><Portrait name={name} size={58} /></span>;
+};
 
 interface Props {
   row: RoleResult;
@@ -33,7 +45,7 @@ export const RoleSide = ({ row, players, picker, onOpenPicker, dispatch }: Props
               title={D.allyFaceTip(!!ally)}
               onClick={() => onOpenPicker('ally')}
             >
-              {ally ? <Portrait name={ally} size={58} /> : '?'}
+              {ally ? <SlotPortrait name={ally} landing={slotKey('ally', role, ally)} /> : '?'}
             </button>
             {ally && (
               <button type="button" className="remove" aria-label={D.removeAlly(ally, role)} title={D.removeTip(ally)} onClick={() => dispatch({ type: 'unlock', role })}>
@@ -61,7 +73,7 @@ export const RoleSide = ({ row, players, picker, onOpenPicker, dispatch }: Props
               title={D.enemyFaceTip(!!enemy)}
               onClick={() => onOpenPicker('enemy')}
             >
-              {enemy ? <Portrait name={enemy} size={58} /> : '?'}
+              {enemy ? <SlotPortrait name={enemy} landing={slotKey('enemy', role, enemy)} /> : '?'}
             </button>
             {enemy && (
               <button type="button" className="remove" aria-label={D.removeEnemy(enemy, role)} title={D.removeTip(enemy)} onClick={() => dispatch({ type: 'clearEnemy', role })}>

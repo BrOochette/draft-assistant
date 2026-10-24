@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type Dispatch, type KeyboardEvent
 import { availability, rolesByPlay, type DraftAction, type Side } from '@draft/engine';
 import { blockedLabel, QUICK_TEXT as Q } from '@draft/i18n-fr';
 import type { DraftState, Role } from '@draft/schemas';
-import { Portrait, useData } from '../ui';
+import { launchFrom, Portrait, slotKey, useData } from '../ui';
 import { filterChampions } from './ChampionPicker';
 
 /** Champions proposés à la fois. */
@@ -61,6 +61,7 @@ export const QuickPick = ({ draft, dispatch }: { draft: DraftState; dispatch: Di
 
   const place = (o: Option, role: Role) => {
     if (o.why) return;
+    launchFrom(document.getElementById('quick-option-' + options.indexOf(o))?.querySelector('.portrait'), slotKey(side, role, o.name));
     dispatch(side === 'enemy' ? { type: 'setEnemy', role, champion: o.name } : { type: 'lock', role, champion: o.name });
     setQuery('');
     setActive(0);

@@ -38,7 +38,7 @@ interface Props {
   query: string;
   onQuery: (q: string) => void;
   items: PickerItem[];
-  onChoose: (name: string) => void;
+  onChoose: (name: string, from: Element) => void;
   onClose: () => void;
   actionLabel: (name: string) => string;
   actions?: ReactNode;
@@ -113,7 +113,7 @@ export const ChampionPicker = ({ title, accent, query, onQuery, items, onChoose,
               className={'picker-item' + (c.current ? ' is-current' : '')}
               disabled={c.disabled}
               aria-label={c.disabled ? T.unavailable(c.name, c.note) : actionLabel(c.name)}
-              onClick={() => onChoose(c.name)}
+              onClick={(ev) => onChoose(c.name, ev.currentTarget)}
             >
               <Portrait name={c.name} size={44} />
               <span className="strong small">{c.name}</span>
