@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { masteryLevel } from '@draft/i18n-fr';
 import { ROLES, type Champion, type PoolEntry, type Pools, type Role } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, useData } from '../ui';
+import { filterChampions } from '../draft/ChampionPicker';
 
 interface Props {
   pools: Pools;
@@ -45,16 +46,17 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
   const setPool = (fn: (list: PoolEntry[]) => PoolEntry[]) =>
     onChange({ ...pools, [player]: { ...pools[player], [role]: fn(pool) } });
 
-  // Tous les champions du catalogue, y compris hors de leurs rôles habituels (rôles affichés à droite).
-  const allChampions = useMemo(() => [...engine.catalog.keys()], [engine]);
-  const addable = allChampions.filter((n) => !pool.some((p) => p.champion === n));
-  const q = newChamp.trim().toLowerCase();
-  const options = addable.filter((n) => n.toLowerCase().includes(q)).sort((a, b) => a.localeCompare(b, 'fr'));
+  // Tous les champions du catalogue, y compris hors de leurs rôles habituels (rôles affichés à droite), sauf ceux du pool.
+  const options = filterChampions(engine.catalog, 'Tous', newChamp)
+    .map((c) => c.name)
+    .filter((n) => !pool.some((p) => p.champion === n));
+  // Option active ramenée dans la liste courante (elle change avec la recherche, le rôle ou le joueur) ; -1 si vide.
+  const current = Math.min(active, options.length - 1);
 
   // Au clavier, l'option active reste visible dans la liste.
   useEffect(() => {
-    if (listOpen) document.getElementById('champ-option-' + active)?.scrollIntoView?.({ block: 'nearest' });
-  }, [active, listOpen]);
+    if (listOpen) document.getElementById('champ-option-' + current)?.scrollIntoView?.({ block: 'nearest' });
+  }, [current, listOpen]);
 
   const addChampion = (name: string) => {
     setPool((list) => [...list, { champion: name, mastery: 5 }]);
@@ -188,7 +190,7 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
                 autoComplete="off"
                 aria-expanded={listOpen}
                 aria-controls="champ-options"
-                aria-activedescendant={listOpen && options[active] ? 'champ-option-' + active : undefined}
+                aria-activedescendant={listOpen && current >= 0 ? 'champ-option-' + current : undefined}
                 placeholder="Rechercher un champion"
                 value={newChamp}
                 onChange={(e) => {
@@ -202,12 +204,12 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
                   if (e.key === 'ArrowDown') {
                     e.preventDefault();
                     setListOpen(true);
-                    setActive(Math.min(active + 1, options.length - 1));
+                    setActive(Math.max(0, Math.min(current + 1, options.length - 1)));
                   } else if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    setActive(Math.max(active - 1, 0));
-                  } else if (e.key === 'Enter' && listOpen && options[active]) {
-                    addChampion(options[active]);
+                    setActive(Math.max(current - 1, 0));
+                  } else if (e.key === 'Enter' && listOpen && current >= 0) {
+                    addChampion(options[current]!);
                   } else if (e.key === 'Escape') {
                     setListOpen(false);
                   }
@@ -222,8 +224,8 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
                       id={'champ-option-' + i}
                       role="option"
                       aria-label={n}
-                      aria-selected={i === active}
-                      className={'combo-option' + (i === active ? ' is-active' : '')}
+                      aria-selected={i === current}
+                      className={'combo-option' + (i === current ? ' is-active' : '')}
                       // mousedown : avant le blur du champ, qui fermerait la liste.
                       onMouseDown={(e) => {
                         e.preventDefault();

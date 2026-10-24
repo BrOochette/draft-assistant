@@ -28,6 +28,8 @@ export interface Entry {
   laneShare: number | null;
   /** Parties fictives à 50 % pour lisser le win rate dans le counter (0 : pas de lissage). */
   priorGames: number;
+  /** Matchups mesurés (Lolalytics) : une paire absente signale « pas assez de parties ». */
+  measured: boolean;
 }
 
 /** Matchup contre un ennemi d'une autre lane, et son poids dans le counter. */

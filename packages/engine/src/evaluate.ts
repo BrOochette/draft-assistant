@@ -133,10 +133,10 @@ export const evaluate = (
   // Ennemis des autres lanes : chacun ajoute son écart au win rate général, avec moins de poids que le vis-à-vis.
   const enemyTeam: EnemyTeamMatchup[] = [];
   const enemyNoData: EnemyNoData[] = [];
-  // Seulement avec des matchups mesurés (Lolalytics) : les données d'exemple n'en ont pas du tout.
-  if (laneOpponent && !m && c.matchups) enemyNoData.push({ opponent: laneOpponent, role: c.role, lane: true, games: found?.[1] ?? null });
+  // Seulement avec des stats mesurées (Lolalytics) : les données d'exemple n'ont aucun matchup.
+  if (laneOpponent && !m && c.measured) enemyNoData.push({ opponent: laneOpponent, role: c.role, lane: true, games: found?.[1] ?? null });
   for (const [role, name] of Object.entries(foes) as [Role, string | null][]) {
-    if (!name || role === c.role || !c.crossMatchups) continue;
+    if (!name || role === c.role || !c.measured) continue;
     const x = c.crossMatchups?.[role]?.[name];
     if (!x || x[1] < MATCHUP_MIN_GAMES) {
       enemyNoData.push({ opponent: name, role, lane: false, games: x?.[1] ?? null });

@@ -39,6 +39,7 @@ export const entryFor = (data: EngineData, meta: RowMeta, role: Role, name: stri
     ...(s.crossMatchups && { crossMatchups: s.crossMatchups }),
     laneShare: s.laneShare ?? null,
     priorGames: data.winRatePriorGames,
+    measured: data.measured,
     ...poolStatus(meta, name)
   };
 };

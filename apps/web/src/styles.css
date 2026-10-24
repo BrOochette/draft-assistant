@@ -183,10 +183,9 @@ button:disabled { cursor: not-allowed; }
 .delta { font-size: 13px; font-weight: 600; color: var(--ally-soft); }
 .rec-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 8px; width: 100%; }
 .rec-stats .col { gap: 3px; }
-.rec-lock { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 8px; border: 1px solid var(--accent); background: var(--raise); color: var(--accent); cursor: pointer; }
+.rec-lock { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 8px; border: 1px solid var(--accent); background: var(--raise); color: var(--accent); cursor: pointer; opacity: 0; transition: opacity .12s; }
 .rec-lock:hover, .rec-lock:focus-visible { background: var(--accent); color: var(--accent-ink); }
-/* Visible au survol de la card ou au clavier ; toujours visible sur écran tactile. */
-.rec-lock { opacity: 0; transition: opacity .12s; }
+/* Cadenas visible au survol de la card, au clavier ou après présélection ; toujours visible sur écran tactile. */
 .rec:hover .rec-lock, .rec:focus-within .rec-lock, .rec.is-selected .rec-lock { opacity: 1; }
 @media (hover: none) { .rec-lock { opacity: 1; } }
 

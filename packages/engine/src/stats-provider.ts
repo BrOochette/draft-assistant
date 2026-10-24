@@ -25,16 +25,22 @@ export interface EngineData {
   banSuggestions: readonly BanSuggestion[];
   /** Lissage du win rate des candidats vers 50 % (parties fictives), 0 sans lissage. */
   winRatePriorGames: number;
+  /** Stats mesurées (Lolalytics) : matchups et duos connus, une paire absente veut dire « pas assez de parties ». */
+  measured: boolean;
 }
 
+/** Valeurs par défaut de la maquette pour un pick sans stats (données d'exemple). */
 const FALLBACK = { games: 3000, synergyBase: 55, laneWinRate: 50, gameWinRate: 50 };
+/** Avec des stats mesurées : aucune partie connue sur ce rôle, signalé « peu fiable ». */
+const MEASURED_FALLBACK = { games: 0, synergyBase: 55, laneWinRate: null, gameWinRate: 50 };
 
 export class SnapshotStatsProvider implements StatsProvider {
   private readonly byRole = new Map<Role, Map<string, Candidate>>();
 
   constructor(
     private readonly candidates: StatsSnapshot['candidates'],
-    private readonly catalog: ReadonlyMap<string, Champion>
+    private readonly catalog: ReadonlyMap<string, Champion>,
+    private readonly measured = false
   ) {
     for (const [role, list] of Object.entries(candidates) as [Role, Candidate[]][]) {
       this.byRole.set(role, new Map(list.map((c) => [c.name, c])));
@@ -48,11 +54,11 @@ export class SnapshotStatsProvider implements StatsProvider {
   getRoleStats(champion: string, role: Role): Candidate {
     const found = this.byRole.get(role)?.get(champion);
     if (found) return found;
-    // Valeur par défaut de la maquette pour un pick sans stats (saisie manuelle).
+    // Pick sans stats sur ce rôle (saisie manuelle, champion du pool hors de ses rôles habituels).
     const m = this.catalog.get(champion);
     return {
       name: champion,
-      ...FALLBACK,
+      ...(this.measured ? MEASURED_FALLBACK : FALLBACK),
       scaling: m ? m.scaling : [3, 3, 3],
       provides: m ? m.provides : [],
       damage: m ? m.damage : 'AD',
@@ -64,8 +70,10 @@ export class SnapshotStatsProvider implements StatsProvider {
 export const createEngineData = (snapshot: StatsSnapshot): EngineData => {
   const catalog = new Map<string, Champion>();
   for (const c of snapshot.champions) if (!catalog.has(c.name)) catalog.set(c.name, normalizeChampion(c));
+  const measured = snapshot.source === 'lolalytics';
   return {
-    stats: new SnapshotStatsProvider(snapshot.candidates, catalog),
+    stats: new SnapshotStatsProvider(snapshot.candidates, catalog, measured),
+    measured,
     catalog,
     matchupNotes: snapshot.matchupNotes,
     winRatePriorGames: snapshot.winRatePriorGames ?? 0,

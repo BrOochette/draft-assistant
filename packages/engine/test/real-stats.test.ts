@@ -148,6 +148,13 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(bans({ ...base, enemyBans: ['Sejuani'] })).toEqual(['Lee Sin', 'Viego', 'Zac']);
   });
 
+  it('classe un champion du pool joué hors de ses rôles habituels, signalé peu fiable', () => {
+    const top = computeDraft(base, { A: { Top: [{ champion: 'Zed', mastery: 8 }] } }, data).roles[0]!;
+    expect(top.note).toBe('POOL');
+    const zed = top.recommendations[0]!;
+    expect(zed).toMatchObject({ champion: 'Zed', pool: 'in', games: 0, lowSample: true, laneWinRate: null, gameWinRate: 50 });
+  });
+
   it('ajoute la synergie de duo avec un allié verrouillé', () => {
     const without = mid(base);
     const withSej = mid({ ...base, ally: { ...base.ally, Jungle: 'Sejuani' } });

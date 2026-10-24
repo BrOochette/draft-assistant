@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useId, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { DUO_WEIGHT, MATCHUP_MIN_GAMES, type Evaluation } from '@draft/engine';
 import { fmtDelta, fmtInt, fmtPct, fmtSigned, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
@@ -108,10 +108,23 @@ const FloatingChip = ({ name, value, label, panelLabel, children }: { name: stri
   const [loading, setLoading] = useState(false);
   /** Position du loader : sous le curseur à la souris, sur le chip au clavier. */
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
+  /** Ouverte par un clic : un second clic la ferme. Ouverte au survol : le clic la garde et saute le loader. */
+  const pinned = useRef(false);
   const close = () => {
     window.clearTimeout(loadTimer.current);
+    pinned.current = false;
     setLoading(false);
     setPos(null);
+  };
+  const onClick = (ev: MouseEvent<HTMLButtonElement>) => {
+    if (!pos) {
+      open(ev.detail > 0 ? { x: ev.clientX, y: ev.clientY } : undefined);
+      pinned.current = true;
+    } else if (!pinned.current) {
+      pinned.current = true;
+      window.clearTimeout(loadTimer.current);
+      setLoading(false);
+    } else close();
   };
   const open = (at?: { x: number; y: number }) => {
     window.clearTimeout(closeTimer.current);
@@ -153,7 +166,6 @@ const FloatingChip = ({ name, value, label, panelLabel, children }: { name: stri
         ref={anchor}
         type="button"
         className="chip chip-info chip-btn"
-        title={label}
         aria-label={label}
         aria-expanded={!!pos}
         aria-controls={pos ? panelId : undefined}
@@ -162,7 +174,7 @@ const FloatingChip = ({ name, value, label, panelLabel, children }: { name: stri
         onMouseLeave={closeSoon}
         onFocus={() => open()}
         onBlur={closeSoon}
-        onClick={(ev) => (pos ? close() : open(ev.detail > 0 ? { x: ev.clientX, y: ev.clientY } : undefined))}
+        onClick={onClick}
       >
         <span className="ellipsis">{name}</span>
         <span className="nowrap">{value}</span>
@@ -279,7 +291,7 @@ const AllyPopover = ({ e }: { e: Evaluation }) => {
               <td><PopoverChamp name={d.ally} sub={d.role} /></td>
               <td className={tone(d.delta)}>{fmtSigned(d.delta)}<br /><span className="muted">{fmtInt(d.games)} parties</span></td>
               <td className={tone(d.smoothed)}>{fmtSigned(d.smoothed)}</td>
-              <td>{'×' + fmt2(DUO_WEIGHT / n)}</td>
+              <td>{weightLabel(DUO_WEIGHT / n)}</td>
               <td className={'strong ' + tone(d.smoothed)}>{fmtSigned((DUO_WEIGHT * d.smoothed) / n)}</td>
             </tr>
           ))}

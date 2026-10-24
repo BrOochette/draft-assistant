@@ -102,3 +102,22 @@ describe('ennemis sans assez de parties', () => {
     expect(screen.getByText('Paire absente des données')).toBeInTheDocument();
   });
 });
+
+describe('clic sur le chip', () => {
+  it('après le survol, le clic garde la fenêtre et saute le loader ; un second clic la ferme', () => {
+    vi.useFakeTimers();
+    render(
+      <DataContext.Provider value={sampleAppData()}>
+        <WinRateChips e={e} />
+      </DataContext.Provider>
+    );
+    const chip = screen.getByRole('button', { name: 'vs Jinx 54,9 %' });
+    expect(chip).not.toHaveAttribute('title');
+    fireEvent.mouseEnter(chip, { clientX: 10, clientY: 10 });
+    fireEvent.click(chip, { detail: 1 });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Effet des ennemis sur le counter de Twitch' })).toBeInTheDocument();
+    fireEvent.click(chip, { detail: 1 });
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+  });
+});

@@ -43,7 +43,7 @@ const RecCard = ({ e, rank, selected, onSelect, onLock, role }: { e: Evaluation;
       <button type="button" className="rec-lock" aria-label={'Verrouiller ' + e.champion + ' en ' + role} title="Verrouiller" onClick={onLock}>
         <Icon name="lock" size={16} />
       </button>
-      <div className="rec-body" title={e.champion + ' : ' + stats.map((s) => s.label + ' ' + s.v).join(', ')}>
+      <div className="rec-body">
         <span className="rec-top">
           <span className="rec-face">
             <Portrait name={e.champion} size={56} />
@@ -174,6 +174,7 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
 
   // Vue liste : les listCount premiers (pool, hors pool, rôle secondaire) ; la recherche porte sur tous.
   const listed = useMemo(() => {
+    if (!expanded) return { items: [], more: false };
     const q = listQuery.trim().toLowerCase();
     const sections = [
       { kind: 'pool' as const, list: row.inPool },
@@ -183,7 +184,7 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
     const all = sections.flatMap(({ kind, list }) => list.map((e, i) => ({ e, kind, best: kind === 'pool' && i === 0 })));
     const kept = q ? all.filter(({ e }) => e.champion.toLowerCase().includes(q)) : all.slice(0, listCount);
     return { items: kept.map((x, i) => ({ ...x, first: i === 0 || kept[i - 1]!.kind !== x.kind })), more: !q && all.length > kept.length };
-  }, [row, listQuery, listCount]);
+  }, [row, listQuery, listCount, expanded]);
 
   return (
     <section ref={section} tabIndex={-1} className="card role-row" aria-label={'Rôle ' + role}>

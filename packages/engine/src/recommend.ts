@@ -27,10 +27,13 @@ export const recommendRole = (
     return { ...base, locked: { ...ev, matchupNotes, info }, recommendations: [], inPool: [], outOfPool: [], secondaryRole: [], note: null };
   }
 
-  const evals = data.stats
-    .listCandidates(role)
-    .filter((c) => !avail.gone(c.name, role))
-    .map((c) => evaluate(entryFor(data, meta, role, c.name), ctx, enemies, meta.player, state.enemy, options));
+  const candidates = data.stats.listCandidates(role).map((c) => c.name);
+  // Champions du pool joués hors de leurs rôles habituels (stats mesurées seulement : la maquette les ignore),
+  // évalués avec les stats par défaut du rôle, signalés peu fiables.
+  const offRole = data.measured ? meta.list.map((p) => p.champion).filter((n) => !candidates.includes(n)) : [];
+  const evals = [...candidates, ...offRole]
+    .filter((name) => !avail.gone(name, role))
+    .map((name) => evaluate(entryFor(data, meta, role, name), ctx, enemies, meta.player, state.enemy, options));
   // Array.prototype.sort est stable : à égalité, l'ordre de la source est conservé.
   evals.sort((a, b) => b.total - a.total);
 

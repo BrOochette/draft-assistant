@@ -16,7 +16,6 @@ export const banSuggestions = (state: DraftState, data: EngineData, avail: Avail
   suggestions: ROLES.filter((role) => !state.enemy[role]).flatMap((role) =>
     data.banSuggestions
       .filter((b) => b.role === role && !avail.banBlocked(b.champion))
-      .slice()
       .sort((a, b) => b.threat - a.threat)
       .slice(0, BANS_PER_ROLE)
       .map((b): BanCard => ({ champion: b.champion, role: b.role, threat: b.threat, ...(b.reason && { reason: b.reason }), ...(b.winRate != null && { winRate: b.winRate }) }))
