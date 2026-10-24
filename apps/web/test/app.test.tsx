@@ -24,6 +24,11 @@ describe('écran Draft', () => {
     expect(compo('ally')).toEqual({ score: '29', verdict: 'À corriger' });
     expect(compo('enemy')).toEqual({ score: '69', verdict: 'Correcte' });
 
+    // Un clic sur la card la présélectionne sans la verrouiller.
+    await user.click(screen.getByRole('group', { name: 'Sejuani, score 74 sur 100' }));
+    expect(screen.getByRole('group', { name: 'Sejuani, score 74 sur 100, présélectionné' })).toBeInTheDocument();
+    expect(compo('ally').score).toBe('29');
+
     await user.click(screen.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' }));
     expect(compo('ally')).toEqual({ score: '68', verdict: 'Correcte' });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();

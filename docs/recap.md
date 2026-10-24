@@ -68,7 +68,7 @@ Une application web d'aide à la draft sur League of Legends. Elle propose, pour
    - clic sur le portrait d'un champion allié ou ennemi, ou sur le slot vide (« ? » ou « + »), pour ouvrir un sélecteur avec recherche ;
    - clic sur un slot « + » des bans pour ajouter un ban ;
    - les champions indisponibles (bannis, pris) sont grisés avec la raison.
-7. **Interaction d'une card**, version 3 (décidé le 24/10/2026) : un bouton cadenas, icône seule, en haut à droite de la card verrouille le champion en un clic. La v2 (un clic sélectionne la card, puis bouton « Verrouiller ») demandait deux clics ; le double clic de la v1 était peu découvrable et inexistant au tactile.
+7. **Interaction d'une card**, version 3 (décidé le 24/10/2026) : un bouton cadenas, icône seule, en haut à droite de la card verrouille le champion en un clic. Il apparaît au survol de la card (ou au clavier), et reste affiché quand un clic sur la card la présélectionne (bordure accent). Sur écran tactile, il est toujours visible. La v2 (un clic sélectionne la card, puis bouton « Verrouiller ») demandait deux clics ; le double clic de la v1 était peu découvrable et inexistant au tactile.
 8. Un pick verrouillé se **retire avec une croix** sur l'avatar du champion. Pas de bouton « Changer de pick ».
 9. **Pas de notion de tour.** Tous les rôles ouverts affichent leurs suggestions en même temps. Pas de barre de tour actif, pas de chrono.
 10. **Bans dans la même vue que la draft.** Pas d'écran de bans séparé.

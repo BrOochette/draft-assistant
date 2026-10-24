@@ -27,11 +27,19 @@ const ReasonChip =({ r }: { r: Parameters<typeof formatReason>[0] }) => (
 const sampleText = (e: Evaluation) => fmtInt(e.games) + ' parties' + (e.lowSample ? ' : peu fiable' : '');
 const sampleTip = (e: Evaluation) => 'Échantillon de ' + fmtInt(e.games) + ' parties : sous 500 parties, le win rate est peu fiable';
 
-/** Card de suggestion : le cadenas en haut à droite verrouille le champion en un clic. */
-const RecCard = ({ e, rank, onLock, role }: { e: Evaluation; rank: number; onLock: () => void; role: string }) => {
+/**
+ * Card de suggestion : le cadenas en haut à droite verrouille le champion en un clic. Il apparaît au survol,
+ * au clavier, ou reste affiché quand la card est présélectionnée par un clic.
+ */
+const RecCard = ({ e, rank, selected, onSelect, onLock, role }: { e: Evaluation; rank: number; selected: boolean; onSelect: () => void; onLock: () => void; role: string }) => {
   const stats = scoreStats(e);
   return (
-    <li className="rec" role="group" aria-label={e.champion + ', score ' + e.total + ' sur 100'}>
+    <li
+      className={'rec' + (selected ? ' is-selected' : '')}
+      role="group"
+      aria-label={e.champion + ', score ' + e.total + ' sur 100' + (selected ? ', présélectionné' : '')}
+      onClick={(ev) => !(ev.target as Element).closest('button') && onSelect()}
+    >
       <button type="button" className="rec-lock" aria-label={'Verrouiller ' + e.champion + ' en ' + role} title="Verrouiller" onClick={onLock}>
         <Icon name="lock" size={16} />
       </button>
@@ -292,6 +300,8 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
                     e={e}
                     rank={i + 1}
                     role={role}
+                    selected={selected === e.champion}
+                    onSelect={() => dispatch({ type: 'select', role, champion: e.champion })}
                     onLock={() => lock(e.champion)}
                   />
                 ))}

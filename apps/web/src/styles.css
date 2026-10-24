@@ -169,7 +169,8 @@ button:disabled { cursor: not-allowed; }
 .empty-box { padding: 12px; border-radius: 10px; border: 1px dashed var(--warn); color: var(--warn); font-size: 13px; }
 
 .recs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
-.rec { position: relative; flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); overflow: hidden; }
+.rec { position: relative; flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); overflow: hidden; cursor: pointer; }
+.rec.is-selected { border-color: var(--accent); background: #16262b; }
 .rec-body { flex: 0 0 auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 0; background: transparent; color: inherit; text-align: left; }
 .rec-top { display: flex; align-items: center; gap: 10px; width: 100%; }
 .rec-face { position: relative; }
@@ -183,6 +184,10 @@ button:disabled { cursor: not-allowed; }
 .rec-stats .col { gap: 3px; }
 .rec-lock { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 8px; border: 1px solid var(--accent); background: var(--raise); color: var(--accent); cursor: pointer; }
 .rec-lock:hover, .rec-lock:focus-visible { background: var(--accent); color: var(--accent-ink); }
+/* Visible au survol de la card ou au clavier ; toujours visible sur écran tactile. */
+.rec-lock { opacity: 0; transition: opacity .12s; }
+.rec:hover .rec-lock, .rec:focus-within .rec-lock, .rec.is-selected .rec-lock { opacity: 1; }
+@media (hover: none) { .rec-lock { opacity: 1; } }
 
 .details { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .detail-head { padding-top: 4px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
