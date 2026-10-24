@@ -45,11 +45,9 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
   const setPool = (fn: (list: PoolEntry[]) => PoolEntry[]) =>
     onChange({ ...pools, [player]: { ...pools[player], [role]: fn(pool) } });
 
-  const roleChampions = useMemo(
-    () => [...engine.catalog.values()].filter((c) => c.roles.includes(role)).map((c) => c.name),
-    [engine, role]
-  );
-  const addable = roleChampions.filter((n) => !pool.some((p) => p.champion === n));
+  // Tous les champions du catalogue, y compris hors de leurs rôles habituels (rôles affichés à droite).
+  const allChampions = useMemo(() => [...engine.catalog.keys()], [engine]);
+  const addable = allChampions.filter((n) => !pool.some((p) => p.champion === n));
   const q = newChamp.trim().toLowerCase();
   const options = addable.filter((n) => n.toLowerCase().includes(q)).sort((a, b) => a.localeCompare(b, 'fr'));
 
@@ -223,6 +221,7 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
                       key={n}
                       id={'champ-option-' + i}
                       role="option"
+                      aria-label={n}
                       aria-selected={i === active}
                       className={'combo-option' + (i === active ? ' is-active' : '')}
                       // mousedown : avant le blur du champ, qui fermerait la liste.
@@ -233,7 +232,8 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
                       onMouseEnter={() => setActive(i)}
                     >
                       <Portrait name={n} size={28} />
-                      <span>{n}</span>
+                      <span className="grow">{n}</span>
+                      <span className="small muted">{engine.catalog.get(n)?.roles.join(", ")}</span>
                     </li>
                   ))}
                 </ul>

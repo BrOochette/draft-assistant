@@ -201,8 +201,8 @@ describe('écran Joueurs', () => {
     await user.click(input);
     const options = within(screen.getByRole('listbox')).getAllByRole('option');
     // Lux est déjà dans le pool : elle n'est pas proposée.
-    expect(options.map((o) => o.textContent)).not.toContain('Lux');
-    const first = options[0]!.textContent!;
+    expect(options.map((o) => o.getAttribute('aria-label'))).not.toContain('Lux');
+    const first = options[0]!.getAttribute('aria-label')!;
     await user.keyboard('{Enter}');
     expect(screen.getByRole('button', { name: 'Retirer ' + first + ' du pool' })).toBeInTheDocument();
     expect(input).toHaveValue('');
