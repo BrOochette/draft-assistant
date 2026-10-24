@@ -110,6 +110,23 @@ describe('écran Joueurs', () => {
     expect(localStorage.getItem('draft-assistant:suggestion-mode')).toBe('synergy');
   });
 
+  it('bascule entre les 3 cards et la vue liste', async () => {
+    const user = userEvent.setup();
+    render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
+    const jungle = within(screen.getByRole('region', { name: 'Rôle Jungle' }));
+    expect(jungleRecs()).toHaveLength(3);
+    expect(jungle.queryByText('Pool', { selector: '.detail-head' })).not.toBeInTheDocument();
+
+    await user.click(jungle.getByRole('button', { name: 'Vue liste en Jungle' }));
+    expect(jungle.queryAllByRole('button', { name: /score .* Sélectionner/ })).toHaveLength(0);
+    expect(jungle.getByText('Pool', { selector: '.detail-head' })).toBeInTheDocument();
+    expect(jungle.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' })).toBeInTheDocument();
+
+    await user.click(jungle.getByRole('button', { name: 'Vue top 3 en Jungle' }));
+    expect(jungleRecs()).toHaveLength(3);
+    expect(jungle.queryByText('Pool', { selector: '.detail-head' })).not.toBeInTheDocument();
+  });
+
   it('permet de ne placer aucun joueur sur un rôle', async () => {
     const user = userEvent.setup();
     render(<App initialData={sampleAppData()} initialPools={seedPools()} />);

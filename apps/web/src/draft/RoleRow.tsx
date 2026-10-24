@@ -227,12 +227,18 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
               <div className="row-between wrap">
                 {/* Sans pool ou sans joueur, l'avertissement de la colonne de gauche suffit. */}
                 <span className="small soft">{row.note && row.note !== 'NO_POOL' && player ? recNoteText(row.note, player, role) : ''}</span>
-                <button type="button" className="btn btn-sm" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
-                  {expanded ? 'Réduire' : 'Plus de détails'} <Icon name="chevron" size={14} rotate={expanded} />
+                {/* Bascule d'affichage : les 3 cards, ou la liste détaillée à leur place. */}
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  aria-label={(expanded ? 'Vue top 3' : 'Vue liste') + ' en ' + role}
+                  onClick={() => setExpanded(!expanded)}
+                >
+                  <Icon name={expanded ? 'grid' : 'list'} size={14} />{expanded ? 'Vue top 3' : 'Vue liste'}
                 </button>
               </div>
               {shown.length === 0 && <span className="empty-box">Aucun champion disponible pour ce rôle.</span>}
-              <ul className="recs">
+              {!expanded && <ul className="recs">
                 {shown.map((e, i) => (
                   <RecCard
                     key={e.champion}
@@ -244,7 +250,7 @@ export const RoleRow = ({ row, draft, players, selected, dispatch }: Props) => {
                     onLock={() => lock(e.champion)}
                   />
                 ))}
-              </ul>
+              </ul>}
               {expanded && (
                 <ul className="details">
                   {row.inPool.map((e, i) => (

@@ -39,7 +39,8 @@ const PATHS = {
   warn: 'M8 2.5l6 10.5H2zM8 7v3M8 11.5v.01',
   chevron: 'M3 6l5 5 5-5',
   close: 'M4 4l8 8M12 4L4 12',
-  flag: 'M4 14V2M4 3h8l-2.5 3L12 9H4'
+  list: 'M5.5 4h8M5.5 8h8M5.5 12h8M2.5 4v.01M2.5 8v.01M2.5 12v.01',
+  grid: 'M2.5 3h4v4h-4zM9.5 3h4v4h-4zM2.5 10h4v3h-4zM9.5 10h4v3h-4z'
 } as const;
 
 export const Icon = ({ name, size = 14, rotate = false }: { name: keyof typeof PATHS; size?: number; rotate?: boolean }) => (
@@ -113,6 +114,9 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
     ...e.enemyTeam.map((m) => ({ ...m, label: m.role }))
   ];
   const total = rows.reduce((s, r) => s + r.delta * r.weight, 0);
+  // Seul le nom est tronqué si la place manque, jamais la valeur.
+  const [name, value] = e.matchup ? ['vs ' + e.matchup.opponent, fmtPct(e.matchup.winRate)] : ['vs compo', fmtSigned(total)];
+  const label = name + ' ' + value + (e.matchup ? '' : ' pts');
   const close = () => {
     window.clearTimeout(loadTimer.current);
     setLoading(false);
@@ -158,6 +162,8 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
         ref={anchor}
         type="button"
         className="chip chip-info chip-btn"
+        title={label}
+        aria-label={label}
         aria-expanded={!!pos}
         aria-controls={pos ? panelId : undefined}
         onMouseEnter={(ev) => open({ x: ev.clientX, y: ev.clientY })}
@@ -167,7 +173,8 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
         onBlur={closeSoon}
         onClick={(ev) => (pos ? close() : open(ev.detail > 0 ? { x: ev.clientX, y: ev.clientY } : undefined))}
       >
-        {e.matchup ? `vs ${e.matchup.opponent} ${fmtPct(e.matchup.winRate)}` : `vs compo ennemie ${fmtSigned(total)} pts`}
+        <span className="ellipsis">{name}</span>
+        <span className="nowrap">{value}</span>
       </button>
       {pos && loading && cursor &&
         createPortal(
@@ -219,12 +226,15 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
   );
 };
 
-/** Chip du win rate de partie (et de lane s'il est connu), plus le matchup contre l'adversaire de lane. */
+/**
+ * Win rate de partie (et de lane s'il est connu) puis matchup contre l'adversaire de lane, sur une seule ligne :
+ * le nom de l'adversaire est tronqué si la place manque.
+ */
 export const WinRateChips = ({ e }: { e: Evaluation }) => (
-  <>
+  <span className="wr-line">
     <Chip title={'Win rate de partie sur ce rôle, tous adversaires' + (e.laneWinRate == null ? '' : ', puis win rate de lane')}>
-      <Icon name="flag" />Win rate {fmtPct(e.gameWinRate)}{e.laneWinRate != null && <> · lane {fmtPct(e.laneWinRate)}</>}
+      WR {fmtPct(e.gameWinRate)}{e.laneWinRate != null && <> · lane {fmtPct(e.laneWinRate)}</>}
     </Chip>
     {(e.matchup || e.enemyTeam.length > 0) && <MatchupPopover e={e} />}
-  </>
+  </span>
 );

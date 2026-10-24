@@ -234,6 +234,9 @@ button:disabled { cursor: not-allowed; }
 
 /* Fenêtre flottante (détail de la compo ennemie) */
 .chip-btn { border: 0; cursor: pointer; font-family: inherit; }
+.wr-line { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+.wr-line > .chip { flex-shrink: 0; white-space: nowrap; padding: 0 8px; gap: 4px; }
+.wr-line > .chip-btn { flex-shrink: 1; min-width: 0; }
 .rec-chips { padding: 0 10px 10px; cursor: pointer; }
 .popover { position: fixed; z-index: 30; width: 340px; max-width: calc(100vw - 16px); padding: 12px; border-radius: 12px; background: var(--raise); border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0, 0, 0, .55); display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
 .popover-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }

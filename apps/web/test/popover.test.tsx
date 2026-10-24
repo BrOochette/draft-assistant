@@ -21,7 +21,7 @@ describe('fenêtre flottante du matchup', () => {
         <WinRateChips e={e} />
       </DataContext.Provider>
     );
-    expect(screen.getByText('Win rate 51,0 %')).toBeInTheDocument();
+    expect(screen.getByText('WR 51,0 %')).toBeInTheDocument();
     expect(screen.queryByText(/Lane/)).not.toBeInTheDocument();
   });
 
