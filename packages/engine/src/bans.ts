@@ -6,10 +6,13 @@ import type { BanCard } from './types';
 export const MAX_BANS = 5;
 const MAX_SUGGESTIONS = 6;
 
-/** Suggestions de bans : score de menace fixe des données, sans les champions déjà bannis ou pris. */
+/**
+ * Suggestions de bans : score de menace fixe des données, sans les champions déjà bannis ou pris, ni les rôles
+ * où l'ennemi a déjà pick (il ne peut plus jouer un autre champion à ce poste).
+ */
 export const banSuggestions = (state: DraftState, data: EngineData, avail: Availability) => ({
   suggestions: data.banSuggestions
-    .filter((b) => !avail.banBlocked(b.champion))
+    .filter((b) => !avail.banBlocked(b.champion) && !state.enemy[b.role])
     .slice()
     .sort((a, b) => b.threat - a.threat)
     .slice(0, MAX_SUGGESTIONS)

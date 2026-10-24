@@ -121,6 +121,20 @@ describe('stats réelles (format Lolalytics)', () => {
     expect(vsSej.enemyTeam).toEqual([]);
   });
 
+  it("ne propose plus de bans sur un rôle où l'ennemi a déjà pick", () => {
+    const d = createEngineData({
+      ...snapshot,
+      banSuggestions: [
+        { champion: 'Sejuani', role: 'Jungle', threat: 90 },
+        { champion: 'Ahri', role: 'Mid', threat: 80 }
+      ]
+    });
+    const bans = (state: DraftState) => computeDraft(state, {}, d).bans.suggestions.map((b) => b.champion);
+    expect(bans(base)).toEqual(['Sejuani', 'Ahri']);
+    // Lee Sin pick en jungle : Sejuani ne peut plus être jouée par l'ennemi à ce poste.
+    expect(bans({ ...base, enemy: { ...base.enemy, Jungle: 'Lee Sin' } })).toEqual(['Ahri']);
+  });
+
   it('ajoute la synergie de duo avec un allié verrouillé', () => {
     const without = mid(base);
     const withSej = mid({ ...base, ally: { ...base.ally, Jungle: 'Sejuani' } });
