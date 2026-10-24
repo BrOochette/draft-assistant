@@ -100,6 +100,11 @@ describe('écran Draft', () => {
     await user.type(screen.getByRole('combobox', { name: 'Saisie rapide : pick allié' }), 'sej');
     await user.keyboard('{Enter}');
     expect(screen.getByRole('button', { name: 'Retirer Sejuani et rouvrir les suggestions en Jungle' })).toBeInTheDocument();
+
+    // À la souris : un clic sur la ligne place le champion sur son rôle mis en avant.
+    await user.type(screen.getByRole('combobox', { name: 'Saisie rapide : pick allié' }), 'orianna');
+    await user.click(screen.getByRole('option', { name: 'Orianna en Mid' }));
+    expect(screen.getByRole('button', { name: 'Retirer Orianna et rouvrir les suggestions en Mid' })).toBeInTheDocument();
   });
 });
 

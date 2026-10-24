@@ -134,6 +134,11 @@ export const QuickPick = ({ draft, dispatch }: { draft: DraftState; dispatch: Di
                   aria-disabled={!!o.why}
                   className={'combo-option' + (i === current ? ' is-active' : '') + (o.why ? ' is-disabled' : '')}
                   onMouseEnter={() => setActive(i)}
+                  // Clic sur la ligne : rôle mis en avant (le plus joué encore libre). mousedown : avant le blur du champ.
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    place(o, o.roles[chosen]!);
+                  }}
                 >
                   <Portrait name={o.name} size={28} />
                   <span className="grow">{o.name}</span>
@@ -151,6 +156,7 @@ export const QuickPick = ({ draft, dispatch }: { draft: DraftState; dispatch: Di
                           // mousedown : avant le blur du champ, qui fermerait la liste.
                           onMouseDown={(e) => {
                             e.preventDefault();
+                            e.stopPropagation();
                             place(o, r);
                           }}
                         >
