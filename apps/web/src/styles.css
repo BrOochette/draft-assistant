@@ -408,3 +408,23 @@ button:disabled { cursor: not-allowed; }
 .role-center:has(> .locked-in) { justify-content: stretch; }
 .locked-in { flex: 1 1 auto; }
 .locked-in > .detail { flex: 1 1 auto; align-content: space-between; }
+
+/* Choix du joueur d'un rôle : avatar, nom, aperçu du pool ; menu avec le pool de chaque joueur sur le rôle. */
+.player-avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; font-weight: 700; line-height: 1; }
+.player-avatar.is-none { background: var(--raise-2); color: var(--muted); border: 1px dashed var(--muted); }
+.player-select { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 6px 10px 6px 8px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; text-align: left; transition: border-color .15s, background-color .15s; }
+.player-select:hover, .player-select.is-open { border-color: var(--accent); }
+.player-select > svg { flex: none; color: var(--muted); transition: transform .2s; }
+.player-select.is-open > svg { transform: rotate(180deg); }
+.player-pool { display: inline-flex; flex: none; }
+.player-pool .portrait { border-radius: 50%; border: 2px solid var(--bg); }
+.player-pool .portrait + .portrait { margin-left: -6px; }
+.player-menu { z-index: 30; max-width: calc(100vw - 16px); padding: 4px; border-radius: 12px; background: var(--raise); border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0, 0, 0, .55); display: flex; flex-direction: column; gap: 2px; animation: fade-in .14s ease-out; outline: none; }
+.player-option { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; outline: none; }
+.player-option.is-active { background: var(--raise-2); }
+.player-option.is-selected { box-shadow: inset 0 0 0 1px var(--accent); }
+.player-option.is-selected > svg { color: var(--accent); }
+.player-option .player-pool .portrait { border-color: var(--raise); }
+.player-option.is-active .player-pool .portrait { border-color: var(--raise-2); }
+.player-option.is-none { border-top: 1px solid var(--border); border-radius: 0 0 8px 8px; margin-top: 2px; color: var(--muted); }
+.player-elsewhere { flex: none; padding: 2px 8px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); font-size: 13px; font-weight: 600; }

@@ -127,9 +127,10 @@ describe('écran Joueurs', () => {
     // Lou était placé en ADC : le rôle n'a plus de joueur dans la draft.
     await user.click(screen.getByRole('link', { name: 'Draft' }));
     const adc = within(await screen.findByRole('region', { name: 'Rôle ADC' }));
-    expect(adc.getByRole('combobox', { name: 'Joueur' })).toHaveValue('');
     expect(adc.queryByText(/tous les champions sont classés/)).not.toBeInTheDocument();
-    expect(adc.queryByRole('option', { name: 'Lou' })).not.toBeInTheDocument();
+    await user.click(adc.getByRole('combobox', { name: 'Joueur en ADC : aucun' }));
+    expect(screen.getByRole('option', { name: /Aucun joueur/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByRole('option', { name: /Lou/ })).not.toBeInTheDocument();
   });
 
   it('change le type de suggestion', async () => {
@@ -200,8 +201,12 @@ describe('écran Joueurs', () => {
     const user = userEvent.setup();
     render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
     const mid = within(screen.getByRole('region', { name: 'Rôle Mid' }));
-    await user.selectOptions(mid.getByRole('combobox', { name: 'Joueur' }), 'Aucun joueur');
-    expect(mid.getByRole('combobox', { name: 'Joueur' })).toHaveValue('');
+    await user.click(mid.getByRole('combobox', { name: /^Joueur en Mid/ }));
+    // Chaque joueur est proposé ; celui déjà placé sur un autre rôle porte ce rôle.
+    expect(screen.getByRole('option', { name: /^Alex/ })).toHaveTextContent('Top');
+    await user.click(screen.getByRole('option', { name: /Aucun joueur/ }));
+    expect(mid.getByRole('combobox', { name: 'Joueur en Mid : aucun' })).toBeInTheDocument();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     // Sans joueur, pas d'avertissement : tous les champions sont proposés.
     expect(mid.queryByText(/tous les champions/)).not.toBeInTheDocument();
     expect(mid.queryByText(/Hors pool/)).not.toBeInTheDocument();

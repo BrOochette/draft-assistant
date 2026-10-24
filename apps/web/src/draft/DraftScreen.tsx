@@ -51,7 +51,6 @@ export const DraftScreen = ({ session, dispatch, pools }: Props) => {
     () => computeDraft(session.draft, pools, engine, { modeByRole: modes }),
     [session.draft, pools, engine, modes]
   );
-  const players = Object.keys(pools);
   const update = (next: Modes) => {
     setModes(next);
     saveModes(next);
@@ -79,7 +78,7 @@ export const DraftScreen = ({ session, dispatch, pools }: Props) => {
               key={row.role}
               row={row}
               draft={session.draft}
-              players={players}
+              pools={pools}
               selected={session.selected[row.role]}
               mode={modes[row.role]}
               onModeChange={(m) => update({ ...modes, [row.role]: m })}

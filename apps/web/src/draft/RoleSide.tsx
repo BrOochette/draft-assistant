@@ -1,7 +1,9 @@
 import { useLayoutEffect, useRef, type Dispatch } from 'react';
 import type { DraftAction, RoleResult, Side } from '@draft/engine';
+import type { DraftState, Pools } from '@draft/schemas';
 import { DRAFT_TEXT as D } from '@draft/i18n-fr';
 import { Icon, land, Portrait, slotKey } from '../ui';
+import { PlayerSelect } from './PlayerSelect';
 
 /** Portrait d'un emplacement : quand le champion change, il arrive en vol depuis le portrait cliqué. */
 const SlotPortrait = ({ name, landing }: { name: string; landing: string }) => {
@@ -17,14 +19,15 @@ const SlotPortrait = ({ name, landing }: { name: string; landing: string }) => {
 
 interface Props {
   row: RoleResult;
-  players: string[];
+  pools: Pools;
+  assign: DraftState['assign'];
   picker: Side | null;
   onOpenPicker: (side: Side) => void;
   dispatch: Dispatch<DraftAction>;
 }
 
 /** Colonne de gauche d'un rôle : état, picks allié et ennemi (saisie manuelle, retrait), joueur placé. */
-export const RoleSide = ({ row, players, picker, onOpenPicker, dispatch }: Props) => {
+export const RoleSide = ({ row, pools, assign, picker, onOpenPicker, dispatch }: Props) => {
   const { role, player, allyPick: ally, enemyPick: enemy } = row;
   return (
     <div className="role-side">
@@ -85,11 +88,8 @@ export const RoleSide = ({ row, players, picker, onOpenPicker, dispatch }: Props
         </div>
       </div>
       <div className="col gap-4">
-        <label htmlFor={'player-' + role} className="small muted">{D.player}</label>
-        <select id={'player-' + role} className="input" value={player ?? ''} onChange={(e) => dispatch({ type: 'assignPlayer', role, player: e.target.value || null })}>
-          <option value="">{D.noPlayer}</option>
-          {players.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
+        <span className="small muted" aria-hidden="true">{D.player}</span>
+        <PlayerSelect role={role} player={player} pools={pools} assign={assign} onChange={(p) => dispatch({ type: 'assignPlayer', role, player: p })} />
       </div>
       {/* Sans joueur, rien à signaler : tous les champions sont proposés. */}
       {player && !row.hasPool && <span className="small warn-text row-gap"><Icon name="warn" />{D.noPoolWarn}</span>}

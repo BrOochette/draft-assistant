@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type Dispatch } from 'react';
 import { availability, type DraftAction, type RoleResult, type Side, type SuggestionMode } from '@draft/engine';
 import { blockedLabel, DRAFT_TEXT as D, recNoteText, SUGGESTION_MODE_SHORT, SUGGESTION_MODE_TIP } from '@draft/i18n-fr';
-import type { DraftState } from '@draft/schemas';
+import type { DraftState, Pools } from '@draft/schemas';
 import { Icon, launchFrom, slotKey, useData } from '../ui';
 import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
 import { LockedSummary } from './LockedSummary';
@@ -12,7 +12,7 @@ import { SuggestionList } from './SuggestionList';
 interface Props {
   row: RoleResult;
   draft: DraftState;
-  players: string[];
+  pools: Pools;
   selected: string | undefined;
   mode: SuggestionMode;
   onModeChange: (m: SuggestionMode) => void;
@@ -25,7 +25,7 @@ const MODES: SuggestionMode[] = ['mix', 'synergy', 'counter'];
 const portraitOf = (from?: Element) => from?.closest('.rec, .detail, .picker-item')?.querySelector('.portrait');
 
 /** Ligne d'un rôle : colonne des picks, puis suggestions (3 cards ou liste) ou résumé du pick verrouillé. */
-export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dispatch }: Props) => {
+export const RoleRow = ({ row, draft, pools, selected, mode, onModeChange, dispatch }: Props) => {
   const { engine } = useData();
   const { role, player, allyPick: ally, enemyPick: enemy } = row;
   const [expanded, setExpanded] = useState(false);
@@ -68,7 +68,7 @@ export const RoleRow = ({ row, draft, players, selected, mode, onModeChange, dis
   return (
     <section ref={section} tabIndex={-1} className="card role-row" aria-label={D.roleRegion(role)}>
       <div className="role-main">
-        <RoleSide row={row} players={players} picker={picker} onOpenPicker={openPicker} dispatch={dispatch} />
+        <RoleSide row={row} pools={pools} assign={draft.assign} picker={picker} onOpenPicker={openPicker} dispatch={dispatch} />
 
         <div className="role-center">
           {!ally && (
