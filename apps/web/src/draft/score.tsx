@@ -61,7 +61,7 @@ const Contributions = ({ x, mastery, inline = false }: { x: Expected; mastery: n
       {note == null && (
         <span className="contrib" title={C.masteryTip(null)}>
           <span className="contrib-label">{C.mastery}</span>
-          <span />
+          <DivergingBar v={0} />
           <span className="contrib-value is-zero">{C.masteryNone}</span>
         </span>
       )}
