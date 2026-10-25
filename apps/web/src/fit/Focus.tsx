@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { MAIN_ROLE_SHARE, type Evaluation, type RoleResult, type SuggestionMode } from '@draft/engine';
-import { CARD_TEXT as C, DRAFT_TEXT as D, POOL_TAG } from '@draft/i18n-fr';
+import { CARD_TEXT as C, DRAFT_TEXT as D, POOL_TAG, VIEW_TEXT as V } from '@draft/i18n-fr';
 import { Chip, Icon, Portrait, ScalingBars, WinRateChips } from '../ui';
 import { ReasonChip, SampleText } from '../draft/RecCard';
 import { RoleModes } from '../draft/modes';
 import { ScoreStats, ScoreValue } from '../draft/score';
+import { Splash } from './Cards';
 import { Contribs } from './parts';
 
 // Centre de la vue client : le rôle choisi, avec ses champions du pool en cartes détaillées
@@ -23,6 +24,7 @@ export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = f
   compact?: boolean;
 }) => (
   <article className={'fcard' + (rank === 1 || highlight ? ' is-first' : '') + (compact ? ' is-compact' : '')} aria-label={C.group(e.champion, e.expected?.score ?? null, e.total, false)}>
+    <Splash name={e.champion} />
     <div className="fcard-top">
       <span className="rec-face">
         <Portrait name={e.champion} size={compact ? 44 : 56} />
@@ -59,6 +61,7 @@ type Kind = 'pool' | 'out' | 'secondary';
 /** Ligne compacte de la liste : portrait, nom, score, contributions ; le cadenas verrouille. */
 const OtherRow = ({ e, row, kind, onLock }: { e: Evaluation; row: RoleResult; kind: Kind; onLock: () => void }) => (
   <li className="orow">
+    <Splash name={e.champion} />
     <Portrait name={e.champion} size={36} />
     <span className="col min0 grow">
       <span className="row-gap orow-head">
@@ -84,7 +87,14 @@ export const LockedPanel = ({ rows, current }: { rows: RoleResult[]; current: Ro
   </section>
 );
 
-export const FocusPanel = ({ row, onLock, mode, onModeChange }: { row: RoleResult; onLock: (champion: string) => void; mode: SuggestionMode; onModeChange: (m: SuggestionMode) => void }) => {
+export const FocusPanel = ({ row, onLock, onManual, mode, onModeChange }: {
+  row: RoleResult;
+  onLock: (champion: string) => void;
+  /** Ouvre la fenêtre de choix manuel du rôle (tous les champions, avec recherche et filtre par rôle). */
+  onManual: () => void;
+  mode: SuggestionMode;
+  onModeChange: (m: SuggestionMode) => void;
+}) => {
   const [query, setQuery] = useState('');
   const lock = onLock;
   // Avec un pool : tout le pool en cartes, le hors pool dans la liste. Sans pool : les premiers en cartes, le reste en liste.
@@ -108,6 +118,9 @@ export const FocusPanel = ({ row, onLock, mode, onModeChange }: { row: RoleResul
         <span className="row-gap">
           {row.note === 'POOL_EXHAUSTED' && <Chip tone="warn">{POOL_TAG.out}</Chip>}
           <RoleModes role={row.role} mode={mode} onChange={onModeChange} />
+          <button type="button" className="btn btn-sm btn-manual" aria-label={V.manualIn(row.role)} title={V.manualIn(row.role)} onClick={onManual}>
+            <Icon name="grid" size={14} />{V.manual}
+          </button>
         </span>
       </div>
       <div className="focus-body">

@@ -118,6 +118,15 @@ describe('écran Draft sur grand écran', () => {
       render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
       // Top (Aurora) est verrouillé dans l'état de départ : le centre montre le premier rôle ouvert, la Jungle.
       expect(screen.getByRole('region', { name: 'Rôle Jungle' })).toBeInTheDocument();
+      // Un clic sur la carte d'un allié affiche les suggestions de son rôle, sans ouvrir la fenêtre de choix.
+      await user.click(screen.getAllByRole('button', { name: 'Suggestions en Mid' })[0]!);
+      expect(screen.getByRole('region', { name: 'Rôle Mid' })).toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      // Le bouton « Choix manuel » ouvre la fenêtre de choix du rôle affiché.
+      await user.click(screen.getByRole('button', { name: 'Choix manuel du champion en Mid' }));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      await user.keyboard('{Escape}');
+      await user.click(screen.getAllByRole('button', { name: 'Suggestions en Jungle' })[0]!);
       await user.click(screen.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' }));
       expect(screen.getByRole('button', { name: 'Retirer Sejuani et rouvrir les suggestions en Jungle' })).toBeInTheDocument();
       // Les mentions légales restent sous la draft.

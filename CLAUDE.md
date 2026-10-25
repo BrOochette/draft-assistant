@@ -23,7 +23,7 @@ TypeScript partout, validé avec le porteur du projet :
 - monorepo en workspaces npm : `packages/schemas`, `packages/engine` (logique pure), `packages/i18n-fr` (tous les textes d'interface), `apps/web` (React + Vite), `apps/ingest` (CLI Node) et `apps/bridge` (pont local vers le client LoL, lecture seule) ;
 - Vitest pour les tests.
 
-Commandes : `npm run dev`, `npm run bridge`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits` (voir `README.md`).
+Commandes : `npm run dev`, `npm run bridge`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits|illustrations` (voir `README.md`).
 
 ## Première étape suggérée
 

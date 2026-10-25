@@ -24,7 +24,7 @@ npm run ingest -- lolalytics  # environ 15 min (toutes régions) : écrit data/s
 npm run dev                   # le snapshot est réassemblé avec les stats les plus récentes
 ```
 
-Puis commiter `data/stats/` et `apps/web/public/data/snapshot.json`, et pousser : Cloudflare redéploie le site. Après la sortie d'un champion, `npm run ingest -- portraits` ajoute son portrait dans `apps/web/public/champions/` (à commiter aussi).
+Puis commiter `data/stats/` et `apps/web/public/data/snapshot.json`, et pousser : Cloudflare redéploie le site. Après la sortie d'un champion, `npm run ingest -- portraits` ajoute son portrait dans `apps/web/public/champions/` et `npm run ingest -- illustrations` son illustration dans `apps/web/public/champions/centered/` (à commiter aussi).
 
 Les attributs des champions (Frontline, Engage, Peel, type de dégâts, rôles) viennent du wiki LoL. Pour les régénérer, par exemple après la sortie d'un champion :
 
@@ -46,6 +46,7 @@ Pour corriger un attribut à la main, modifier `data/champions-overrides.json` :
 | `npm run ingest -- snapshot` | Assemble `apps/web/public/data/snapshot.json` : stats Lolalytics si présentes, sinon données d'exemple |
 | `npm run ingest -- sample` | Force le snapshot sur les données d'exemple de la maquette |
 | `npm run ingest -- portraits` | Télécharge les portraits manquants dans `apps/web/public/champions/` |
+| `npm run ingest -- illustrations` | Télécharge les illustrations centrées manquantes (fond des cartes joueurs) dans `apps/web/public/champions/centered/` |
 | `npm run bridge` | Pont local vers le client LoL pour la draft en direct (lecture seule) |
 
 ## Organisation
@@ -65,7 +66,7 @@ Pour corriger un attribut à la main, modifier `data/champions-overrides.json` :
 
 ## Déploiement (Cloudflare)
 
-Cloudflare construit le site depuis GitHub à chaque push sur `master` (Workers Builds, assets statiques). Le snapshot de stats et les portraits sont commités : le build n'a pas besoin du réseau. `wrangler.jsonc` indique à `wrangler deploy` d'envoyer `apps/web/dist` tel quel, sans code serveur ; sans ce fichier, Wrangler refuse de deviner quelle appli du monorepo déployer.
+Cloudflare construit le site depuis GitHub à chaque push sur `master` (Workers Builds, assets statiques). Le snapshot de stats, les portraits et les illustrations sont commités : le build n'a pas besoin du réseau. `wrangler.jsonc` indique à `wrangler deploy` d'envoyer `apps/web/dist` tel quel, sans code serveur ; sans ce fichier, Wrangler refuse de deviner quelle appli du monorepo déployer.
 
 Réglages du projet (Workers & Pages, Create, Import a repository, dépôt `draft-assistant`) :
 
@@ -77,7 +78,7 @@ Réglages du projet (Workers & Pages, Create, Import a repository, dépôt `draf
 | Root directory | (vide : racine du dépôt) |
 | Variable de build | `NODE_VERSION` = `22` (aussi fixé par `.node-version`) |
 
-Le site est servi sur `draft-assistant.<sous-domaine>.workers.dev`. `apps/web/public/_headers` règle le cache : fichiers du build un an, portraits une semaine, stats revalidées à chaque chargement.
+Le site est servi sur `draft-assistant.<sous-domaine>.workers.dev`. `apps/web/public/_headers` règle le cache : fichiers du build un an, portraits et illustrations une semaine, stats revalidées à chaque chargement.
 
 Les stats viennent de Lolalytics : pour ne pas les republier en accès libre, protéger le site avec Cloudflare Access (Zero Trust, Access, Applications, Self-hosted : domaine `draft-assistant.<sous-domaine>.workers.dev`, règle « Emails » avec les adresses autorisées).
 

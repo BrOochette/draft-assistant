@@ -1,0 +1,50 @@
+/* Cartes joueurs de la vue client : illustration centrée du champion en fond (image locale), sous le contenu ; un
+   champion seulement survolé est estompé. */
+.fit-client .fit-member { position: relative; isolation: isolate; }
+.member-art { position: absolute; inset: 0; z-index: -1; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.member-art img { position: absolute; display: block; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.member-art::after { content: ''; position: absolute; inset: 0; }
+.member-art.is-faded { opacity: .45; }
+
+/* Le personnage occupe la carte, le texte se range en bas (rôle, champion en
+   grand, joueur), à gauche pour ton équipe et à droite pour l'ennemi, sur un voile qui ne fonce que vers le bas.
+   Toute la carte ouvre le sélecteur de champion : la case du portrait, invisible, s'étend à la carte entière (même
+   bouton, même nom accessible) ; le choix du joueur et la croix de retrait restent cliquables par-dessus. */
+.fit-client .fit-member { flex-direction: column; align-items: stretch; justify-content: flex-end; gap: 6px; padding-top: 10px; }
+.fit-client .has-art .member-art img { object-position: center 18%; }
+.fit-client .has-art .member-art::after {
+  background: linear-gradient(0deg, color-mix(in srgb, var(--ally) 22%, rgba(10, 10, 12, .92)) 0%, rgba(10, 10, 12, .5) 42%, transparent 72%);
+}
+.fit-client .is-enemy.has-art .member-art::after {
+  background: linear-gradient(0deg, color-mix(in srgb, var(--enemy) 22%, rgba(10, 10, 12, .92)) 0%, rgba(10, 10, 12, .5) 42%, transparent 72%);
+}
+
+/* La case du portrait couvre la carte, sans rien afficher (sa taille est posée en ligne : !important). */
+.fit-client .fit-member > .face-wrap { position: absolute; inset: 0; z-index: 0; }
+.fit-client .fit-member .face {
+  width: 100% !important; height: 100% !important; border: 0; border-radius: inherit; background: transparent; font-size: 0; cursor: pointer;
+}
+.fit-client .fit-member .face-img { opacity: 0; }
+.fit-client .fit-member .face:hover { outline: none; }
+.fit-client .fit-member .face:focus-visible { outline: 2px solid var(--ally); outline-offset: -2px; }
+.fit-client .fit-member:has(.face:hover) { outline: 1px solid rgba(255, 255, 255, .55); outline-offset: -1px; }
+.fit-client .fit-member .face-wrap .remove { z-index: 2; top: 8px; left: 8px; right: auto; }
+.fit-client .fit-member.is-enemy .face-wrap .remove { left: auto; right: 8px; }
+
+/* Texte par-dessus la carte : il laisse passer le clic, sauf le choix du joueur. */
+.fit-client .fit-member .fit-member-body,
+.fit-client .fit-member.is-enemy .fit-member-info { position: relative; z-index: 1; flex: none; width: 100%; pointer-events: none; }
+.fit-client .fit-member .fit-player { pointer-events: auto; }
+.fit-client .fit-member.is-enemy .fit-member-info { align-items: flex-end; }
+.fit-client .has-art .fit-member-info { text-shadow: 0 1px 4px rgba(0, 0, 0, .85); }
+.fit-client .has-art .fit-member-info .strong { font-size: 17px; font-weight: 700; }
+
+/* Choix du joueur plus bas, avatar et aperçu du pool réduits, fond sombre translucide et flouté. */
+.fit-client .fit-player .player-select {
+  min-height: 30px; padding: 2px 8px 2px 4px; gap: 6px; font-size: 13px;
+  background: rgba(10, 10, 12, .42); border: 1px solid rgba(255, 255, 255, .12);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.fit-client .fit-player .player-select:hover { background: rgba(10, 10, 12, .62); }
+.fit-client .fit-player .player-avatar { width: 22px !important; height: 22px !important; font-size: 11px !important; }
+.fit-client .fit-player .player-pool .portrait { width: 18px !important; height: 18px !important; }

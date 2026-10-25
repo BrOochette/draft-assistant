@@ -711,3 +711,10 @@ button:disabled { cursor: not-allowed; }
   .fit-member { transition: none; }
   .fit-member.is-picking::after { animation: none; transform: none; opacity: .5; }
 }
+
+/* Cartes champion de la vue client : le portrait flou (.pcard-bg) reste sous le contenu et dans la carte. overflow: clip
+   (pas hidden) : la carte ne devient pas un conteneur de défilement, la grille ne peut donc pas l’écraser. */
+.fit-center .fcard, .fit-center .orow, .fit-center .ban-card { position: relative; overflow: clip; isolation: isolate; }
+
+/* Vue client : bouton « Choix manuel » de l'en-tête du rôle, même gabarit que les modes voisins. */
+.fit .btn-manual { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; }

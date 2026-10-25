@@ -143,6 +143,36 @@ describe('lecture du client', () => {
     expect(side).toBe('red');
   });
 
+  it('suit un échange de rôles et un échange d’ordre de pick pendant la draft', () => {
+    const players = [{ name: 'Alex', riotId: 'Alex#EUW' }, { name: 'Sam', riotId: 'Sam#EUW' }];
+    // Départ : Alex en Top (Aatrox verrouillé) dans la première case, Sam en Mid dans la deuxième.
+    let sync = applyClientDraft(
+      empty(),
+      client({ ally: [ally(0, 'Top', 'Aatrox', { riotId: 'Alex#EUW' }), ally(1, 'Mid', undefined, { riotId: 'Sam#EUW' })] }),
+      data, players, true
+    );
+    expect(sync.draft.ally.Top).toBe('Aatrox');
+    expect(sync.draft.assign).toMatchObject({ Top: 'Alex', Mid: 'Sam' });
+    // Échange de rôles : le client attribue Mid à Alex et Top à Sam ; son champion suit.
+    sync = applyClientDraft(
+      sync.draft,
+      client({ ally: [ally(0, 'Mid', 'Aatrox', { riotId: 'Alex#EUW' }), ally(1, 'Top', undefined, { riotId: 'Sam#EUW' })] }),
+      data, players, false
+    );
+    expect(sync.draft.ally).toMatchObject({ Mid: 'Aatrox', Top: null });
+    expect(sync.draft.assign).toMatchObject({ Mid: 'Alex', Top: 'Sam' });
+    expect(sync.order.ally.slice(0, 2)).toEqual(['Mid', 'Top']);
+    // Échange d'ordre de pick : les deux joueurs changent de case, l'ordre affiché suit les cases.
+    sync = applyClientDraft(
+      sync.draft,
+      client({ ally: [ally(0, 'Top', undefined, { riotId: 'Sam#EUW' }), ally(1, 'Mid', 'Aatrox', { riotId: 'Alex#EUW' })] }),
+      data, players, false
+    );
+    expect(sync.order.ally.slice(0, 2)).toEqual(['Top', 'Mid']);
+    expect(sync.draft.assign).toMatchObject({ Top: 'Sam', Mid: 'Alex' });
+    expect(sync.draft.ally).toMatchObject({ Mid: 'Aatrox', Top: null });
+  });
+
   it('le réducteur remplace la draft et retire les présélections des rôles verrouillés', () => {
     let s = createSession(empty());
     s = draftReducer(s, { type: 'select', role: 'Top', champion: 'Darius' });

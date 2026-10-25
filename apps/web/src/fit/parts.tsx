@@ -93,8 +93,10 @@ export const BanStrip = ({ draft, side, size, dispatch, onAdd }: { draft: DraftS
 };
 
 /** Emplacement d'un pick : portrait (survol estompé), « ? » sinon ; un clic ouvre le sélecteur, la croix retire. */
-export const Face = ({ side, role, name, hover, size, onOpen, onRemove }: {
+export const Face = ({ side, role, name, hover, size, onOpen, onRemove, label }: {
   side: Side; role: Role; name: string | null; hover?: string | null; size: number; onOpen: () => void; onRemove: () => void;
+  /** Nom accessible du bouton, si le clic ne sert pas à la saisie manuelle. */
+  label?: string;
 }) => {
   const shown = name ?? hover ?? null;
   return (
@@ -103,7 +105,7 @@ export const Face = ({ side, role, name, hover, size, onOpen, onRemove }: {
         type="button"
         className={'face fit-face ' + (name ? 'is-' + side : side === 'ally' ? 'is-empty-ally' : 'is-waiting')}
         style={{ width: size, height: size }}
-        aria-label={side === 'ally' ? D.allyFace(!!name, null, role) : D.enemyFace(!!name, role)}
+        aria-label={label ?? (side === 'ally' ? D.allyFace(!!name, null, role) : D.enemyFace(!!name, role))}
         title={!name && hover ? D.hoverTip(hover) : name ?? undefined}
         onClick={onOpen}
       >

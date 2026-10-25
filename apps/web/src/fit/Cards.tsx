@@ -34,7 +34,7 @@ interface Props {
 const VERDICT_TONE: Record<Verdict, string> = { solid: 'pos', fair: 'info', fragile: 'warn', fix: 'neg' };
 const DAMAGE_COLOR = { AD: 'var(--neg)', AP: 'var(--ally)', TANK: 'var(--muted-bar)' } as const;
 
-/** Portrait du champion en fond de carte, flouté. */
+/** Portrait du champion en fond de carte, très flou (toutes les cartes champion de la vue client). */
 export const Splash = ({ name }: { name: string | null }) => {
   const { engine } = useData();
   const id = name ? engine.catalog.get(name)?.ddragonId : undefined;

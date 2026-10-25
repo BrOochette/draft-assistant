@@ -3,7 +3,7 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Portraits : changent rarement (nouveau champion).
+# Portraits et illustrations : changent rarement (nouveau champion).
 /champions/*
   Cache-Control: public, max-age=604800
 

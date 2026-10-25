@@ -6,6 +6,7 @@ import { useData } from '../ui';
 import { GlobalModes, useSuggestionModes, type Modes } from '../draft/modes';
 import { PlayerSelect } from '../draft/PlayerSelect';
 import { QuickPick } from '../draft/QuickPick';
+import './member-cards.css';
 import { FocusPanel, LockedPanel } from './Focus';
 import { BanPanel, PANEL_BANS_PER_ROLE, TeamPanel } from './Phases';
 import { BanStrip, CompoCompact, Face, usePicker } from './parts';
@@ -17,6 +18,19 @@ interface Props {
   /** Draft en direct : bans encore attendus dans le client ; null sans draft en direct. */
   liveBans?: boolean | null;
 }
+
+/** Illustration centrée du champion en fond de carte (fichier local, npm run ingest -- illustrations) : champion
+    verrouillé, sinon survolé (estompé). */
+const MemberArt = ({ name, faded }: { name: string | null; faded: boolean }) => {
+  const { engine } = useData();
+  const id = name ? engine.catalog.get(name)?.ddragonId : undefined;
+  if (!id) return null;
+  return (
+    <span className={'member-art' + (faded ? ' is-faded' : '')} aria-hidden="true">
+      <img src={import.meta.env.BASE_URL + 'champions/centered/' + id + '.jpg'} alt="" loading="lazy" />
+    </span>
+  );
+};
 
 type Picker = ReturnType<typeof usePicker>;
 interface ClientProps {
@@ -73,8 +87,9 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
           const best = row.recommendations[0];
           const isPicking = picking.ally.includes(row.role);
           return (
-            <li key={row.role} className={'fit-member card' + (current?.role === row.role ? ' is-focus' : '') + (isPicking ? ' is-picking' : '')}>
-              <Face side="ally" role={row.role} name={row.allyPick} hover={hover[row.role]} size={52} onOpen={() => picker.open({ kind: 'pick', side: 'ally', role: row.role })} onRemove={() => dispatch({ type: 'unlock', role: row.role })} />
+            <li key={row.role} className={'fit-member card' + (current?.role === row.role ? ' is-focus' : '') + (isPicking ? ' is-picking' : '') + (row.allyPick ?? hover[row.role] ? ' has-art' : '')}>
+              <MemberArt name={row.allyPick ?? hover[row.role] ?? null} faded={!row.allyPick} />
+              <Face side="ally" role={row.role} name={row.allyPick} hover={hover[row.role]} size={52} label={T.focus(row.role)} onOpen={() => setFocus({ role: row.role, wasLocked: !!row.locked })} onRemove={() => dispatch({ type: 'unlock', role: row.role })} />
               <div className="fit-member-body">
                 <button type="button" className="fit-member-info" aria-pressed={current?.role === row.role} aria-label={T.focus(row.role)} onClick={() => setFocus({ role: row.role, wasLocked: !!row.locked })}>
                   <span className="role-name">{row.role}</span>
@@ -98,7 +113,7 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
         ) : current ? (
           current.locked
             ? <LockedPanel rows={allies} current={current} />
-            : <FocusPanel key={current.role} row={current} onLock={lockFocused(current.role)} mode={modes[current.role]} onModeChange={(m) => onModeChange(current.role, m)} />
+            : <FocusPanel key={current.role} row={current} onLock={lockFocused(current.role)} onManual={() => picker.open({ kind: 'pick', side: 'ally', role: current.role })} mode={modes[current.role]} onModeChange={(m) => onModeChange(current.role, m)} />
         ) : <section className="card fit-focus" />}
         {/* Draft complète : notes et lecture des compos sont dans le panneau des deux équipes. Bans : aucun pick à noter. */}
         {!complete && !showBans && <div className="card"><CompoCompact result={result} horizontal /></div>}
@@ -107,7 +122,8 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
         {enemies.map((row) => {
           const isPicking = picking.enemy.includes(row.role);
           return (
-            <li key={row.role} className={'fit-member card is-enemy' + (isPicking ? ' is-picking' : '')}>
+            <li key={row.role} className={'fit-member card is-enemy' + (isPicking ? ' is-picking' : '') + (row.enemyPick ? ' has-art' : '')}>
+              <MemberArt name={row.enemyPick} faded={false} />
               <span className="fit-member-info">
                 <span className="role-name">{row.role}</span>
                 {isPicking && <span className="picking-chip">{D.picking}</span>}

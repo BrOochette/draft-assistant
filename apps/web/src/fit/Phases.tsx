@@ -18,7 +18,7 @@ import { Chip, Icon, Portrait, ScalingBars, toneOf, useData } from '../ui';
 import { ScoreValue } from '../draft/score';
 import { Contribs } from './parts';
 import { BanReason } from '../draft/BanBar';
-import { EnemyCard, TeamBar } from './Cards';
+import { EnemyCard, Splash, TeamBar } from './Cards';
 import { FocusCard } from './Focus';
 import type { usePicker } from './parts';
 
@@ -76,6 +76,7 @@ export const BanPanel = ({ result, dispatch }: { result: DraftResult; dispatch: 
                       // Carte étroite : la ligne du win rate est masquée, elle reste dans l'infobulle.
                       title={c.impact ? c.champion + ' · ' + B.strength(c.winRate ?? 50, c.games) + ' · ' + B.strengthTip(c.impact.strength) : undefined}
                     >
+                      <Splash name={c.champion} />
                       {/* Portrait, nom et valeur ; puis force, win rate et parties ; puis l'effet sur ta meilleure option. */}
                       <div className="ban-head">
                         <span className="rec-face">

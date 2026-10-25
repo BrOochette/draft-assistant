@@ -322,6 +322,8 @@ export const QUICK_TEXT = {
 /** Vue client de l'écran Draft (grand écran) : textes propres à cette vue. */
 export const VIEW_TEXT = {
   focus: (role: Role) => 'Suggestions en ' + role,
+  manual: 'Choix manuel',
+  manualIn: (role: Role) => 'Choix manuel du champion en ' + role,
   best: 'Meilleur',
   noData: '—',
   /** Panneau des deux équipes (fin de draft) */

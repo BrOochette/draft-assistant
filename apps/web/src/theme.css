@@ -135,11 +135,20 @@ body[data-theme="teams"] .fit-member.is-enemy .picking-chip { box-shadow: 0 0 12
 /* Centre : panneau translucide sur le dégradé, cartes quasi noires avec un filet (même fond que le bandeau du haut). */
 body[data-theme="teams"] .fit-center > .card { background: rgba(12, 12, 14, .38); border: 1px solid rgba(255, 255, 255, .08); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 
+/* Cartes champion du centre, même gabarit que les cartes ennemies de fin de draft : portrait très flou en fond, fond et
+   barre extérieure de la couleur de l'équipe concernée. Tes options et tes picks : ton équipe (barre à gauche) ;
+   bans, champions adverses : l'adversaire (barre à droite). */
 body[data-theme="teams"] .fit-center .fcard,
-body[data-theme="teams"] .fit-center .orow,
+body[data-theme="teams"] .fit-center .orow {
+  background: color-mix(in srgb, var(--ally) 13%, rgba(27, 27, 27, .72));
+  border: 1px solid color-mix(in srgb, var(--ally) 28%, transparent);
+  border-left: 3px solid var(--ally);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
 body[data-theme="teams"] .fit-center .ban-card {
-  background-color: #0e0e10;
-  border: 1px solid rgba(255, 255, 255, .08);
+  background: color-mix(in srgb, var(--enemy) 13%, rgba(27, 27, 27, .72));
+  border: 1px solid color-mix(in srgb, var(--enemy) 28%, transparent);
+  border-right: 3px solid var(--enemy);
   box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
 }
 
@@ -218,3 +227,10 @@ body[data-theme="teams"] .fit-team-col.is-enemy .fit-member.is-picking {
   background: color-mix(in srgb, var(--enemy) 30%, rgba(27, 27, 27, .78));
   box-shadow: inset -6px 0 0 var(--enemy), 0 12px 30px rgba(0, 0, 0, .5);
 }
+
+/* Survol des cases de portrait et de ban : la bordure prend la couleur de l'équipe, sans l'ancien contour carré
+   (le contour reste au clavier, pour l'accessibilité). */
+body[data-theme="teams"] .face:hover, body[data-theme="teams"] .ban-slot:hover { outline: none; }
+body[data-theme="teams"] .face:hover { border-color: var(--ally); }
+body[data-theme="teams"] .face.is-enemy:hover, body[data-theme="teams"] .face.is-waiting:hover { border-color: var(--enemy); }
+body[data-theme="teams"] .ban-slot:hover { border-color: rgba(255, 255, 255, .5); }

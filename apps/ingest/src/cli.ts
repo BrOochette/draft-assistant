@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { ChampionAttributesSchema, ChampionOverridesSchema, type ChampionAttributes } from '@draft/schemas';
 import { politeFetch } from './http';
 import { crawlLolalytics, DEFAULT_PAIR_REGION, DEFAULT_REGION, LolalyticsDumpSchema } from './lolalytics';
-import { downloadPortraits, latestDdragonVersion } from './portraits';
+import { downloadIllustrations, downloadPortraits, latestDdragonVersion } from './portraits';
 import { buildSampleSnapshot, writeSnapshot } from './sample';
 import { assembleLolalyticsSnapshot } from './snapshot';
 import { applyOverrides, importWikiAttributes } from './wiki';
@@ -25,7 +25,8 @@ const USAGE = `Usage : npm run ingest -- <commande>
               : data/stats/lolalytics-<patch>.json (environ 12 min)
   snapshot    Assemble le fichier chargé par l'appli (stats Lolalytics si présentes, sinon données d'exemple)
   sample      Force le snapshot sur les données d'exemple de la maquette
-  portraits   Télécharge les portraits Data Dragon manquants dans apps/web/public/champions/`;
+  portraits   Télécharge les portraits Data Dragon manquants dans apps/web/public/champions/
+  illustrations  Télécharge les illustrations centrées manquantes dans apps/web/public/champions/centered/`;
 
 // La clé Riot ne sert à aucune commande. Si elle sert un jour, elle sera lue ici, jamais dans le code web :
 // const riotKey = process.env.RIOT_API_KEY;
@@ -102,6 +103,13 @@ const main = async (cmd: string | undefined): Promise<number> => {
       const r = await downloadPortraits(ids, PUBLIC + 'champions', version);
       await writeFile(DDRAGON_VERSION, version + '\n', 'utf8');
       console.log(`Portraits ${version} : ${r.fetched} téléchargés, ${r.skipped} déjà présents.` + (r.failed.length ? ` Introuvables : ${r.failed.join(', ')}.` : ''));
+      return 0;
+    }
+    case 'illustrations': {
+      const attributes = await readAttributes();
+      const ids = attributes ? attributes.map((c) => c.ddragonId) : Object.values((await readJson(DATA + 'ddragon-ids.json')) as Record<string, string>);
+      const r = await downloadIllustrations(ids, PUBLIC + 'champions/centered');
+      console.log(`Illustrations : ${r.fetched} téléchargées, ${r.skipped} déjà présentes.` + (r.failed.length ? ` Introuvables : ${r.failed.join(', ')}.` : ''));
       return 0;
     }
     default:
