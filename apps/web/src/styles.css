@@ -521,7 +521,7 @@ button:disabled { cursor: not-allowed; }
 /* Vue client : rôle choisi, pool en cartes détaillées et autres champions en liste. */
 .focus-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 300px); gap: 12px; }
 .focus-cards { min-height: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
-.fcard-grid { min-height: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); align-content: start; gap: 8px; overflow: auto; }
+.fcard-grid { min-height: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); align-content: start; gap: 8px; overflow: auto; }
 .fcard { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: 12px; background: var(--raise); border: 1px solid var(--border); }
 .fcard.is-first { border-color: var(--accent); }
 .fcard-top { display: flex; align-items: center; gap: 10px; }
@@ -640,8 +640,6 @@ button:disabled { cursor: not-allowed; }
 
 .picking-chip { align-self: flex-start; padding: 1px 8px; border-radius: 10px; background: var(--ally); color: var(--bg); font-size: 13px; font-weight: 700; white-space: nowrap; }
 .fit-member.is-enemy .picking-chip { align-self: flex-end; background: var(--enemy); }
-/* Colonne alliée de la vue client : la croix de retrait passe à gauche du portrait, le nom du rôle reste lisible. */
-.fit-team-col:not(.is-enemy) .face-wrap .remove { right: auto; left: -9px; }
 /* Bandeau de la vue client : « Ennemi / Allié » toujours sur une ligne ; sous 1500 px, cases de ban plus petites et
    libellé « Suggérés » retiré (les portraits restent), pour laisser la place à la saisie rapide. */
 .fit-quick .segmented { flex-wrap: nowrap; flex-shrink: 0; }
@@ -672,14 +670,13 @@ button:disabled { cursor: not-allowed; }
 .fit .btn-ban:hover, .fit .btn-ban:focus-visible { background: var(--neg); color: #160709; border-color: var(--neg); }
 .fit .btn-ban:hover svg, .fit .btn-ban:focus-visible svg { color: currentColor; }
 
-/* Vue client : croix de retrait d'un pick, pastille sombre au filet clair posée sur le coin du portrait. */
+/* Vue client : croix de retrait d'un pick, pastille sombre au filet clair (placée dans le coin de la carte : member-cards.css). */
 .fit .face-wrap .remove {
   width: 22px; height: 22px; top: -7px; right: -7px; border-radius: 50%;
   background: rgba(12, 12, 16, .82); color: #fff; border: 1px solid rgba(255, 255, 255, .45);
   box-shadow: 0 2px 6px rgba(0, 0, 0, .45); backdrop-filter: blur(4px);
   transition: background-color .15s, color .15s, border-color .15s;
 }
-.fit .fit-team-col:not(.is-enemy) .face-wrap .remove { right: auto; left: -7px; }
 .fit .face-wrap .remove svg { width: 10px; height: 10px; }
 .fit .face-wrap .remove:hover, .fit .face-wrap .remove:focus-visible { background: var(--neg); color: #160709; border-color: var(--neg); }
 

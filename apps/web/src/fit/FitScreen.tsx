@@ -3,7 +3,7 @@ import { computeDraft, type ClientOrder, type DraftAction, type DraftResult, typ
 import { APP_TEXT as A, DRAFT_TEXT as D, VIEW_TEXT as T } from '@draft/i18n-fr';
 import { ROLES, type DraftState, type Pools, type Role } from '@draft/schemas';
 import { useData } from '../ui';
-import { GlobalModes, useSuggestionModes, type Modes } from '../draft/modes';
+import { useSuggestionModes, type Modes } from '../draft/modes';
 import { PlayerSelect } from '../draft/PlayerSelect';
 import { QuickPick } from '../draft/QuickPick';
 import './member-cards.css';
@@ -150,7 +150,7 @@ export const FitScreen = ({ session, dispatch, pools, liveBans = null }: Props) 
     };
   }, [side]);
   // Même type de suggestion que l'écran Draft en lignes (mémorisé sur l'appareil).
-  const { modes, shared, setAll, setRole } = useSuggestionModes();
+  const { modes, setRole } = useSuggestionModes();
   const result = useMemo(() => computeDraft(session.draft, pools, engine, { modeByRole: modes, bansPerRole: PANEL_BANS_PER_ROLE }), [session.draft, pools, engine, modes]);
   const picker = usePicker(session.draft, dispatch);
   // Phase de bans : lue dans le client, sinon tant qu'aucun pick n'est saisi et que tes bans ne sont pas tous posés.
@@ -159,8 +159,6 @@ export const FitScreen = ({ session, dispatch, pools, liveBans = null }: Props) 
   return (
     <main className="fit" aria-label={A.draft}>
       <div className="fit-top">
-        <span id="fit-modes" className="visually-hidden">{D.modesLabel}</span>
-        <GlobalModes shared={shared} onChange={setAll} labelId="fit-modes" short />
         <BanStrip draft={session.draft} side="ally" size={40} dispatch={dispatch} onAdd={() => picker.open({ kind: 'ban', side: 'ally' })} />
         <div className="fit-quick"><QuickPick draft={session.draft} dispatch={dispatch} /></div>
         <BanStrip draft={session.draft} side="enemy" size={40} dispatch={dispatch} onAdd={() => picker.open({ kind: 'ban', side: 'enemy' })} />
