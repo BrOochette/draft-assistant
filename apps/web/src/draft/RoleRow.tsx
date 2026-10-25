@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState, type Dispatch } from 'react';
 import { availability, type DraftAction, type RoleResult, type Side, type SuggestionMode } from '@draft/engine';
-import { blockedLabel, DRAFT_TEXT as D, recNoteText, SUGGESTION_MODE_SHORT, SUGGESTION_MODE_TIP } from '@draft/i18n-fr';
+import { blockedLabel, DRAFT_TEXT as D, recNoteText } from '@draft/i18n-fr';
 import type { DraftState, Pools } from '@draft/schemas';
 import { Icon, launchFrom, slotKey, useData } from '../ui';
 import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
 import { LockedSummary } from './LockedSummary';
+import { RoleModes } from './modes';
 import { RecCard } from './RecCard';
 import { RoleSide } from './RoleSide';
 import { SuggestionList } from './SuggestionList';
@@ -14,18 +15,19 @@ interface Props {
   draft: DraftState;
   pools: Pools;
   selected: string | undefined;
+  /** Champion survolé par l'allié dans le client. */
+  hover?: string | undefined;
   mode: SuggestionMode;
   onModeChange: (m: SuggestionMode) => void;
   dispatch: Dispatch<DraftAction>;
 }
 
-const MODES: SuggestionMode[] = ['mix', 'synergy', 'counter'];
 
 /** Portrait de la card, de la ligne ou de la case du sélecteur cliquée. */
 const portraitOf = (from?: Element) => from?.closest('.rec, .detail, .picker-item')?.querySelector('.portrait');
 
 /** Ligne d'un rôle : colonne des picks, puis suggestions (3 cards ou liste) ou résumé du pick verrouillé. */
-export const RoleRow = ({ row, draft, pools, selected, mode, onModeChange, dispatch }: Props) => {
+export const RoleRow = ({ row, draft, pools, selected, hover, mode, onModeChange, dispatch }: Props) => {
   const { engine } = useData();
   const { role, player, allyPick: ally, enemyPick: enemy } = row;
   const [expanded, setExpanded] = useState(false);
@@ -68,7 +70,7 @@ export const RoleRow = ({ row, draft, pools, selected, mode, onModeChange, dispa
   return (
     <section ref={section} tabIndex={-1} className="card role-row" aria-label={D.roleRegion(role)}>
       <div className="role-main">
-        <RoleSide row={row} pools={pools} assign={draft.assign} picker={picker} onOpenPicker={openPicker} dispatch={dispatch} />
+        <RoleSide row={row} hover={hover} pools={pools} assign={draft.assign} picker={picker} onOpenPicker={openPicker} dispatch={dispatch} />
 
         <div className="role-center">
           {!ally && (
@@ -78,21 +80,7 @@ export const RoleRow = ({ row, draft, pools, selected, mode, onModeChange, dispa
                 <span className="small soft">{row.note === 'POOL_EXHAUSTED' && player ? recNoteText(row.note, player, role) : ''}</span>
                 <div className="row-gap wrap">
                   {/* Mode de suggestion propre au rôle ; le sélecteur global règle les 5 d'un coup. */}
-                  <div role="group" aria-label={D.roleModes(role)} className="segmented segmented-sm">
-                    {MODES.map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        className={'segment' + (mode === m ? ' is-on' : '')}
-                        aria-pressed={mode === m}
-                        aria-label={D.inRole(SUGGESTION_MODE_SHORT[m], role)}
-                        title={SUGGESTION_MODE_TIP[m]}
-                        onClick={() => onModeChange(m)}
-                      >
-                        {SUGGESTION_MODE_SHORT[m]}
-                      </button>
-                    ))}
-                  </div>
+                  <RoleModes role={role} mode={mode} onChange={onModeChange} />
                   {/* Affichage : les 3 cards, ou la liste détaillée à leur place. */}
                   <div role="group" aria-label={D.viewGroup(role)} className="segmented segmented-icons">
                     {([false, true] as const).map((list) => (

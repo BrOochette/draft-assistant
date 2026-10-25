@@ -1,5 +1,6 @@
 import { emptySlots, type DraftState, type Role } from '@draft/schemas';
 import { MAX_BANS } from './bans';
+import type { ClientOrder } from './client';
 import { availability } from './context';
 
 export type Side = 'ally' | 'enemy';
@@ -25,6 +26,14 @@ export interface DraftSession extends Snapshot {
   history: Snapshot[];
   /** Dernière action annulable, tant que la notification est affichée. */
   toast: ActionMessage | null;
+  /** Champions survolés par les alliés dans le client : affichés, hors calcul. */
+  hover: Partial<Record<Role, string>>;
+  /** Ordre des joueurs dans le client (ordre de pick), null sans draft lue dans le client. */
+  order: ClientOrder | null;
+  /** Rôles dont le joueur est en train de choisir dans le client. */
+  picking: ClientOrder;
+  /** Side de ton équipe dans le client, null s'il est inconnu. */
+  side: 'blue' | 'red' | null;
 }
 
 export type DraftAction =
@@ -41,14 +50,17 @@ export type DraftAction =
   | { type: 'reset' }
   /** Remplace la draft sans historique (chargement de l'état de départ). */
   | { type: 'load'; draft: DraftState }
+  /** Draft lue dans le client LoL (voir `applyClientDraft`), sans historique. */
+  | { type: 'syncClient'; draft: DraftState; hover: Partial<Record<Role, string>>; order?: ClientOrder; picking?: ClientOrder; side?: 'blue' | 'red' | null }
   | { type: 'undo' }
   | { type: 'dismissToast' };
 
 const HISTORY_LIMIT = 50;
 
-export const createSession = (draft: DraftState): DraftSession => ({ draft, selected: {}, history: [], toast: null });
+export const createSession = (draft: DraftState): DraftSession => ({ draft, selected: {}, history: [], toast: null, hover: {}, order: null, picking: { ally: [], enemy: [] }, side: null });
 
 const commit = (s: DraftSession, message: ActionMessage, draft: DraftState, selected = s.selected): DraftSession => ({
+  ...s,
   draft,
   selected,
   history: [...s.history, { draft: s.draft, selected: s.selected }].slice(-HISTORY_LIMIT),
@@ -105,12 +117,19 @@ export const draftReducer = (s: DraftSession, a: DraftAction): DraftSession => {
     }
     case 'load':
       return createSession(a.draft);
+    case 'syncClient': {
+      // Une présélection n'a plus lieu d'être sur un rôle verrouillé depuis le client.
+      const selected = Object.fromEntries(Object.entries(s.selected).filter(([r]) => !a.draft.ally[r as Role]));
+      // Sans ordre (fin de la sélection), l'ordre lu reste affiché avec la draft.
+      // Fin de la sélection : plus personne ne choisit ; le side reste affiché avec la draft.
+      return { ...s, draft: a.draft, hover: a.hover, order: a.order ?? s.order, picking: a.picking ?? { ally: [], enemy: [] }, side: a.side !== undefined ? a.side : s.side, selected };
+    }
     case 'reset':
-      return commit(s, { code: 'RESET' }, { assign: d.assign, ally: emptySlots(), enemy: emptySlots(), allyBans: [], enemyBans: [] }, {});
+      return { ...commit(s, { code: 'RESET' }, { assign: d.assign, ally: emptySlots(), enemy: emptySlots(), allyBans: [], enemyBans: [] }, {}), hover: {}, order: null };
     case 'undo': {
       const prev = s.history[s.history.length - 1];
       if (!prev) return s;
-      return { ...prev, history: s.history.slice(0, -1), toast: null };
+      return { ...s, ...prev, history: s.history.slice(0, -1), toast: null };
     }
     case 'dismissToast':
       return s.toast ? { ...s, toast: null } : s;

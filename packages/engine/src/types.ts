@@ -99,6 +99,8 @@ export interface ScoringOptions {
   mode?: SuggestionMode;
   /** Mode propre à un rôle ; absent pour un rôle : `mode`. */
   modeByRole?: Partial<Record<Role, SuggestionMode>>;
+  /** Suggestions de bans par rôle ; absent : BANS_PER_ROLE (3). Le panneau des bans de la vue client en montre plus. */
+  bansPerRole?: number;
 }
 
 export type Phase = 0 | 1 | 2;
@@ -226,6 +228,8 @@ export interface BanCard {
   /** Raison rédigée (données d'exemple), sinon l'interface affiche le win rate. */
   reason?: string;
   winRate?: number;
+  /** Stats mesurées : parties du champion sur le rôle. */
+  games?: number;
   /** Stats mesurées : ce que le ban nous rapporte, en points de win rate attendu. */
   impact?: BanImpact;
 }

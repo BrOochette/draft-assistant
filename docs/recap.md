@@ -22,7 +22,7 @@ Une application web d'aide à la draft sur League of Legends. Elle propose, pour
 - Usage strictement personnel, non lucratif, pour une seule personne. Pas de comptes, pas d'équipe partagée, pas de public pour l'instant.
 - Application web, stack TypeScript partout.
 - Données hybrides : attributs de champions (frontline, engage, peel, type de dégâts) plus statistiques (win rates).
-- Saisie manuelle de la draft d'abord. Lecture automatique du client de jeu « plus tard », sans engagement.
+- Saisie manuelle de la draft d'abord. Lecture automatique du client de jeu « plus tard », sans engagement. Mise en place le 25/10/2026 (section 10).
 - Le moteur doit répondre en **moins d'une seconde**. En draft, on n'a que quelques secondes pour décider.
 
 ---
@@ -72,7 +72,7 @@ Une application web d'aide à la draft sur League of Legends. Elle propose, pour
 8. Un pick verrouillé se **retire avec une croix** sur l'avatar du champion. Pas de bouton « Changer de pick ».
 9. **Pas de notion de tour.** Tous les rôles ouverts affichent leurs suggestions en même temps. Pas de barre de tour actif, pas de chrono.
 10. **Bans dans la même vue que la draft.** Pas d'écran de bans séparé.
-11. **Vue « face à face » par lane** : l'allié et l'ennemi d'un même rôle côte à côte. C'est la seule vue de draft.
+11. **Vue « face à face » par lane** : l'allié et l'ennemi d'un même rôle côte à côte. C'est la seule vue de draft. **Remplacé sur grand écran** le 25/10/2026 par la vue client (section 11) ; gardé en dessous de 1200 px.
 12. Accessibilité : texte de 13 px minimum, cibles tactiles de 44 px, et les états ne reposent jamais sur la couleur seule (icône plus mot : « Verrouillé », « Sélectionné », « À choisir »).
 13. Interface en français.
 
@@ -323,7 +323,7 @@ Principes :
 2. **Interface web** : écrans Draft v2 et Joueurs en React, branchés sur le moteur, pools persistés dans IndexedDB.
 3. **Vraies données statiques** : catalogue complet depuis Data Dragon (noms, images) et fichier d'attributs maison.
 4. **Stats réelles** : choisir la source (section 6), écrire le `StatsProvider` et l'outil d'ingestion, générer le premier snapshot de patch.
-5. Plus tard : import automatique des pools depuis le mastery et l'historique Riot, puis lecture automatique du client.
+5. Plus tard : import automatique des pools depuis le mastery et l'historique Riot. La lecture automatique du client est en place (section 10).
 
 ## 9. Questions ouvertes
 
@@ -345,3 +345,43 @@ Principes :
 - **Décidé** : la ligne « Base » est retirée des contributions (elle répétait le chip WR) ; la base lissée du win rate attendu est donnée dans l'infobulle du chip WR. Le rôle verrouillé reprend la ligne de la vue liste (identité, contributions, score, pied de chips), sans bouton, avec les notes de matchup en pied.
 - **Décidé** : plus d'avertissement « Sans joueur : tous les champions » sous un rôle sans joueur (seul « Sans pool » reste, quand un joueur placé n'a pas de pool sur le rôle). La ligne du rôle verrouillé occupe toute la hauteur de la colonne.
 - **Décidé** : chip WR dans le pied de ligne de la vue liste, avec les autres chips. Choix du joueur d'un rôle : bouton avec avatar (initiale, couleur stable par nom), nom et 3 meilleurs champions du pool sur le rôle ; le menu montre pour chaque joueur ses 3 meilleurs champions sur le rôle (ou « Sans pool ») et le rôle où il est déjà placé, puis « Aucun joueur ». Clavier : flèches, Entrée, Échap.
+
+## 10. Draft en direct : lecture du client
+
+**Décidé** (25/10/2026) avec le porteur du projet :
+
+- **Pont local en CLI Node** (`apps/bridge`, `npm run bridge`). Le site ne peut pas joindre l'API locale du client (port et mot de passe changent à chaque lancement, certificat auto-signé, pas de CORS). Le pont trouve le client (ligne de commande de `LeagueClientUx`, sinon `lockfile`, ou `LOL_LOCKFILE`), suit `/lol-champ-select/v1/session` par WebSocket et transmet une draft simplifiée sur `ws://127.0.0.1:52147`. Le mot de passe du client ne quitte pas le pont. Seules l'appli en local et `draft-assistant.<sous-domaine>.workers.dev` sont acceptées (`DRAFT_BRIDGE_ORIGINS` pour en ajouter). Chrome demande une fois l'accès au réseau local depuis le site Cloudflare.
+- **Lecture seule** : le pont ne survole, ne verrouille et ne bannit rien dans le client.
+- **Le client prime** : bans, picks verrouillés et rôles attribués. Un rôle sans pick dans le client garde la saisie à la main, sauf si ce champion est banni ou pris ailleurs. Une nouvelle sélection (autre partie, ou retour après une sortie) repart d'une draft vide ; à la fin de la sélection, la draft reste affichée.
+- **Ennemis** : le client ne donne pas leur rôle. Un nouveau pick ennemi va sur son rôle le plus joué encore libre (comme la saisie rapide) ; un champion déjà placé garde son rôle, donc une correction à la main reste.
+- **Survols alliés** : affichés (« Survolé », portrait estompé), hors calcul. Les survols ennemis ne sont pas visibles dans le client.
+- **Joueurs** : un champ Riot ID par joueur (écran Joueurs, gardé dans IndexedDB). Un allié reconnu est placé sur le rôle de sa case et retiré des autres. En classé, le client masque souvent le Riot ID des alliés : seul le joueur local est alors reconnu.
+- **Reconnaissance par pseudo** (décidé le 25/10/2026) : un Riot ID identique prime ; sinon le pseudo lu dans le client est comparé au nom du joueur dans l'appli et au nom de son Riot ID. Casse, accents, espaces, symboles et lettres grecques ou cyrilliques décoratives (« KWΛNGYA ») sont ignorés. Ressemblance : pseudo identique 0,98, nom d'au moins 4 caractères contenu dans le pseudo 0,9, sinon 1 − fautes ÷ longueur (lettre en trop, en moins, remplacée, ou deux lettres voisines inversées). Seuil 0,75, environ une faute pour 4 caractères ; moins de 3 caractères : identique seulement. Chaque joueur va sur une seule case, les meilleures ressemblances d'abord. Si le deuxième joueur le plus proche est à moins de 0,05, la case reste sans joueur.
+- En-tête : chip « Draft en direct », « Client LoL connecté » ou « Client LoL fermé », absent quand le pont ne tourne pas.
+
+## 11. Écran Draft : vue client
+
+**Décidé** (25/10/2026) : sur grand écran (1200 px de large et plus), l'écran Draft est la « vue client », retenue parmi quatre mises en page essayées sur une page de test (lignes compactes, vue client, matrice, cartes), supprimée depuis. En dessous de 1200 px, l'écran Draft garde la mise en page en lignes, avec sa version mobile.
+
+- **Une seule fenêtre** : en-tête et draft occupent exactement la hauteur de la fenêtre, sans défilement ; les mentions légales (exigées par Riot) restent juste en dessous.
+- **Bandeau** : type de suggestion global (Mix, Synergie, Counter), 3 bans suggérés (un clic bannit), bans alliés, saisie rapide, bans ennemis.
+- **Colonnes des équipes** comme dans le client : alliés à gauche, ennemis à droite, dans l'ordre des cases du client (ordre de pick) pendant une draft en direct, sinon Top, Jungle, Mid, ADC, Support. Allié : portrait (survol estompé), rôle, meilleur champion ou pick verrouillé, choix du joueur.
+- **Centre** : le rôle choisi (clic sur un allié ; par défaut le premier rôle ouvert, et le suivant après un verrouillage), avec son type de suggestion. Les champions du pool en cartes détaillées (score, « Compo +N », contributions, chips WR, vs et avec, raisons, scaling, parties, « Verrouiller ») ; à droite, la liste hors pool avec recherche, seule partie qui défile. Sans pool : les 6 premiers du rôle en cartes, le reste et les rôles secondaires en liste. Rôle verrouillé choisi : les picks verrouillés de l'équipe en cartes.
+- **Sous le centre** : notes des deux compos, 5 critères, scaling par phase et lecture de ta compo.
+- **Phase de bans** (décidé le 25/10/2026) : le centre montre les suggestions de bans, une colonne par rôle ennemi encore ouvert, avec autant de bans que la hauteur le permet (3 à 8, mesuré en direct ; les autres écrans en gardent 3). Chaque carte : rang, portrait, nom et valeur du ban en points ; win rate et parties (la force, win rate lissé − 50, en infobulle) ; effet sur ta meilleure option du rôle (« Pour Malphite −2,4 ») et « Bannir ». Le bandeau de compo du bas est masqué pendant les bans (aucun pick à noter). Draft en direct : tant que le client attend des bans (actions de ban non terminées, champ `bansPending` du pont). Saisie à la main : tant qu'aucun pick n'est saisi et que tes 5 bans ne sont pas posés. Un clic sur un allié montre ses suggestions à la place.
+- **Draft complète** (10 picks connus, décidé le 25/10/2026) : le centre montre les deux équipes lane par lane, Top au-dessus de Top. Bandeau de chaque équipe (note, verdict, dégâts, critères, et pour toi le scaling), tes picks en cartes compactes (score, « Compo +N », contributions, chips WR, vs et avec, scaling, parties), les picks ennemis (win rate sur le rôle, parties, dégâts, archétype, apports, scaling, effet sur chacun de tes picks), puis la lecture des deux compos et leurs archétypes en chips. Le bandeau de compo du bas est retiré, ce panneau le reprend. Sur un écran moins haut (panneau de moins de 760 px), une ligne par lane remplace les deux rangées de cartes : ton pick (score, « Compo +N », contributions) face au pick ennemi (win rate, parties, effet sur ton vis-à-vis ; l'effet sur tes autres picks en infobulle) ; si la place manque encore, les critères des bandeaux s'écrivent avec leur valeur, et le scaling par phase, les dégâts et l'archétype de chaque pick ennemi ne sont plus répétés (ils restent dans la lecture des compos et la répartition des dégâts). Tient sans défiler en 1904 × 931, 1366 × 768 et 1280 × 720 (vérifié sur une draft type ; une lecture de compo plus longue fait défiler le panneau).
+- **Exception** : le choix du joueur fait 36 px de haut (44 ailleurs), comme les boutons de vue.
+- **Joueur qui pick** (draft en direct) : sa carte avance vers le centre, bordée d'une barre épaisse de la couleur de son équipe et balayée d'un reflet ; les autres joueurs de son équipe s'estompent ; badge « En train de choisir ». Sans rôle choisi d'un clic, le centre montre ses suggestions.
+- **Boutons** : « Verrouiller » détouré dans la couleur de ton équipe (cadenas), « Bannir » neutre (cercle barré, rouge au survol, icône seule sur carte étroite), croix de retrait en pastille sombre sur le coin du portrait.
+
+## 12. Thème
+
+**Décidé** (25/10/2026) : thème unique « Épuré équipes », retenu parmi une douzaine d'essais (page de test supprimée), dans `apps/web/src/theme.css` sur `<body data-theme="teams">`, pour toute l'appli.
+
+- Aplats sombres sans bordures, police Inter partout (titres et scores compris).
+- **Couleurs des camps selon le side** : ton équipe en bleu côté bleu, en rouge côté rouge, l'adversaire dans l'autre couleur (side lu dans le client ; bleu à la saisie à la main). La couleur d'équipe identifie les camps sans juger : un bon score reste vert, les verdicts « info » neutres, le rouge reste le malus.
+- **Fond** : dégradé de la couleur de ton équipe (gauche) vers celle de l'adversaire (droite) sur tout l'écran, en-tête translucide.
+- **Colonnes des joueurs** en verre teinté de la couleur de l'équipe ; **centre** translucide, cartes et bandeau du haut quasi noirs avec un filet clair.
+- **Sélection** (meilleure suggestion, rôle choisi) : seule la bordure change, prise dans la couleur de ton équipe ; le fond reste.
+- **Arrondis** de la vue client : 12 px les grands blocs, 8 px les contrôles et portraits, 6 px les petits éléments, pastilles rondes.
+- **Écarts avec les règles 9 et 11** : les suggestions détaillées ne portent que sur le rôle choisi (les autres rôles montrent leur meilleur champion), et le face-à-face par lane n'est plus côte à côte. Pas encore repris : le panneau de suggestions de bans par rôle, la lecture de la compo ennemie, les archétypes, le bloc « Équipe » et « Lire les scores ».

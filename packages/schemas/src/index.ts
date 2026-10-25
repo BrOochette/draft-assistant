@@ -211,3 +211,66 @@ export const fromSampleDraftState = (s: SampleDraftState): DraftState => {
     enemyBans: [...s.enemyBans]
   };
 };
+
+/**
+ * Sélection des champions lue dans le client LoL par le pont local (`apps/bridge`), déjà simplifiée.
+ * Les champions sont des identifiants numériques Riot (`key` du catalogue).
+ */
+const clientCell = z.object({
+  cell: z.number().int(),
+  /** Rôle attribué par le client, null s'il n'y en a pas (blind pick, partie personnalisée, ennemis). */
+  position: RoleSchema.nullable(),
+  /** Champion verrouillé, null sinon. */
+  champion: z.number().int().positive().nullable(),
+  /** Ce joueur est en train de choisir son champion. */
+  picking: z.boolean().default(false)
+});
+export const ClientDraftSchema = z.object({
+  /** Change à chaque nouvelle sélection des champions. */
+  gameId: z.number().int(),
+  phase: z.enum(['planning', 'banPick', 'finalization', 'starting']),
+  /** Bans encore attendus : le client ne distingue pas la phase de bans de celle des picks (BAN_PICK pour les deux). */
+  bansPending: z.boolean().default(false),
+  /** Side de ton équipe (bleu ou rouge), null s'il est inconnu. */
+  side: z.enum(['blue', 'red']).nullable().default(null),
+  ally: z.array(
+    clientCell.extend({
+      /** Champion survolé sans être verrouillé. */
+      hover: z.number().int().positive().nullable(),
+      /** Riot ID « Nom#TAG », null s'il est masqué par le client. */
+      riotId: z.string().nullable(),
+      local: z.boolean()
+    })
+  ),
+  enemy: z.array(clientCell),
+  allyBans: z.array(z.number().int().positive()),
+  enemyBans: z.array(z.number().int().positive())
+});
+export type ClientDraft = z.infer<typeof ClientDraftSchema>;
+
+/** Messages du pont local vers l'appli. */
+export const BridgeMessageSchema = z.discriminatedUnion('type', [
+  /** Client LoL ouvert ou fermé. */
+  /** Client LoL ouvert ou fermé ; `version` : version du protocole du pont (absente : pont antérieur). */
+  z.object({ type: z.literal('client'), connected: z.boolean(), version: z.number().int().optional() }),
+  /** Sélection des champions en cours, null en dehors. */
+  z.object({ type: z.literal('champSelect'), draft: ClientDraftSchema.nullable() })
+]);
+export type BridgeMessage = z.infer<typeof BridgeMessageSchema>;
+
+/** Port local du pont, côté appli et côté pont. */
+export const BRIDGE_PORT = 52147;
+
+/**
+ * Version du protocole du pont, à augmenter quand le pont transmet une nouvelle information. L'appli signale un pont
+ * d'une autre version (lancé avant une mise à jour) : il faut le relancer.
+ * 2 : phase de bans, side et joueurs en train de choisir.
+ */
+export const BRIDGE_VERSION = 2;
+
+/** Joueur vers Riot ID « Nom#TAG », pour le placer sur son rôle pendant une draft en direct. */
+export const RiotIdsSchema = z.record(z.string().min(1), z.string());
+export type RiotIds = Record<string, string>;
+
+/** Riot ID comparable : sans espaces autour, sans casse. */
+export const normalizeRiotId = (id: string): string => id.trim().toLowerCase();

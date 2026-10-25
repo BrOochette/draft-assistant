@@ -12,7 +12,7 @@ interface Props {
 }
 
 /** Raison d'un ban : valeur pour nous (stats mesurées), sinon raison rédigée ou menace (données d'exemple). */
-const BanReason = ({ c }: { c: BanCard }) => {
+export const BanReason = ({ c }: { c: BanCard }) => {
   const i = c.impact;
   if (i) {
     return (

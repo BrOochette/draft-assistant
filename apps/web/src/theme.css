@@ -1,0 +1,220 @@
+/* Thème de l'appli (« Épuré équipes », retenu le 25/10/2026) : aplats sombres sans bordures, police Inter, couleurs des
+   deux camps (ton équipe en bleu côté bleu, en rouge côté rouge, selon data-side), dégradé bleu-rouge sur tout l'écran,
+   colonnes des joueurs en verre teinté, cartes quasi noires. Posé sur <body data-theme="teams"> (index.html) ;
+   les couleurs de base et la mise en page sont dans styles.css. */
+
+/* Arrondi par défaut des éléments ; les échelles propres à la vue client sont plus bas. */
+body[data-theme="teams"] * { border-radius: 6px; }
+
+body[data-theme="teams"] .portrait,
+body[data-theme="teams"] .player-avatar,
+body[data-theme="teams"] .rank { border-radius: 50%; }
+
+body[data-theme="teams"] .fit-member,
+body[data-theme="teams"] .lane-side { border-left-width: 0; border-right-width: 0; }
+
+body[data-theme="teams"] .h3,
+body[data-theme="teams"] .role-name,
+body[data-theme="teams"] .score,
+body[data-theme="teams"] .score-md,
+body[data-theme="teams"] .fit-score,
+body[data-theme="teams"] .ban-value,
+body[data-theme="teams"] .fit-big,
+body[data-theme="teams"] .team-bar-big {
+  font-family: 'Inter', system-ui, sans-serif; letter-spacing: -.01em;
+}
+
+body[data-theme="teams"] .role-name { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+/* Bordures transparentes : les rails des barres prennent la couleur des rails de contribution. */
+body[data-theme="teams"] .bar,
+body[data-theme="teams"] .fit-bar { background: var(--track); }
+
+/* Couleurs des camps : ton équipe en bleu côté bleu, en rouge côté rouge (data-side, posé par la vue client). */
+body[data-theme="teams"] {
+  --blue: #4da3ff; --blue-soft: #9cc9ff; --red: #ff4d5e; --red-soft: #ff8f9a;
+  --ally: var(--blue); --ally-soft: var(--blue-soft); --enemy: var(--red); --enemy-soft: var(--red-soft);
+}
+
+body[data-theme="teams"][data-side="red"] {
+  --ally: var(--red); --ally-soft: var(--red-soft); --enemy: var(--blue); --enemy-soft: var(--blue-soft);
+}
+
+/* Palette : gris neutres en aplat, accent de la couleur de ton équipe. Fond : dégradé des deux camps, plus bas. */
+body[data-theme="teams"] {
+  --bg: #121212; --bg-2: #161616; --card: #1b1b1b; --card-side: #1b1b1b; --raise: #232323; --raise-2: #2b2b2b;
+  --border: transparent; --text: #ededed; --soft: #c6c6c6; --muted: #949494; --muted-bar: #3a3a3a;
+  --accent: var(--ally); --accent-ink: #0b0f16;
+  --pos: #9fdcb8; --pos-bg: #1e2c24; --neg: #f09a9a; --neg-bg: #2e1f1f; --warn: #e8cf8a; --warn-bg: #2c271a; --info-bg: #1c2733; --track: #2b2b2b;
+}
+
+body[data-theme="teams"] .fit-team-col .fit-member,
+body[data-theme="teams"] .team-bar,
+body[data-theme="teams"] .lane-side {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+body[data-theme="teams"] .fit-team-col:not(.is-enemy) .fit-member,
+body[data-theme="teams"] .team-bar.is-ally,
+body[data-theme="teams"] .lane-side.is-ally,
+body[data-theme="teams"] .pcard.is-ally {
+  background: color-mix(in srgb, var(--ally) 13%, rgba(27, 27, 27, .72));
+  border-left: 3px solid var(--ally);
+}
+
+body[data-theme="teams"] .fit-team-col.is-enemy .fit-member,
+body[data-theme="teams"] .team-bar.is-enemy,
+body[data-theme="teams"] .lane-side.is-enemy,
+body[data-theme="teams"] .pcard.is-enemy {
+  background: color-mix(in srgb, var(--enemy) 13%, rgba(27, 27, 27, .72));
+  border-right: 3px solid var(--enemy);
+}
+
+body[data-theme="teams"] .fit-team-col:not(.is-enemy) .role-name { color: var(--ally-soft); }
+
+body[data-theme="teams"] .fit-team-col.is-enemy .role-name,
+body[data-theme="teams"] .enemy-text { color: var(--enemy-soft); }
+
+body[data-theme="teams"] .btn-accent { background: var(--ally); color: var(--accent-ink); border: 0; box-shadow: none; }
+
+body[data-theme="teams"] .btn-accent:hover { background: var(--ally-soft); }
+
+/* Lisibilité : rangs et croix de retrait clairs sur fond sombre. */
+body[data-theme="teams"] .rank { background: #ececec; color: #111; border: 2px solid var(--bg); }
+
+body[data-theme="teams"] .rank.is-first { background: var(--ally); color: var(--accent-ink); }
+
+/* La couleur d'équipe identifie les camps, elle ne juge pas. Côté rouge, un bon score ne doit pas
+   s'afficher en rouge (le rouge reste le malus) : score mis en avant en vert, verdicts « info » en neutre. */
+body[data-theme="teams"] .is-best { color: var(--pos); }
+
+body[data-theme="teams"] .tone-info { color: var(--text); }
+
+body[data-theme="teams"] .chip-info { background: var(--raise-2); color: var(--text); }
+
+/* Fond : dégradé de la couleur de ton équipe (à gauche) vers celle de l'adversaire (à droite), sur tout l'écran ;
+   l'en-tête, translucide, le laisse voir. */
+body[data-theme="teams"] {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--ally) 34%, #0c0c0f) 0%,
+      color-mix(in srgb, var(--ally) 10%, #101013) 32%,
+      color-mix(in srgb, var(--enemy) 10%, #101013) 68%,
+      color-mix(in srgb, var(--enemy) 34%, #0c0c0f) 100%) fixed;
+}
+
+body[data-theme="teams"] .header { background: rgba(10, 10, 12, .45); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+
+/* Cartes joueurs (colonnes gauche et droite) : verre teinté, flou marqué, filet clair et reflet en haut. */
+body[data-theme="teams"] .fit-team-col .fit-member {
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border-top: 1px solid rgba(255, 255, 255, .14);
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 10px 30px rgba(0, 0, 0, .28);
+  border-radius: 14px;
+}
+
+body[data-theme="teams"] .fit-team-col:not(.is-enemy) .fit-member {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ally) 26%, rgba(255, 255, 255, .06)), rgba(255, 255, 255, .03));
+  border-left: 3px solid var(--ally);
+  border-right: 1px solid rgba(255, 255, 255, .06);
+}
+
+body[data-theme="teams"] .fit-team-col.is-enemy .fit-member {
+  background: linear-gradient(225deg, color-mix(in srgb, var(--enemy) 26%, rgba(255, 255, 255, .06)), rgba(255, 255, 255, .03));
+  border-right: 3px solid var(--enemy);
+  border-left: 1px solid rgba(255, 255, 255, .06);
+}
+
+body[data-theme="teams"] .picking-chip { padding: 2px 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #0b0f16; box-shadow: 0 0 12px color-mix(in srgb, var(--ally) 60%, transparent); }
+
+body[data-theme="teams"] .fit-member.is-enemy .picking-chip { box-shadow: 0 0 12px color-mix(in srgb, var(--enemy) 60%, transparent); }
+
+/* Centre : panneau translucide sur le dégradé, cartes quasi noires avec un filet (même fond que le bandeau du haut). */
+body[data-theme="teams"] .fit-center > .card { background: rgba(12, 12, 14, .38); border: 1px solid rgba(255, 255, 255, .08); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+body[data-theme="teams"] .fit-center .fcard,
+body[data-theme="teams"] .fit-center .orow,
+body[data-theme="teams"] .fit-center .ban-card {
+  background-color: #0e0e10;
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+
+/* Sélection (meilleure suggestion, joueur choisi) : le fond ne change pas, seule la bordure prend la couleur de ton équipe. */
+body[data-theme="teams"] .fit-center .fcard.is-first { border-color: var(--ally); }
+body[data-theme="teams"] .fit-team-col .fit-member.is-focus { border-color: var(--ally); }
+
+/* Bandeau du haut sur le fond le plus foncé de l’écran (champ de saisie un cran plus sombre). */
+body[data-theme="teams"] .fit-top .segmented,
+body[data-theme="teams"] .fit-top .quick,
+body[data-theme="teams"] .fit-top .fit-ban.is-empty {
+  background-color: #0e0e10;
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+
+body[data-theme="teams"] .fit-top .quick .input { background-color: #070708; border: 1px solid rgba(255, 255, 255, .08); }
+
+/* Vue client : une seule échelle d'arrondis. 12 px les grands blocs, 8 px les contrôles et portraits,
+   6 px les petits éléments ; les pastilles (rangs, croix, avatars) restent rondes. */
+body[data-theme="teams"] .fit .card,
+body[data-theme="teams"] .fit-team-col .fit-member,
+body[data-theme="teams"] .fit .fcard,
+body[data-theme="teams"] .fit .team-bar,
+body[data-theme="teams"] .fit .pcard,
+body[data-theme="teams"] .fit .fit-focus,
+body[data-theme="teams"] .fit-top .quick {
+  border-radius: 12px;
+}
+
+body[data-theme="teams"] .fit .orow,
+body[data-theme="teams"] .fit .ban-card,
+body[data-theme="teams"] .fit .lane-side,
+body[data-theme="teams"] .fit .input,
+body[data-theme="teams"] .fit .segmented,
+body[data-theme="teams"] .fit .player-select,
+body[data-theme="teams"] .fit .face,
+body[data-theme="teams"] .fit .fit-ban,
+body[data-theme="teams"] .fit .portrait,
+body[data-theme="teams"] .fit .ban-slot,
+body[data-theme="teams"] .fit .orow-lock,
+body[data-theme="teams"] .fit .btn-lock,
+body[data-theme="teams"] .fit .btn-ban,
+body[data-theme="teams"] .fit .pcard-effects {
+  border-radius: 8px;
+}
+
+body[data-theme="teams"] .fit .face .portrait,
+body[data-theme="teams"] .fit .fit-ban .portrait { border-radius: 6px; }
+
+body[data-theme="teams"] .fit .segment,
+body[data-theme="teams"] .fit .chip,
+body[data-theme="teams"] .fit .state,
+body[data-theme="teams"] .fit .picking-chip,
+body[data-theme="teams"] .fit .contrib-bar,
+body[data-theme="teams"] .fit .bar,
+body[data-theme="teams"] .fit .fit-bar,
+body[data-theme="teams"] .fit .dmg-part {
+  border-radius: 6px;
+}
+
+body[data-theme="teams"] .fit .rank,
+body[data-theme="teams"] .fit .face-wrap .remove,
+body[data-theme="teams"] .fit .player-avatar,
+body[data-theme="teams"] .fit .player-pool .portrait {
+  border-radius: 50%;
+}
+
+/* Joueur qui pick : fond un peu plus teinté, barre de l'équipe et ombre portée de la carte sortie. */
+body[data-theme="teams"] .fit-team-col .fit-member.is-picking {
+  background: color-mix(in srgb, var(--ally) 30%, rgba(27, 27, 27, .78));
+  box-shadow: inset 6px 0 0 var(--ally), 0 12px 30px rgba(0, 0, 0, .5);
+}
+
+body[data-theme="teams"] .fit-team-col.is-enemy .fit-member.is-picking {
+  background: color-mix(in srgb, var(--enemy) 30%, rgba(27, 27, 27, .78));
+  box-shadow: inset -6px 0 0 var(--enemy), 0 12px 30px rgba(0, 0, 0, .5);
+}

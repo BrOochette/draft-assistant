@@ -39,6 +39,13 @@ export const APP_TEXT = {
   snapshotMissing: (status: number) => 'Snapshot introuvable (' + status + '). Lancer « npm run ingest -- sample ».'
 };
 
+/** Client LoL lu par le pont local. */
+export const CLIENT_TEXT = {
+  status: { closed: 'Client LoL fermé', idle: 'Client LoL connecté', champSelect: 'Draft en direct', outdated: 'Pont obsolète' } as Record<'closed' | 'idle' | 'champSelect' | 'outdated', string>,
+  tip: 'Picks, bans et rôles lus dans le client LoL, en lecture seule',
+  outdatedTip: 'Pont lancé avec une version antérieure de l’appli : phase de bans, side et joueur en train de choisir manquent'
+};
+
 export const DRAFT_TEXT = {
   modesLabel: 'Suggestions, tous les rôles',
   roleRegion: (role: Role) => 'Rôle ' + role,
@@ -46,6 +53,10 @@ export const DRAFT_TEXT = {
   locked: 'Verrouillé',
   vs: 'VS',
   waiting: 'En attente',
+  hovered: 'Survolé',
+  /** Draft en direct : ce joueur choisit son champion en ce moment. */
+  picking: 'En train de choisir',
+  hoverTip: (champion: string) => champion + ' survolé dans le client, hors calcul',
   allyFace: (picked: boolean, player: string | null, role: Role) =>
     'Saisie manuelle : ' + (picked ? 'changer le champion' : 'choisir le champion') + (player ? ' de ' + player : '') + ' en ' + role,
   allyFaceTip: (picked: boolean) => (picked ? 'Changer à la main' : 'Choisir à la main'),
@@ -186,7 +197,16 @@ export const BANS_TEXT = {
     'WR ' + fmtPct(winRate) + (ours ? ' · ' + ours + ' ' + fmtSigned(-drop) : ''),
   impactTip: (strength: number, ours: string | null, drop: number) =>
     'Force ' + fmtSigned(strength) + ' (win rate lissé − 50)' + (ours ? ', et ' + ours + ', ta meilleure option, ' + (Math.round(drop * 10) >= 0 ? 'perd ' : 'gagne ') + fmt1(Math.abs(drop)) + ' pt contre lui' : ''),
-  threatTip: (threat: number) => 'Menace ' + threat + ' sur 100'
+  threatTip: (threat: number) => 'Menace ' + threat + ' sur 100',
+  /** Panneau des bans (vue client) : valeur du ban et sa décomposition, une ligne par terme. */
+  value: (value: number) => fmtSigned(value),
+  /** Unité de la valeur, masquée sur une carte étroite (l'infobulle la donne). */
+  unit: ' pts',
+  valueTip: 'Ce que ce ban te rapporte, en points de win rate attendu : force du champion, plus la baisse de ta meilleure option s’il est ton vis-à-vis',
+  strength: (winRate: number, games: number | undefined) => 'WR ' + fmtPct(winRate) + (games != null ? ' · ' + fmtInt(games) + ' parties' : ''),
+  strengthTip: (strength: number) => 'Force ' + fmtSigned(strength) + ' : win rate lissé du champion sur le rôle, moins 50',
+  versusOurs: (ours: string, drop: number) => 'Pour ' + ours + ' ' + fmtSigned(-drop),
+  versusOursTip: (ours: string) => 'Écart du win rate attendu de ' + ours + ', ta meilleure option du rôle, s’il est ton vis-à-vis'
 };
 
 export const COMPO_TEXT = {
@@ -202,6 +222,8 @@ export const COMPO_TEXT = {
   scalingSection: 'Scaling des deux équipes',
   scaling: 'Scaling',
   reading: 'Lecture des compositions',
+  /** Fin de draft (vue client) : les deux équipes complètes. */
+  teams: 'Les deux équipes',
   archetype: (label: string, names: readonly string[]) => label + ' : ' + names.join(', '),
   archetypeTip: 'Archétype des champions d’après leur classe Riot (au moins 2 champions)',
   team: "Points d'attention sur l'équipe",
@@ -245,6 +267,9 @@ export const PLAYERS_TEXT = {
   deleteYes: 'Oui, supprimer',
   cancel: 'Annuler',
   deletePlayer: 'Supprimer le joueur',
+  riotId: 'Riot ID',
+  riotIdPlaceholder: 'Nom#TAG',
+  riotIdTip: 'Draft en direct : joueur reconnu par son Riot ID, sinon par son pseudo, à quelques fautes près, puis placé sur le rôle attribué par le client',
   role: 'Rôle',
   noPool: 'Aucun pool',
   emptyTitle: (role: Role, player: string) => 'Aucun pool ' + role + ' pour ' + player,
@@ -292,4 +317,20 @@ export const QUICK_TEXT = {
   place: (champion: string, role: Role) => champion + ' en ' + role,
   replaces: (current: string) => 'remplace ' + current,
   notFound: 'Aucun champion trouvé.'
+};
+
+/** Vue client de l'écran Draft (grand écran) : textes propres à cette vue. */
+export const VIEW_TEXT = {
+  focus: (role: Role) => 'Suggestions en ' + role,
+  best: 'Meilleur',
+  noData: '—',
+  /** Panneau des deux équipes (fin de draft) */
+  damage: { AD: 'AD', AP: 'AP', TANK: 'Tank' } as Record<'AD' | 'AP' | 'TANK', string>,
+  damageTip: (counts: string) => 'Type de dégâts des picks connus : ' + counts,
+  noPick: 'Aucun pick',
+  /** Effet du pick ennemi sur ton pick de la même lane, en points de win rate attendu. */
+  versus: (ally: string) => 'Pour ' + ally,
+  versusTip: (ally: string, enemy: string) => 'Effet de ' + enemy + ' sur le win rate attendu de ' + ally + ' : écart lissé, pondéré (vis-à-vis ×1, autres lanes moins), en points',
+  enemyWr: 'WR',
+  enemyWrTip: (role: Role) => 'Win rate du champion en ' + role + ', toutes régions'
 };

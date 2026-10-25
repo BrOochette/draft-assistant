@@ -23,6 +23,8 @@
   --warn: #ffd27a;
   --warn-bg: #3a3016;
   --info-bg: #1e2a44;
+  /* Rail des barres de contribution. */
+  --track: #262c3a;
   color-scheme: dark;
 }
 
@@ -155,6 +157,8 @@ button:disabled { cursor: not-allowed; }
 .state { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 0 10px; border-radius: 14px; font-size: 13px; font-weight: 600; }
 .state-open { background: var(--raise-2); color: var(--text); }
 .state-locked { background: var(--pos-bg); color: var(--pos); }
+.state-hover { background: var(--raise-2); color: var(--soft); border: 1px dashed var(--accent); }
+.face-img.is-hover { opacity: 0.55; }
 .faces { display: flex; align-items: flex-start; gap: 6px; }
 .face-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .face-wrap { position: relative; }
@@ -227,7 +231,6 @@ button:disabled { cursor: not-allowed; }
 .help dt { font-weight: 600; }
 .help dd { margin: 0; color: var(--muted); }
 
-
 /* Joueurs */
 .players { display: flex; flex-direction: column; gap: 24px; padding: 32px 32px 56px; }
 .players-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
@@ -295,7 +298,7 @@ button:disabled { cursor: not-allowed; }
 .contribs-inline { width: 260px; max-width: 100%; }
 .contrib { display: contents; }
 .contrib-label { color: var(--muted); white-space: nowrap; }
-.contrib-bar { position: relative; height: 8px; border-radius: 4px; background: #262c3a; }
+.contrib-bar { position: relative; height: 8px; border-radius: 4px; background: var(--track); }
 .contrib-bar::after { content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--muted-bar); }
 .contrib-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
 .contrib-fill.is-pos { background: var(--pos); }
@@ -429,3 +432,282 @@ button:disabled { cursor: not-allowed; }
 .player-option.is-active .player-pool .portrait { border-color: var(--raise-2); }
 .player-option.is-none { border-top: 1px solid var(--border); border-radius: 0 0 8px 8px; margin-top: 2px; color: var(--muted); }
 .player-elsewhere { flex: none; padding: 2px 8px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); font-size: 13px; font-weight: 600; }
+
+.riot-id { width: 220px; max-width: 100%; }
+
+/* Page test : la draft tient dans la fenêtre, sans défilement. */
+.app.is-fit .app-screen { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.app.is-fit .header { padding-top: 8px; padding-bottom: 8px; }
+.fit { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 8px 16px 12px; }
+.fit-top { display: flex; align-items: center; gap: 12px; }
+.fit-bans { display: flex; gap: 4px; }
+.fit-ban { font-size: 16px; }
+.fit-quick { flex: 1; min-width: 0; }
+.fit-quick .quick { padding: 4px 8px; }
+.fit .card { padding: 8px 12px; }
+.fit .role-name { font-size: 17px; }
+.fit-faces { display: inline-flex; align-items: center; gap: 6px; }
+.fit-vs { font-size: 13px; color: var(--muted); font-weight: 600; }
+.fit-face { font-size: 16px; }
+.fit-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fit-score { white-space: nowrap; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 700; line-height: 1; color: var(--text); }
+.fit-contribs { display: flex; flex-wrap: wrap; gap: 0 10px; font-size: 13px; }
+
+/* B. Vue client */
+.fit-client { flex: 1; min-height: 0; display: grid; grid-template-columns: 280px minmax(0, 1fr) 200px; gap: 8px; }
+.fit-team-col { min-height: 0; display: grid; grid-template-rows: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.fit-member { min-height: 0; min-width: 0; display: flex; align-items: center; gap: 10px; border-left: 3px solid var(--ally); }
+.fit-member.is-enemy { border-left: 1px solid var(--border); border-right: 3px solid var(--enemy); justify-content: flex-end; text-align: right; }
+.fit-member.is-focus { box-shadow: inset 0 0 0 1px var(--accent); }
+.fit-member-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; cursor: pointer; }
+.fit-member-info:disabled { cursor: default; }
+.fit-best { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fit-center { min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.fit-focus { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+
+/* Compo resserrée */
+.fit-compo { display: flex; flex-direction: column; gap: 10px; }
+.fit-compo.is-horizontal { flex-direction: row; align-items: flex-start; gap: 20px; }
+.fit-compo.is-horizontal > .fit-block { flex: 1; min-width: 0; }
+.fit-block { display: flex; flex-direction: column; gap: 4px; }
+.fit-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fit-team { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.fit-big { font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1; }
+.fit-crit { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 8px; }
+.fit-pair { display: flex; flex-direction: column; gap: 2px; }
+.fit-bar { height: 5px; border-radius: 3px; background: var(--raise-2); overflow: hidden; }
+.fit-bar > span { display: block; height: 100%; border-radius: 3px; }
+.fit-phases { display: flex; flex-wrap: wrap; gap: 4px; }
+.fit-read { display: flex; flex-direction: column; gap: 2px; }
+.fit-compo.is-horizontal > .fit-block:first-child { flex: 0 0 240px; }
+.fit-team .eyebrow { white-space: nowrap; }
+
+/* Panneau des deux équipes (fin de draft) : bandeaux d’équipe et cartes des picks ennemis. */
+.cards-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.team-bar { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; gap: 4px 16px; padding: 6px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--ally); }
+.team-bar.is-enemy { border-top-color: var(--enemy); }
+.team-bar-score { grid-row: 1 / -1; display: flex; flex-direction: column; gap: 2px; }
+.team-bar-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.team-bar-top .dmg { flex: 1; max-width: 320px; }
+.team-bar-top .chip { min-height: 22px; padding: 0 8px; }
+.team-bar-big { font-family: 'Barlow Condensed', sans-serif; font-size: 34px; font-weight: 700; line-height: 1; }
+.team-bar-crits { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.team-bar-crit { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.team-bar-crit .small { overflow: hidden; text-overflow: ellipsis; }
+.dmg { display: flex; width: 100%; gap: 3px; }
+.dmg-part { min-width: 52px; padding: 2px 6px; border-radius: 6px; border: 1px solid; background: var(--raise); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.dmg-empty { padding: 2px 0; }
+.pcard { position: relative; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); container-type: size; isolation: isolate; }
+.pcard.is-ally { border-color: color-mix(in srgb, var(--ally) 45%, var(--border)); }
+.pcard.is-ally.is-locked { border-color: var(--accent); }
+.pcard.is-enemy { border-color: color-mix(in srgb, var(--enemy) 45%, var(--border)); }
+.pcard.is-enemy.is-empty { border-style: dashed; }
+.pcard-bg { position: absolute; inset: -20%; width: 140%; height: 140%; object-fit: cover; filter: blur(22px) saturate(1.2); opacity: .16; z-index: -1; pointer-events: none; }
+.pcard-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pcard-head .state { min-height: 24px; padding: 0 8px; }
+.pcard-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pcard-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcard-score { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; white-space: nowrap; }
+.pcard-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.pcard-chips .chip { min-height: 24px; padding: 0 8px; }
+.pcard-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pcard-effects { display: flex; flex-direction: column; gap: 1px; padding: 4px 8px; border-radius: 8px; background: color-mix(in srgb, var(--bg) 60%, transparent); }
+@container (max-height: 230px) { .pcard.is-enemy .pcard-chips { flex-wrap: nowrap; overflow: hidden; } }
+/* Carte étroite : les champions du pool sortent du bouton joueur, le nom reste lisible. */
+@container (max-width: 250px) { .pcard .player-select .player-pool { display: none; } }
+.pcard-id .row-gap { flex-wrap: wrap; gap: 0 8px; }
+.pcard-id .row-gap > span { white-space: nowrap; }
+
+/* Vue client : rôle choisi, pool en cartes détaillées et autres champions en liste. */
+.focus-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 300px); gap: 12px; }
+.focus-cards { min-height: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+.fcard-grid { min-height: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); align-content: start; gap: 8px; overflow: auto; }
+.fcard { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: 12px; background: var(--raise); border: 1px solid var(--border); }
+.fcard.is-first { border-color: var(--accent); }
+.fcard-top { display: flex; align-items: center; gap: 10px; }
+.fcard-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fcard-score { align-items: flex-end; text-align: right; }
+.fcard-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.fcard-chips .chip { min-height: 26px; }
+.fcard-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.focus-others { min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.focus-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+.orow { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 10px; background: var(--raise); border: 1px solid var(--border); }
+.orow-head { gap: 6px; min-width: 0; }
+.orow .fit-contribs { gap: 0 8px; }
+.orow-score { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; white-space: nowrap; }
+.orow-lock { flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--raise-2); color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.orow-lock:hover, .orow-lock:focus-visible { color: var(--accent); border-color: var(--accent); }
+/* Fin de draft : les 5 picks côte à côte. */
+.fcard-grid.is-team { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.fcard-grid.is-team .fcard-top { flex-wrap: wrap; }
+/* Carte étroite : le score passe sous l'identité plutôt que de la chevaucher. */
+.fcard-top { flex-wrap: wrap; row-gap: 4px; }
+.fcard-top > .col.grow { min-width: 96px; flex: 1 1 96px; }
+.fcard-score { margin-left: auto; flex-shrink: 0; }
+.fcard-score .score-md { white-space: nowrap; }
+.fcard .scal { flex-wrap: nowrap; }
+/* Choix du joueur compact (pages test) : 36 px de haut au lieu de 44. */
+.fit-player { display: block; min-width: 0; width: 100%; container-type: inline-size; }
+.fit-player .player-select { min-height: 36px; padding: 3px 8px 3px 6px; }
+.fit-member-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.fit-member-body .fit-member-info { flex: none; }
+/* Le bouton joueur tient dans sa colonne : le nom se tronque, l'aperçu du pool garde sa place. */
+.fit-player .player-select { min-width: 0; }
+.fit-player .player-select > .grow { min-width: 0; }
+/* Bouton joueur étroit : le nom passe avant l'aperçu du pool (visible au centre et dans « Meilleur »). */
+@container (max-width: 230px) { .fit-player .player-pool, .fit-player .player-select > .small.muted { display: none; } }
+/* Texte lu par les lecteurs d'écran, invisible à l'écran. */
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* Vue client, phase de bans : une colonne par rôle ennemi encore ouvert. */
+.ban-panel { min-height: 0; overflow: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); align-content: start; gap: 12px; }
+.ban-panel .ban-cards { display: flex; flex-direction: column; gap: 6px; }
+/* Vue client, draft complète : les deux équipes lane par lane, puis la lecture des deux compos. */
+.team-panel { overflow: auto; }
+.team-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.team-row .pcard { container-type: normal; min-height: 0; }
+.team-reads { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* De la hauteur à revendre : la raison du ban s'affiche en entier. */
+.ban-panel .ban-card { align-items: flex-start; }
+.ban-panel .ban-card > .ellipsis:not(.muted) { white-space: normal; overflow: visible; }
+.ban-panel .ban-card .btn { align-self: center; }
+.fcard.is-compact .fcard-top { flex-wrap: nowrap; gap: 8px; }
+.fcard.is-compact .fcard-top > .col.grow { min-width: 0; flex: 1 1 0; }
+.fcard.is-compact .score-md { font-size: 26px; }
+.team-panel .pcard-effects { line-height: 1.3; }
+.team-panel { gap: 6px; }
+.fcard.is-compact { gap: 4px; }
+.fcard.is-compact .fcard-chips .chip { min-height: 24px; padding: 0 8px; }
+/* Panneau des deux équipes : deux rangées de cartes s'il y a la hauteur, sinon une ligne par lane. */
+.team-panel { container-type: size; }
+.team-lanes { display: none; flex-direction: column; gap: 4px; }
+.lane-row { display: grid; grid-template-columns: 76px minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 8px; }
+.lane-side { min-width: 0; display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 10px; background: var(--raise); border: 1px solid var(--border); container-type: inline-size; }
+.lane-side.is-ally { border-left: 3px solid var(--ally); }
+.lane-side.is-enemy { border-left: 3px solid var(--enemy); }
+.lane-side > .col.min0 { flex: 1 1 0; }
+.lane-score { flex: none; align-items: flex-end; }
+.lane-contribs .fit-contribs { flex-direction: column; flex-wrap: nowrap; gap: 0; line-height: 1.3; }
+.lane-chips { display: flex; gap: 4px; flex: none; }
+.lane-chips .chip { min-height: 22px; padding: 0 7px; }
+@container (max-height: 760px) {
+  .team-panel .team-row { display: none; }
+  .team-panel .team-lanes { display: flex; }
+}
+/* Ligne étroite : le scaling (et l'archétype) passent après l'essentiel. */
+@container (max-width: 400px) { .lane-extra { display: none; } }
+/* Dégâts et archétype restent dans la répartition des dégâts de l'équipe et dans les archétypes de la lecture. */
+@container (max-width: 400px) { .lane-chips { display: none; } }
+/* Bandeau d'équipe étroit : critères en texte avec leur valeur, plutôt que des libellés tronqués. */
+.team-bar { container-type: inline-size; }
+.team-bar-value { display: none; }
+@container (max-width: 520px) {
+  .team-bar-top { flex-wrap: wrap; justify-content: flex-start; }
+  /* Le scaling par phase reste dans la lecture de ta compo (avantage ou désavantage de scaling). */
+  .team-bar-top > .row-gap { display: none; }
+  .team-bar-crits { display: flex; flex-wrap: wrap; gap: 0 10px; }
+  .team-bar-crit { flex-direction: row; gap: 4px; }
+  .team-bar-crit .bar { display: none; }
+  .team-bar-value { display: inline; }
+}
+/* Disposition par lane : la ligne du win rate ennemi passe à la ligne, et la lecture des compos devient un texte continu. */
+@container (max-height: 760px) {
+  .team-reads .fcard-chips { display: block; line-height: 1.5; }
+  .team-reads .fcard-chips .chip { display: inline; min-height: 0; padding: 0; background: none; font-weight: 400; }
+  .team-reads .fcard-chips .chip:not(:last-child)::after { content: ' · '; color: var(--muted); }
+}
+@container (max-height: 760px) {
+  .team-lanes { gap: 3px; }
+  .lane-side { padding-top: 3px; padding-bottom: 3px; }
+}
+@container (max-width: 520px) { .team-bar { padding: 4px 10px; gap: 2px 12px; } }
+/* Panneau des bans : carte sur trois lignes, autant de bans par rôle que la hauteur le permet (calculé en JS). */
+.ban-panel { flex: 1; overflow: hidden; }
+.ban-panel .ban-card { display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 6px 8px; }
+.ban-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ban-value { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; white-space: nowrap; }
+.ban-foot { display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* Une colonne par rôle encore ouvert, quelle que soit la largeur. */
+.ban-panel { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.ban-panel .ban-card { container-type: inline-size; }
+.ban-foot .small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@container (max-width: 210px) { .ban-card .small.muted.ellipsis { display: none; } }
+/* La saisie rapide reste sur une ligne dans le bandeau. */
+.fit-quick .quick { flex-wrap: nowrap; }
+.fit-quick .quick .combo { min-width: 0; }
+
+
+
+.picking-chip { align-self: flex-start; padding: 1px 8px; border-radius: 10px; background: var(--ally); color: var(--bg); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.fit-member.is-enemy .picking-chip { align-self: flex-end; background: var(--enemy); }
+/* Colonne alliée de la vue client : la croix de retrait passe à gauche du portrait, le nom du rôle reste lisible. */
+.fit-team-col:not(.is-enemy) .face-wrap .remove { right: auto; left: -9px; }
+/* Bandeau de la vue client : « Ennemi / Allié » toujours sur une ligne ; sous 1500 px, cases de ban plus petites et
+   libellé « Suggérés » retiré (les portraits restent), pour laisser la place à la saisie rapide. */
+.fit-quick .segmented { flex-wrap: nowrap; flex-shrink: 0; }
+@media (max-width: 1500px) {
+  .fit-top .fit-ban { width: 34px !important; height: 34px !important; }
+  .fit-top .fit-ban .portrait { width: 32px !important; height: 32px !important; }
+  .fit-top .ban-top > .small { display: none; }
+}
+/* Carte de ban étroite : le nom rétrécit (points de suspension), la valeur reste entière dans la carte. */
+.ban-head > .grow { min-width: 0; }
+.ban-head .ban-value { flex-shrink: 0; }
+@container (max-width: 210px) { .ban-head .ban-value { font-size: 18px; } }
+@container (max-width: 210px) { .ban-unit { display: none; } }
+/* Badge du joueur qui pick : passe sur deux lignes dans une carte étroite plutôt que de déborder. */
+.picking-chip { white-space: normal; text-align: center; max-width: 100%; }
+
+/* Vue client : boutons d'action. Verrouiller, détouré dans l'accent, se remplit au survol ; Bannir, neutre, passe au
+   rouge du malus au survol ; tous deux en pilule avec leur icône. */
+.fit .btn-lock, .fit .btn-ban {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; letter-spacing: .01em; cursor: pointer;
+  transition: background-color .15s, color .15s, border-color .15s, box-shadow .15s;
+}
+.fit .btn-lock { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent); }
+.fit .btn-lock:hover, .fit .btn-lock:focus-visible { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent); }
+.fit .btn-ban { background: rgba(255, 255, 255, .05); color: var(--text); border: 1px solid rgba(255, 255, 255, .22); }
+.fit .btn-ban svg { color: var(--neg); }
+.fit .btn-ban:hover, .fit .btn-ban:focus-visible { background: var(--neg); color: #160709; border-color: var(--neg); }
+.fit .btn-ban:hover svg, .fit .btn-ban:focus-visible svg { color: currentColor; }
+
+/* Vue client : croix de retrait d'un pick, pastille sombre au filet clair posée sur le coin du portrait. */
+.fit .face-wrap .remove {
+  width: 22px; height: 22px; top: -7px; right: -7px; border-radius: 50%;
+  background: rgba(12, 12, 16, .82); color: #fff; border: 1px solid rgba(255, 255, 255, .45);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .45); backdrop-filter: blur(4px);
+  transition: background-color .15s, color .15s, border-color .15s;
+}
+.fit .fit-team-col:not(.is-enemy) .face-wrap .remove { right: auto; left: -7px; }
+.fit .face-wrap .remove svg { width: 10px; height: 10px; }
+.fit .face-wrap .remove:hover, .fit .face-wrap .remove:focus-visible { background: var(--neg); color: #160709; border-color: var(--neg); }
+
+.picking-chip { text-transform: uppercase; letter-spacing: .04em; }
+/* Carte de ban étroite : « Bannir » en icône seule (le nom accessible du bouton reste), la ligne « Pour … » garde la place. */
+@container (max-width: 230px) { .btn-ban .btn-text { display: none; } .fit .btn-ban { padding: 0 8px; } }
+
+/* Joueur qui pick, tous thèmes : sa carte sort de la colonne vers le centre, les autres joueurs de son équipe
+   s'estompent, une barre épaisse de la couleur de l'équipe la borde et un reflet la balaie. */
+.fit-member { transition: transform .25s ease, opacity .25s ease, filter .25s ease; }
+.fit-team-col:has(.is-picking) .fit-member:not(.is-picking) { opacity: .45; filter: saturate(.5); }
+.fit-member.is-picking {
+  position: relative; z-index: 1; overflow: hidden; transform: translateX(8px);
+  box-shadow: inset 6px 0 0 var(--ally), 0 10px 26px rgba(0, 0, 0, .45);
+}
+.fit-member.is-enemy.is-picking { transform: translateX(-8px); box-shadow: inset -6px 0 0 var(--enemy), 0 10px 26px rgba(0, 0, 0, .45); }
+.fit-member.is-picking::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--ally) 38%, transparent) 50%, transparent 70%);
+  transform: translateX(-100%); animation: picking-sweep 2.2s ease-in-out infinite;
+}
+.fit-member.is-enemy.is-picking::after {
+  background: linear-gradient(255deg, transparent 30%, color-mix(in srgb, var(--enemy) 38%, transparent) 50%, transparent 70%);
+  animation-name: picking-sweep-enemy;
+}
+@keyframes picking-sweep { to { transform: translateX(100%); } }
+@keyframes picking-sweep-enemy { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .fit-member { transition: none; }
+  .fit-member.is-picking::after { animation: none; transform: none; opacity: .5; }
+}

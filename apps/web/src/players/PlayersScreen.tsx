@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { masteryLevel, PLAYERS_TEXT as T } from '@draft/i18n-fr';
-import { ROLES, type Champion, type PoolEntry, type Pools, type Role } from '@draft/schemas';
+import { ROLES, type Champion, type PoolEntry, type Pools, type RiotIds, type Role } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, useData } from '../ui';
 import { filterChampions } from '../draft/ChampionPicker';
 
 interface Props {
   pools: Pools;
   onChange: (pools: Pools) => void;
+  riotIds: RiotIds;
+  onRiotIdsChange: (ids: RiotIds) => void;
 }
 
 const TRAIT_CHIPS: { label: string; has: (c: Champion) => boolean }[] = [
@@ -18,7 +20,7 @@ const TRAIT_CHIPS: { label: string; has: (c: Champion) => boolean }[] = [
   { label: T.traits.late, has: (c) => c.scaling[2] >= 5 }
 ];
 
-export const PlayersScreen = ({ pools, onChange }: Props) => {
+export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Props) => {
   const { engine } = useData();
   const names = Object.keys(pools);
   const [sel, setSel] = useState(names[0] ?? '');
@@ -125,6 +127,19 @@ export const PlayersScreen = ({ pools, onChange }: Props) => {
                 <Icon name="close" size={14} />{T.deletePlayer}
               </button>
             )}
+          </div>
+          <div className="row-gap wrap">
+            <label htmlFor="riot-id" className="small muted" title={T.riotIdTip}>{T.riotId}</label>
+            <input
+              id="riot-id"
+              className="input riot-id"
+              placeholder={T.riotIdPlaceholder}
+              autoComplete="off"
+              spellCheck={false}
+              title={T.riotIdTip}
+              value={riotIds[player] ?? ''}
+              onChange={(e) => onRiotIdsChange({ ...riotIds, [player]: e.target.value })}
+            />
           </div>
           <div role="group" aria-label={T.role} className="row-gap wrap">
             {ROLES.map((r) => {

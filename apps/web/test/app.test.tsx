@@ -108,6 +108,26 @@ describe('écran Draft', () => {
   });
 });
 
+describe('écran Draft sur grand écran', () => {
+  it('affiche la vue client et verrouille depuis le rôle choisi', async () => {
+    // Fenêtre d'au moins 1200 px : jsdom n'a pas matchMedia, on le simule.
+    const mq = { matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+    vi.stubGlobal('matchMedia', vi.fn(() => mq));
+    try {
+      const user = userEvent.setup();
+      render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
+      // Top (Aurora) est verrouillé dans l'état de départ : le centre montre le premier rôle ouvert, la Jungle.
+      expect(screen.getByRole('region', { name: 'Rôle Jungle' })).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' }));
+      expect(screen.getByRole('button', { name: 'Retirer Sejuani et rouvrir les suggestions en Jungle' })).toBeInTheDocument();
+      // Les mentions légales restent sous la draft.
+      expect(screen.getByRole('contentinfo', { name: 'Mentions' })).toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 describe('écran Joueurs', () => {
   it('supprime un joueur après confirmation', async () => {
     const user = userEvent.setup();

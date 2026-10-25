@@ -19,6 +19,8 @@ const SlotPortrait = ({ name, landing }: { name: string; landing: string }) => {
 
 interface Props {
   row: RoleResult;
+  /** Champion survolé par l'allié dans le client : affiché, hors calcul. */
+  hover?: string | undefined;
   pools: Pools;
   assign: DraftState['assign'];
   picker: Side | null;
@@ -27,15 +29,18 @@ interface Props {
 }
 
 /** Colonne de gauche d'un rôle : état, picks allié et ennemi (saisie manuelle, retrait), joueur placé. */
-export const RoleSide = ({ row, pools, assign, picker, onOpenPicker, dispatch }: Props) => {
+export const RoleSide = ({ row, hover, pools, assign, picker, onOpenPicker, dispatch }: Props) => {
   const { role, player, allyPick: ally, enemyPick: enemy } = row;
+  const hovered = ally ? null : hover ?? null;
   return (
     <div className="role-side">
       <div className="row-between">
         <span className="role-name">{role}</span>
         {ally
           ? <span className="state state-locked"><Icon name="lock" />{D.locked}</span>
-          : <span className="state state-open"><Icon name="circle" />{D.toChoose}</span>}
+          : hovered
+            ? <span className="state state-hover" title={D.hoverTip(hovered)}><Icon name="circle" />{D.hovered}</span>
+            : <span className="state state-open"><Icon name="circle" />{D.toChoose}</span>}
       </div>
       <div className="faces">
         <div className="face-col">
@@ -48,7 +53,9 @@ export const RoleSide = ({ row, pools, assign, picker, onOpenPicker, dispatch }:
               title={D.allyFaceTip(!!ally)}
               onClick={() => onOpenPicker('ally')}
             >
-              {ally ? <SlotPortrait name={ally} landing={slotKey('ally', role, ally)} /> : '?'}
+              {ally
+                ? <SlotPortrait name={ally} landing={slotKey('ally', role, ally)} />
+                : hovered ? <span className="face-img is-hover" title={D.hoverTip(hovered)}><Portrait name={hovered} size={58} /></span> : '?'}
             </button>
             {ally && (
               <button type="button" className="remove" aria-label={D.removeAlly(ally, role)} title={D.removeTip(ally)} onClick={() => dispatch({ type: 'unlock', role })}>
@@ -56,7 +63,7 @@ export const RoleSide = ({ row, pools, assign, picker, onOpenPicker, dispatch }:
               </button>
             )}
           </div>
-          <span className="small strong center-text">{ally ?? D.toChoose}</span>
+          <span className={'small strong center-text' + (!ally && hovered ? ' muted' : '')}>{ally ?? hovered ?? D.toChoose}</span>
         </div>
         {/* « VS » devient un bouton d'échange dès qu'un des deux picks est saisi. */}
         {ally || enemy ? (

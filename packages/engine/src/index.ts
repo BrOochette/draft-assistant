@@ -26,7 +26,7 @@ export const computeDraft = (state: DraftState, pools: Pools, data: EngineData, 
     allyRead: readAlly(full, scaling),
     enemyRead: readEnemy(state, enemies),
     team: teamNotes(state, pools),
-    bans: banSuggestions(state, pools, data, avail, roles),
+    bans: banSuggestions(state, pools, data, avail, roles, options.bansPerRole),
     archetypes: {
       ally: archetypes(full.map((x) => x.name), data.catalog),
       enemy: archetypes(enemies.map((x) => x.name), data.catalog)
@@ -34,6 +34,8 @@ export const computeDraft = (state: DraftState, pools: Pools, data: EngineData, 
   };
 };
 
+export { applyClientDraft, type ClientOrder, type ClientSync } from './client';
+export { matchPlayers, nameSimilarity, normalizeName, PLAYER_MATCH_MIN, type PlayerIdentity } from './players';
 export { availability, rolesByPlay, type Availability, type BanBlocked, type Blocked, type GoneReason } from './context';
 export { compScore, verdictOf } from './composition';
 export { allyWeight, DUO_WEIGHT, evaluate, LOW_SAMPLE_GAMES, MASTERY_POINT, matchupEffect, modeOf, otherEnemyWeight, totalScore } from './evaluate';

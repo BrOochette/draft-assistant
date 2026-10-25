@@ -2,6 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import './styles.css';
+// Thème de l'appli, après les styles de base qu'il surcharge.
+import './theme.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

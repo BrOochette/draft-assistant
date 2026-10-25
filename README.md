@@ -9,6 +9,14 @@ npm install
 npm run dev                   # assemble le snapshot de stats puis lance Vite sur http://localhost:5173
 ```
 
+## Draft en direct
+
+```bash
+npm run bridge                # pont local en lecture seule vers le client LoL, à laisser ouvert pendant les drafts
+```
+
+L'appli (en local ou sur Cloudflare) se connecte au pont toute seule : picks, bans, rôles et survols alliés arrivent pendant la sélection des champions. Le chip « Draft en direct » s'affiche dans l'en-tête. Renseigner le Riot ID des joueurs (écran Joueurs) pour qu'ils soient placés sur leur rôle. Chrome demande une fois l'accès au réseau local depuis le site Cloudflare. Variables utiles : `LOL_LOCKFILE` (chemin du `lockfile` si le client n'est pas trouvé), `DRAFT_BRIDGE_ORIGINS` (autre adresse du site, séparées par des virgules), `DRAFT_BRIDGE_PORT` (port local, 52147 par défaut, à changer aussi côté appli).
+
 ## Mettre à jour les stats (à chaque patch)
 
 ```bash
@@ -38,6 +46,7 @@ Pour corriger un attribut à la main, modifier `data/champions-overrides.json` :
 | `npm run ingest -- snapshot` | Assemble `apps/web/public/data/snapshot.json` : stats Lolalytics si présentes, sinon données d'exemple |
 | `npm run ingest -- sample` | Force le snapshot sur les données d'exemple de la maquette |
 | `npm run ingest -- portraits` | Télécharge les portraits manquants dans `apps/web/public/champions/` |
+| `npm run bridge` | Pont local vers le client LoL pour la draft en direct (lecture seule) |
 
 ## Organisation
 
@@ -45,7 +54,8 @@ Pour corriger un attribut à la main, modifier `data/champions-overrides.json` :
 - `packages/engine` : moteur pur (scores, note de compo, recommandations, bans, réducteur de la draft).
 - `packages/i18n-fr` : tous les textes d'interface. Le moteur ne renvoie que des codes.
 - `apps/ingest` : CLI de collecte (wiki, Lolalytics) et d'assemblage du snapshot.
-- `apps/web` : écrans Draft et Joueurs. Les pools sont gardés dans IndexedDB.
+- `apps/web` : écrans Draft et Joueurs. Les pools et les Riot ID sont gardés dans IndexedDB.
+- `apps/bridge` : pont local vers le client LoL (sélection des champions), en lecture seule.
 
 ## Sources
 

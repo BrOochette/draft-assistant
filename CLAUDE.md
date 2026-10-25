@@ -15,15 +15,15 @@ Application web personnelle d'aide à la draft sur League of Legends. Elle recom
 - **Règle de pool** : les recommandations par défaut viennent du pool du joueur placé sur le rôle. Les champions hors pool n'apparaissent que dans le détail d'une ligne.
 - **Score** : win rate attendu (Lolalytics) : win rate du champion, plus les écarts des matchups contre les ennemis connus et des duos avec les alliés verrouillés, lissés vers la moyenne de leur paire de classes, plus la maîtrise (décidé le 24/10/2026, voir `docs/recap.md`). Pas de win rate de lane depuis l'abandon de l'API Riot (décidé le 23/10/2026).
 - **Usage solo** : pas de comptes ni de serveur au départ.
-- **Sécurité** : la clé API Riot ne doit jamais apparaître dans le code web ni dans le dépôt. Elle passe par une variable d'environnement de l'outil d'ingestion.
+- **Sécurité** : la clé API Riot ne doit jamais apparaître dans le code web ni dans le dépôt. Elle passe par une variable d'environnement de l'outil d'ingestion. Le mot de passe de l'API locale du client LoL reste dans `apps/bridge`, jamais transmis à l'appli ni affiché.
 
 ## Stack
 
 TypeScript partout, validé avec le porteur du projet :
-- monorepo en workspaces npm : `packages/schemas`, `packages/engine` (logique pure), `packages/i18n-fr` (tous les textes d'interface), `apps/web` (React + Vite) et `apps/ingest` (CLI Node) ;
+- monorepo en workspaces npm : `packages/schemas`, `packages/engine` (logique pure), `packages/i18n-fr` (tous les textes d'interface), `apps/web` (React + Vite), `apps/ingest` (CLI Node) et `apps/bridge` (pont local vers le client LoL, lecture seule) ;
 - Vitest pour les tests.
 
-Commandes : `npm run dev`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits` (voir `README.md`).
+Commandes : `npm run dev`, `npm run bridge`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits` (voir `README.md`).
 
 ## Première étape suggérée
 

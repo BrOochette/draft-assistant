@@ -14,28 +14,35 @@ const BAN_GAMES = 1000;
 
 /**
  * Suggestions de bans, par rôle où l'ennemi n'a pas encore pick, sans les champions déjà bannis ou pris.
- * Stats mesurées : les BANS_PER_ROLE champions qui nous coûtent le plus, en points de win rate attendu (leur force,
+ * Stats mesurées : les `perRole` champions (BANS_PER_ROLE par défaut) qui nous coûtent le plus, en points de win rate attendu (leur force,
  * plus la baisse de notre meilleure option du rôle s'ils sont le vis-à-vis). Données d'exemple : menace fixe.
  * Ordre : rôle (Top à Support), puis valeur.
  */
-export const banSuggestions = (state: DraftState, pools: Pools, data: EngineData, avail: Availability, roles: readonly RoleResult[]) => ({
+export const banSuggestions = (
+  state: DraftState,
+  pools: Pools,
+  data: EngineData,
+  avail: Availability,
+  roles: readonly RoleResult[],
+  perRole = BANS_PER_ROLE
+) => ({
   suggestions: ROLES.filter((role) => !state.enemy[role]).flatMap((role) =>
-    data.measured ? measuredBans(role, state, pools, data, avail, roles.find((r) => r.role === role)!) : sampleBans(role, data, avail)
+    data.measured ? measuredBans(role, state, pools, data, avail, roles.find((r) => r.role === role)!, perRole) : sampleBans(role, data, avail, perRole)
   ),
   allyFull: state.allyBans.length >= MAX_BANS
 });
 
-const sampleBans = (role: Role, data: EngineData, avail: Availability): BanCard[] =>
+const sampleBans = (role: Role, data: EngineData, avail: Availability, perRole: number): BanCard[] =>
   data.banSuggestions
     .filter((b) => b.role === role && !avail.banBlocked(b.champion))
     .sort((a, b) => b.threat - a.threat)
-    .slice(0, BANS_PER_ROLE)
+    .slice(0, perRole)
     .map((b) => ({ champion: b.champion, role: b.role, threat: b.threat, ...(b.reason && { reason: b.reason }), ...(b.winRate != null && { winRate: b.winRate }) }));
 
 /** Nos options sur le rôle : le pick verrouillé, sinon le pool, sinon les suggestions. */
 const ourOptions = (row: RoleResult): Evaluation[] => (row.locked ? [row.locked] : row.hasPool && row.inPool.length ? row.inPool : row.recommendations);
 
-const measuredBans = (role: Role, state: DraftState, pools: Pools, data: EngineData, avail: Availability, row: RoleResult): BanCard[] => {
+const measuredBans = (role: Role, state: DraftState, pools: Pools, data: EngineData, avail: Availability, row: RoleResult, perRole: number): BanCard[] => {
   const meta = rowMeta(state, pools, role);
   const options = ourOptions(row).map((e) => ({ e, entry: entryFor(data, meta, role, e.champion), score: rankScore(e) }));
   const best = options.reduce<(typeof options)[number] | null>((b, o) => (!b || o.score > b.score ? o : b), null);
@@ -50,8 +57,8 @@ const measuredBans = (role: Role, state: DraftState, pools: Pools, data: EngineD
       const bestVs = options.reduce((m, o) => Math.max(m, o.score + (matchupEffect(o.entry, role, c.name)?.delta ?? 0)), -Infinity);
       const drop = best ? best.score - bestVs : 0;
       const value = strength + drop;
-      return { champion: c.name, role, threat: value, winRate: c.gameWinRate, impact: { value, strength, drop, ours: best?.e.champion ?? null } };
+      return { champion: c.name, role, threat: value, winRate: c.gameWinRate, games: c.games, impact: { value, strength, drop, ours: best?.e.champion ?? null } };
     })
     .sort((a, b) => b.threat - a.threat)
-    .slice(0, BANS_PER_ROLE);
+    .slice(0, perRole);
 };
