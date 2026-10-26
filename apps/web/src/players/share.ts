@@ -15,6 +15,14 @@ export const toPlayersFile = (pools: Pools, riotIds: RiotIds, now = new Date()):
 /** Nom du fichier exporté : « draft-assistant-joueurs-2026-10-26.json ». */
 export const playersFileName = (now = new Date()): string => 'draft-assistant-joueurs-' + now.toISOString().slice(0, 10) + '.json';
 
+/** Fichier de partage d'un seul joueur : même format, la liste ne contient que lui. */
+export const toPlayerFile = (name: string, pools: Pools, riotIds: RiotIds, now = new Date()): PlayersFile =>
+  toPlayersFile(pools[name] ? { [name]: pools[name] } : {}, riotIds, now);
+
+/** Nom du fichier d'un joueur : « draft-assistant-joueur-Lou-2026-10-26.json » (caractères interdits sous Windows remplacés). */
+export const playerFileName = (name: string, now = new Date()): string =>
+  'draft-assistant-joueur-' + (name.trim().replace(/[\s<>:"/\\|?*]+/g, '-').replace(/^-+|-+$/g, '') || 'joueur') + '-' + now.toISOString().slice(0, 10) + '.json';
+
 export interface ImportPreview {
   pools: Pools;
   riotIds: RiotIds;

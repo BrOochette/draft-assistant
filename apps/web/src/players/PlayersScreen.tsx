@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { masteryLevel, PLAYERS_TEXT as T } from '@draft/i18n-fr';
-import { ROLES, type Champion, type PoolEntry, type Pools, type RiotIds, type Role } from '@draft/schemas';
+import { ROLES, type Champion, type PlayersFile, type PoolEntry, type Pools, type RiotIds, type Role } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, useData } from '../ui';
 import { filterChampions } from '../draft/ChampionPicker';
-import { playersFileName, readPlayersFile, toPlayersFile, type ImportError, type ImportPreview } from './share';
+import { playerFileName, playersFileName, readPlayersFile, toPlayerFile, toPlayersFile, type ImportError, type ImportPreview } from './share';
 
 interface Props {
   pools: Pools;
@@ -52,13 +52,35 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
   const [pasting, setPasting] = useState(false);
   const [pasted, setPasted] = useState('');
 
-  const playersJson = () => JSON.stringify(toPlayersFile(pools, riotIds), null, 2) + '\n';
+  /** Copie du joueur affiché : réussie ou non, effacée au changement de joueur. */
+  const [copiedPlayer, setCopiedPlayer] = useState<boolean | null>(null);
+
+  const toJson = (file: PlayersFile) => JSON.stringify(file, null, 2) + '\n';
+  const playersJson = () => toJson(toPlayersFile(pools, riotIds));
   const resetShare = () => {
     setImported(null);
     setPreview(null);
     setImportError(null);
     setCopied(null);
   };
+  const download = (json: string, fileName: string) => {
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const copyPlayer = async () => {
+    try {
+      await navigator.clipboard.writeText(toJson(toPlayerFile(player, pools, riotIds)));
+      setCopiedPlayer(true);
+    } catch {
+      setCopiedPlayer(false);
+    }
+  };
+  const exportPlayer = () => download(toJson(toPlayerFile(player, pools, riotIds)), playerFileName(player));
   const copyPlayers = async () => {
     resetShare();
     setPasting(false);
@@ -93,15 +115,7 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
     else setPasting(true);
   };
 
-  const exportPlayers = () => {
-    const blob = new Blob([playersJson()], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = playersFileName();
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const exportPlayers = () => download(playersJson(), playersFileName());
   const readFile = async (file: File | undefined) => {
     resetShare();
     if (!file) return;
@@ -121,6 +135,7 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
   const select = (p: string) => {
     setSel(p);
     setConfirmDelete(false);
+    setCopiedPlayer(null);
   };
 
   const deletePlayer = () => {
@@ -261,6 +276,10 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
         <section className="col gap-16 players-center">
           <div className="row-between wrap">
             <h2 className="h2">{T.poolsOf(player)}</h2>
+            <div role="group" aria-label={T.playerActions(player)} className="row-gap wrap">
+              {copiedPlayer != null && <span role="status" className={'small ' + (copiedPlayer ? 'pos-text' : 'neg-text')}>{copiedPlayer ? T.copied : T.copyFailed}</span>}
+              <button type="button" className="btn btn-sm" aria-label={T.playerCopy(player)} title={T.playerCopyTip(player)} onClick={() => void copyPlayer()}><Icon name="copy" />{T.copyButton}</button>
+              <button type="button" className="btn btn-sm" aria-label={T.playerExport(player)} title={T.playerExportTip(player)} onClick={exportPlayer}><Icon name="download" />{T.exportButton}</button>
             {confirmDelete ? (
               <div role="group" aria-label={T.confirmDelete(player)} className="row-gap wrap">
                 <span className="small warn-text strong">{T.deleteAsk(player)}</span>
@@ -272,6 +291,7 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
                 <Icon name="close" size={14} />{T.deletePlayer}
               </button>
             )}
+            </div>
           </div>
           <div className="row-gap wrap">
             <label htmlFor="riot-id" className="small muted" title={T.riotIdTip}>{T.riotId}</label>
