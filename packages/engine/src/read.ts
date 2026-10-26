@@ -14,8 +14,8 @@ export const scalingPhases = (ally: readonly CompMember[], enemies: readonly Com
 
 const NEEDS: Trait[] = ['Frontline', 'Engage', 'Physique', 'Peel'];
 
-/** Lecture factuelle de la compo alliée : apports, mix de dégâts, puis scaling par phase. */
-export const readAlly = (ally: readonly CompMember[], phases: readonly PhaseResult[]): AllyReadItem[] => {
+/** Lecture factuelle de la compo alliée : apports, mix de dégâts, dégâts soutenus face à la frontline, puis scaling par phase. */
+export const readAlly = (ally: readonly CompMember[], phases: readonly PhaseResult[], enemies: readonly CompMember[] = []): AllyReadItem[] => {
   const met = new Map<Trait, string>();
   for (const x of ally) for (const g of x.provides) if (!met.has(g)) met.set(g, x.name);
   const out: AllyReadItem[] = NEEDS.map((trait) => {
@@ -28,6 +28,9 @@ export const readAlly = (ally: readonly CompMember[], phases: readonly PhaseResu
       ? { sign: '-', code: 'MAGIC_HEAVY', ap, total: ally.length }
       : { sign: '+', code: 'MIXED_DAMAGE', ap, total: ally.length });
   }
+  // Dès 3 picks alliés : plus assez de rôles ouverts pour compter sur un futur pick.
+  const front = enemies.filter((x) => x.provides.includes('Frontline')).map((x) => x.name);
+  if (ally.length >= 3 && front.length && !ally.some((x) => x.sustained)) out.push({ sign: '-', code: 'NO_SUSTAINED', against: front });
   for (const p of phases) {
     if (p.verdict === 'advantage') out.push({ sign: '+', code: 'SCALING_ADVANTAGE', phase: p.phase });
     else if (p.verdict === 'disadvantage') out.push({ sign: '-', code: 'SCALING_DISADVANTAGE', phase: p.phase });

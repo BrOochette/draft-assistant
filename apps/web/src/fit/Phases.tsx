@@ -15,8 +15,8 @@ import {
 } from '@draft/i18n-fr';
 import { ROLES } from '@draft/schemas';
 import { Chip, Icon, Portrait, ScalingBars, toneOf, useData } from '../ui';
-import { ScoreValue } from '../draft/score';
-import { Contribs } from './parts';
+import { ScoreSub, ScoreValue } from '../draft/score';
+import { Contribs, ScalingChart } from './parts';
 import { BanReason } from '../draft/BanBar';
 import { EnemyCard, Splash, TeamBar } from './Cards';
 import { FocusCard } from './Focus';
@@ -134,7 +134,6 @@ const LaneRow = ({ row, allies }: { row: RoleResult; allies: RoleResult[] }) => 
   const lane = effects.find((x) => x.lane);
   return (
     <section aria-label={D.roleRegion(row.role)} className="lane-row">
-      <span className="role-name">{row.role}</span>
       <div className="lane-side is-ally">
         {e && (
           <>
@@ -145,7 +144,7 @@ const LaneRow = ({ row, allies }: { row: RoleResult; allies: RoleResult[] }) => 
             </span>
             <span className="col lane-score">
               <ScoreValue e={e} className="fit-score" avg={row.averageWr} />
-              <span className="delta" title={C.compoTip}>{C.compo(e.compoDelta)}</span>
+              <ScoreSub e={e} />
             </span>
             <span className="lane-contribs"><Contribs e={e} /></span>
             <span className="lane-extra"><ScalingBars scaling={e.scaling} /></span>
@@ -215,6 +214,10 @@ export const TeamPanel = ({ result, dispatch, picker }: { result: DraftResult; d
             {result.enemyRead.map((x, i) => <Chip key={i}>{enemyReadText(x)}</Chip>)}
             <Archetypes groups={result.archetypes.enemy} />
           </div>
+        </section>
+        <section aria-label={CT.scalingSection} className="col gap-4 team-scaling">
+          <span className="eyebrow">{CT.scaling}</span>
+          <ScalingChart phases={result.scaling} height={84} />
         </section>
       </div>
     </section>

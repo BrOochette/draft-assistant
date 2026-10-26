@@ -4,7 +4,7 @@ import { CARD_TEXT as C, DRAFT_TEXT as D, POOL_TAG, VIEW_TEXT as V } from '@draf
 import { Chip, Icon, Portrait, ScalingBars, WinRateChips } from '../ui';
 import { ReasonChip, SampleText } from '../draft/RecCard';
 import { RoleModes } from '../draft/modes';
-import { ScoreStats, ScoreValue } from '../draft/score';
+import { ScoreStats, ScoreSub, ScoreValue } from '../draft/score';
 import { Splash } from './Cards';
 import { Contribs } from './parts';
 
@@ -23,7 +23,7 @@ export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = f
   /** Version basse (les deux équipes en fin de draft) : petit portrait, sans les raisons. */
   compact?: boolean;
 }) => (
-  <article className={'fcard' + (rank === 1 || highlight ? ' is-first' : '') + (compact ? ' is-compact' : '')} aria-label={C.group(e.champion, e.expected?.score ?? null, e.total, false)}>
+  <article className={'fcard' + (rank === 1 || highlight ? ' is-first' : '') + (compact ? ' is-compact' : '')} aria-label={C.group(e.champion, e.points.value, false)}>
     <Splash name={e.champion} />
     <div className="fcard-top">
       <span className="rec-face">
@@ -31,14 +31,14 @@ export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = f
         {rank != null && <span className={'rank' + (rank === 1 ? ' is-first' : '')}>{rank}</span>}
       </span>
       <span className="col gap-4 min0 grow">
-        {rank == null && <span className="role-name">{row.role}</span>}
+        {rank == null && !compact && <span className="role-name">{row.role}</span>}
         <span className="fcard-name">{e.champion}</span>
         {rank == null && <span className="small muted ellipsis">{row.player ?? D.noPlayer}</span>}
         <ScalingBars scaling={e.scaling} />
       </span>
       <span className="col fcard-score">
         <ScoreValue e={e} className="score-md" avg={row.averageWr} best={rank === 1} />
-        <span className="delta" title={C.compoTip}>{C.compo(e.compoDelta)}</span>
+        <ScoreSub e={e} />
       </span>
     </div>
     <ScoreStats e={e} />
@@ -72,8 +72,8 @@ const OtherRow = ({ e, row, kind, onLock }: { e: Evaluation; row: RoleResult; ki
       <Contribs e={e} />
     </span>
     <ScoreValue e={e} className="orow-score" avg={row.averageWr} />
-    <button type="button" className="orow-lock" aria-label={C.lock(e.champion, row.role)} title={C.lockTip} onClick={onLock}>
-      <Icon name="lock" size={16} />
+    <button type="button" className="btn-lock orow-lock" aria-label={C.lock(e.champion, row.role)} title={C.lockTip} onClick={onLock}>
+      <Icon name="lock" size={14} />
     </button>
   </li>
 );
@@ -113,7 +113,7 @@ export const FocusPanel = ({ row, onLock, onManual, mode, onModeChange }: {
 
   return (
     <section aria-label={D.roleRegion(row.role)} className="card fit-focus">
-      <div className="row-between">
+      <div className="row-between focus-head">
         <span className="h3">{row.role}{row.player ? ' · ' + row.player : ''}</span>
         <span className="row-gap">
           {row.note === 'POOL_EXHAUSTED' && <Chip tone="warn">{POOL_TAG.out}</Chip>}

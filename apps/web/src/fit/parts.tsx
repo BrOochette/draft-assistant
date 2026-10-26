@@ -1,5 +1,5 @@
 import { useMemo, useState, type Dispatch, type ReactNode } from 'react';
-import { availability, MAX_BANS, type DraftAction, type DraftResult, type Evaluation, type Side } from '@draft/engine';
+import { availability, MAX_BANS, type DraftAction, type DraftResult, type Evaluation, type PhaseResult, type Side } from '@draft/engine';
 import {
   BAN_BLOCKED_LABEL,
   BANS_TEXT as B,
@@ -15,7 +15,8 @@ import {
   SCALING_VERDICT_LABEL,
   VIEW_TEXT as T,
   VERDICT_LABEL,
-  allyReadText
+  allyReadText,
+  fmtScal
 } from '@draft/i18n-fr';
 import type { DraftState, Role } from '@draft/schemas';
 import { Icon, Portrait, useData } from '../ui';
@@ -120,9 +121,9 @@ export const Face = ({ side, role, name, hover, size, onOpen, onRemove, label }:
   );
 };
 
-/** Contributions en texte court : ennemis, alliés, maîtrise (« — » : rien à mesurer). */
+/** Contributions à la note sur 20 en texte court : ennemis, alliés, maîtrise, compo (« — » : rien à mesurer). */
 const contribRows = (e: Evaluation) => {
-  const x = e.expected;
+  const x = e.points.parts;
   if (!x) return [{ label: C.synergy, text: String(e.synergy), tone: '' }, { label: C.counter, text: String(e.counter), tone: '' }];
   const row = (label: string, v: number | null) => {
     const r = v == null ? 0 : Math.round(v * 10);
@@ -131,7 +132,8 @@ const contribRows = (e: Evaluation) => {
   return [
     row(C.enemies, e.enemyTeam.length ? x.matchups : null),
     row(C.allies, e.allyTeam.length ? x.duos : null),
-    row(C.mastery, e.mastery == null ? null : x.mastery)
+    row(C.mastery, e.mastery == null ? null : x.mastery),
+    row(C.fit, x.fit)
   ];
 };
 
@@ -145,6 +147,44 @@ export const Contribs = ({ e }: { e: Evaluation }) => (
 
 const TONE: Record<string, string> = { solid: 'pos', fair: 'info', fragile: 'warn', fix: 'neg', advantage: 'pos', even: 'plain', disadvantage: 'neg' };
 
+/**
+ * Scaling des deux compos sur les trois phases, sur 10 : une courbe par équipe, la lettre de la phase en dessous colorée
+ * selon le verdict (avantage, équilibre, désavantage ; valeurs et verdict en toutes lettres dans l'infobulle de la phase). L'axe est resserré autour des valeurs (au moins 3 points d'amplitude) pour
+ * que les écarts se lisent ; la valeur de chaque point est écrite au-dessus.
+ */
+export const ScalingChart = ({ phases, height = 84 }: { phases: readonly PhaseResult[]; height?: number }) => {
+  const W = 180;
+  const top = 12;
+  const bottom = height - 16;
+  const values = phases.flatMap((p) => [p.ally * 2, p.enemy * 2]);
+  const mid = (Math.max(...values) + Math.min(...values)) / 2;
+  const half = Math.max(1.5, (Math.max(...values) - Math.min(...values)) / 2 + 0.5);
+  const lo = Math.max(1, Math.min(10 - 2 * half, mid - half));
+  const hi = lo + 2 * half;
+  const x = (i: number) => 18 + i * ((W - 36) / 2);
+  const y = (v: number) => bottom - ((v * 2 - lo) / (hi - lo)) * (bottom - top);
+  const line = (k: 'ally' | 'enemy') => phases.map((p, i) => x(i) + ',' + y(p[k])).join(' ');
+  return (
+    <svg className="scaling-chart" viewBox={'0 0 ' + W + ' ' + height} role="img" aria-label={CT.scalingSection}>
+      <line className="sc-grid" x1={8} x2={W - 8} y1={top} y2={top} />
+      <line className="sc-grid" x1={8} x2={W - 8} y1={bottom} y2={bottom} />
+      <polyline className="sc-line is-enemy" points={line('enemy')} />
+      <polyline className="sc-line is-ally" points={line('ally')} />
+      {phases.map((p, i) => (
+        <g key={p.phase} className="sc-phase" data-tip={CT.scalingChart(phaseTitle(p.phase), fmtScal(p.ally), fmtScal(p.enemy)) + ' · ' + SCALING_VERDICT_LABEL[p.verdict]}>
+          {/* Zone de survol de la phase entière (infobulle). */}
+          <rect className="sc-hit" x={x(i) - 30} y={0} width={60} height={height} />
+          <circle className="sc-dot is-enemy" cx={x(i)} cy={y(p.enemy)} r={3} />
+          <circle className="sc-dot is-ally" cx={x(i)} cy={y(p.ally)} r={3.5} />
+          <text className="sc-value is-ally" x={x(i)} y={y(p.ally) + (p.ally >= p.enemy ? -6 : 12)} textAnchor="middle">{fmtScal(p.ally)}</text>
+          <text className="sc-value is-enemy" x={x(i)} y={y(p.enemy) + (p.enemy > p.ally ? -6 : 12)} textAnchor="middle">{fmtScal(p.enemy)}</text>
+          <text className={'sc-label is-' + p.verdict} x={x(i)} y={height - 3} textAnchor="middle">{PHASE_SHORT[p.phase]}</text>
+        </g>
+      ))}
+    </svg>
+  );
+};
+
 /** Deux barres fines, alliée et ennemie, sur 100. */
 const Pair = ({ a, b }: { a: number; b: number }) => (
   <span className="fit-pair" aria-hidden="true">
@@ -156,17 +196,19 @@ const Pair = ({ a, b }: { a: number; b: number }) => (
 /** Analyse de compo resserrée : notes, 5 critères, scaling par phase, lecture de ta compo. */
 export const CompoCompact = ({ result, horizontal = false }: { result: DraftResult; horizontal?: boolean }) => {
   const { ally, enemy } = result.composition;
-  const score = (label: string, cls: string, s: typeof ally) => (
-    <span className="fit-team">
+  // Sans pick connu d'un côté, la note vaut 0 et le verdict ne dit rien : il n'est pas affiché.
+  const picks = { ally: result.roles.filter((r) => r.allyPick).length, enemy: result.roles.filter((r) => r.enemyPick).length };
+  const score = (label: string, cls: string, s: typeof ally, known: number) => (
+    <span className="fit-team" data-testid={cls === 'ally-text' ? 'ally-compo' : 'enemy-compo'}>
       <span className={'eyebrow ' + cls}>{label}</span>
-      <span className={'fit-big tone-' + TONE[s.verdict]}>{s.total}</span>
-      <span className={'chip chip-' + TONE[s.verdict]}>{VERDICT_LABEL[s.verdict]}</span>
+      <span className={'fit-big' + (known ? ' tone-' + TONE[s.verdict] : '')} data-testid="compo-score">{s.total}<span className="score-unit">{CT.unit100}</span></span>
+      {known > 0 && <span className={'chip chip-' + TONE[s.verdict]} data-testid="compo-verdict">{VERDICT_LABEL[s.verdict]}</span>}
     </span>
   );
   const block = (children: ReactNode, label: string) => <section aria-label={label} className="fit-block">{children}</section>;
   return (
     <div className={'fit-compo' + (horizontal ? ' is-horizontal' : '')}>
-      {block(<div className="fit-scores">{score(CT.ally, 'ally-text', ally)}{score(CT.enemy, 'enemy-text', enemy)}</div>, CT.scores)}
+      {block(<div className="fit-scores">{score(CT.ally, 'ally-text', ally, picks.ally)}{score(CT.enemy, 'enemy-text', enemy, picks.enemy)}</div>, CT.scores)}
       {block(
         ally.criteria.map((c, i) => {
           const e = enemy.criteria[i]!;
@@ -182,13 +224,7 @@ export const CompoCompact = ({ result, horizontal = false }: { result: DraftResu
       {block(
         <>
           <span className="small strong">{CT.scaling}</span>
-          <div className="fit-phases">
-            {result.scaling.map((p) => (
-              <span key={p.phase} className={'chip chip-' + TONE[p.verdict]} title={phaseTitle(p.phase) + ' · ' + SCALING_VERDICT_LABEL[p.verdict]}>
-                {PHASE_SHORT[p.phase]} {SCALING_VERDICT_LABEL[p.verdict]}
-              </span>
-            ))}
-          </div>
+          <ScalingChart phases={result.scaling} />
         </>,
         CT.scalingSection
       )}

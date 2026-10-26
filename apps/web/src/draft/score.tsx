@@ -1,23 +1,37 @@
-import type { Evaluation, Expected } from '@draft/engine';
+import { pointsOfWr, type Evaluation } from '@draft/engine';
 import { CARD_TEXT as C, fmt1, fmtPct, fmtSigned } from '@draft/i18n-fr';
 import { Bar } from '../ui';
 
-/** Écart au-dessus de la moyenne du rôle à partir duquel le win rate attendu est mis en avant (vert). */
+/** Écart (points sur 20) au-dessus de la note moyenne du rôle à partir duquel la note est mise en avant (vert). */
 const GOOD_ABOVE_AVERAGE = 1.5;
 
 /**
- * Grand chiffre d'une suggestion : win rate attendu (stats mesurées), sinon score sur 100 de la maquette.
- * Le win rate attendu est coloré par rapport à la moyenne du rôle (environ 51,5 %) : vert nettement au-dessus,
- * neutre autour, rouge en dessous. `best` met en avant le premier score sur 100.
+ * Grand chiffre d'une suggestion : note sur 20. Stats mesurées : colorée par rapport à la note moyenne du rôle (vert
+ * nettement au-dessus, neutre autour, rouge en dessous). Données d'exemple : `best` met en avant la première.
  */
 export const ScoreValue = ({ e, className, avg, best = false }: { e: Evaluation; className: string; avg: number | null; best?: boolean }) => {
-  const x = e.expected;
-  if (!x) return <span className={className + (best ? ' is-best' : '')}>{e.total}</span>;
-  const tone = avg == null ? '' : x.score >= avg + GOOD_ABOVE_AVERAGE ? ' is-best' : x.score < avg ? ' is-low' : '';
-  return <span className={className + tone} title={C.expectedTip(x.base, avg, x.score)}>{fmtPct(x.score)}</span>;
+  const p = e.points;
+  if (!p.parts) {
+    return (
+      <span className={className + (best ? ' is-best' : '')} title={C.pointsSampleTip}>
+        {C.points(p.value)}<span className="score-unit">{C.outOf20}</span>
+      </span>
+    );
+  }
+  const ref = avg == null ? null : pointsOfWr(avg);
+  const tone = ref == null ? '' : p.value >= ref + GOOD_ABOVE_AVERAGE ? ' is-best' : p.value < ref ? ' is-low' : '';
+  return (
+    <span className={className + tone} title={C.pointsTip(ref)}>
+      {C.points(p.value)}<span className="score-unit">{C.outOf20}</span>
+    </span>
+  );
 };
 
-/** Écart (en points) qui remplit la moitié de la barre : au-delà, la barre est pleine. */
+/** Sous la note, avec les données d'exemple : points ajoutés à la note de compo de la maquette. Rien avec les stats mesurées. */
+export const ScoreSub = ({ e }: { e: Evaluation }) =>
+  e.expected ? null : <span className="delta" title={C.compoTip}>{C.compo(e.compoDelta)}</span>;
+
+/** Écart (points sur 20) qui remplit la moitié de la barre : au-delà, la barre est pleine. */
 const FULL_SCALE = 2;
 
 /** Barre centrée sur zéro : vers la droite si positif, vers la gauche si négatif. */
@@ -37,17 +51,20 @@ const signed = (v: number) => {
   return { text: r === 0 ? fmt1(0) : fmtSigned(v), tone: r > 0 ? 'is-pos' : r < 0 ? 'is-neg' : 'is-zero' };
 };
 
+type Parts = NonNullable<Evaluation['points']['parts']>;
+
 /**
- * Contributions au win rate attendu, une ligne par effet : ennemis, alliés, maîtrise (la base est dans le chip WR). Chaque effet a sa barre
- * centrée sur zéro, pour lire d'un coup d'œil ce qui fait monter ou baisser le pick. Sans ennemi ou allié connu,
- * la ligne affiche « — » (rien à mesurer), à distinguer d'un effet nul « 0,0 ».
+ * Contributions à la note sur 20, une ligne par effet : ennemis, alliés, maîtrise, compo (la base est dans le chip WR).
+ * Chaque effet a sa barre centrée sur zéro, pour lire d'un coup d'œil ce qui fait monter ou baisser le pick. Sans
+ * ennemi ou allié connu, la ligne affiche « — » (rien à mesurer), à distinguer d'un effet nul « 0,0 ».
  */
-const Contributions = ({ e, x, inline = false }: { e: Evaluation; x: Expected; inline?: boolean }) => {
+const Contributions = ({ e, x, inline = false }: { e: Evaluation; x: Parts; inline?: boolean }) => {
   const note = e.mastery == null ? null : e.mastery / 10;
   const rows = [
     { label: C.enemies, v: e.enemyTeam.length ? x.matchups : null, none: C.nobody, tip: C.enemiesTip },
     { label: C.allies, v: e.allyTeam.length ? x.duos : null, none: C.nobody, tip: C.alliesTip },
-    { label: C.mastery, v: note == null ? null : x.mastery, none: C.masteryNone, tip: C.masteryTip(note) }
+    { label: C.mastery, v: note == null ? null : x.mastery, none: C.masteryNone, tip: C.masteryTip(note) },
+    { label: C.fit, v: x.fit, none: C.nobody, tip: C.fitTip }
   ];
   return (
     <span className={'contribs' + (inline ? ' contribs-inline' : '')}>
@@ -74,8 +91,8 @@ const legacyItems = (e: Evaluation) => [
 
 /** Détail compact (cards) : contributions (stats mesurées) ou barres sur 100. */
 export const ScoreStats = ({ e }: { e: Evaluation }) =>
-  e.expected ? (
-    <Contributions e={e} x={e.expected} />
+  e.points.parts ? (
+    <Contributions e={e} x={e.points.parts} />
   ) : (
     <span className="rec-stats">
       {legacyItems(e).map((s) => (
@@ -89,8 +106,8 @@ export const ScoreStats = ({ e }: { e: Evaluation }) =>
 
 /** Détail en ligne (vue liste, rôle verrouillé). */
 export const ScoreLine = ({ e, barWidth }: { e: Evaluation; barWidth: number }) =>
-  e.expected ? (
-    <Contributions e={e} x={e.expected} inline />
+  e.points.parts ? (
+    <Contributions e={e} x={e.points.parts} inline />
   ) : (
     <>
       {legacyItems(e).map((s) => (

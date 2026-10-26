@@ -40,12 +40,13 @@ body[data-theme="teams"][data-side="red"] {
   --ally: var(--red); --ally-soft: var(--red-soft); --enemy: var(--blue); --enemy-soft: var(--blue-soft);
 }
 
-/* Palette : gris neutres en aplat, accent de la couleur de ton équipe. Fond : dégradé des deux camps, plus bas. */
+/* Palette : gris neutres en aplat, accent de la couleur de ton équipe. Fond : dégradé des deux camps, plus bas.
+   Malus en orange (--neg) : le rouge et le bleu sont réservés aux équipes. */
 body[data-theme="teams"] {
   --bg: #121212; --bg-2: #161616; --card: #1b1b1b; --card-side: #1b1b1b; --raise: #232323; --raise-2: #2b2b2b;
   --border: transparent; --text: #ededed; --soft: #c6c6c6; --muted: #949494; --muted-bar: #3a3a3a;
   --accent: var(--ally); --accent-ink: #0b0f16;
-  --pos: #9fdcb8; --pos-bg: #1e2c24; --neg: #f09a9a; --neg-bg: #2e1f1f; --warn: #e8cf8a; --warn-bg: #2c271a; --info-bg: #1c2733; --track: #2b2b2b;
+  --pos: #9fdcb8; --pos-bg: #1e2c24; --neg: #ffa657; --neg-bg: #33240f; --warn: #e8cf8a; --warn-bg: #2c271a; --info-bg: #1c2733; --track: #2b2b2b;
 }
 
 body[data-theme="teams"] .fit-team-col .fit-member,

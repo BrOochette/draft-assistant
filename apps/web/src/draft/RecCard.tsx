@@ -2,7 +2,7 @@ import type { Evaluation } from '@draft/engine';
 import { CARD_TEXT as C, formatReason, POOL_TAG } from '@draft/i18n-fr';
 import type { Role } from '@draft/schemas';
 import { Chip, Icon, Portrait, ScalingBars, WinRateChips } from '../ui';
-import { ScoreLine, ScoreStats, ScoreValue } from './score';
+import { ScoreLine, ScoreStats, ScoreSub, ScoreValue } from './score';
 
 export const ReasonChip = ({ r }: { r: Parameters<typeof formatReason>[0] }) => (
   <Chip tone={r.sign === '+' ? 'pos' : 'neg'}>{formatReason(r)}</Chip>
@@ -11,8 +11,6 @@ export const ReasonChip = ({ r }: { r: Parameters<typeof formatReason>[0] }) => 
 export const SampleText = ({ e }: { e: Evaluation }) => (
   <span className={'small ' + (e.lowSample ? 'warn-text' : 'muted')} title={C.sampleTip(e.games)}>{C.sample(e.games, e.lowSample)}</span>
 );
-
-const Compo = ({ e }: { e: Evaluation }) => <span className="delta" title={C.compoTip}>{C.compo(e.compoDelta)}</span>;
 
 interface CardProps {
   e: Evaluation;
@@ -34,7 +32,7 @@ export const RecCard = ({ e, rank, role, avg, selected, onSelect, onLock }: Card
   <li
     className={'rec' + (selected ? ' is-selected' : '')}
     role="group"
-    aria-label={C.group(e.champion, e.expected?.score ?? null, e.total, selected)}
+    aria-label={C.group(e.champion, e.points.value, selected)}
     onClick={(ev) => !(ev.target as Element).closest('button') && onSelect()}
   >
     <button type="button" className="rec-lock" aria-label={C.lock(e.champion, role)} title={C.lockTip} onClick={(ev) => onLock(ev.currentTarget)}>
@@ -48,7 +46,7 @@ export const RecCard = ({ e, rank, role, avg, selected, onSelect, onLock }: Card
         </span>
         <span className="col">
           <ScoreValue e={e} className="score" avg={avg} best={rank === 1} />
-          <Compo e={e} />
+          <ScoreSub e={e} />
         </span>
       </span>
       <ScoreStats e={e} />
@@ -97,7 +95,7 @@ export const DetailItem = ({ e, role, avg, best, selected, secondary = false, on
       {onLock && <button type="button" className="btn btn-accent btn-sm" aria-label={C.lock(e.champion, role)} onClick={(ev) => onLock(ev.currentTarget)}>{C.lockButton}</button>}
       <div className="col detail-score-value">
         <ScoreValue e={e} className="score-md" avg={avg} best={best} />
-        <Compo e={e} />
+        <ScoreSub e={e} />
       </div>
     </div>
     {/* Pied de ligne : raisons, puis chips WR, « vs » et « avec », nombre de parties à droite. */}

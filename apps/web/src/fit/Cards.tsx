@@ -10,9 +10,6 @@ import {
   DRAFT_TEXT as D,
   fmtPct,
   fmtSigned,
-  PHASE_SHORT,
-  phaseTitle,
-  SCALING_VERDICT_LABEL,
   VIEW_TEXT as T,
   VERDICT_LABEL
 } from '@draft/i18n-fr';
@@ -61,27 +58,18 @@ export const DamageSplit = ({ names }: { names: string[] }) => {
   );
 };
 
-/** Bandeau d'une équipe : note de compo et verdict, 5 critères, dégâts, et pour toi le scaling. */
+/** Bandeau d'une équipe : note sur 100 et verdict, 5 critères, dégâts. */
 export const TeamBar = ({ side, score, names, result }: { side: 'ally' | 'enemy'; score: CompScore & { verdict: Verdict }; names: string[]; result: DraftResult }) => (
   <section aria-label={side === 'ally' ? CT.ally : CT.enemy} className={'team-bar is-' + side}>
     <div className="team-bar-score" title={side === 'ally' ? result.allyRead.map(allyReadText).join('\n') : undefined}>
       <span className={'eyebrow ' + side + '-text'}>{side === 'ally' ? CT.ally : CT.enemy}</span>
       <span className="row-gap">
-        <span className={'team-bar-big tone-' + VERDICT_TONE[score.verdict]}>{score.total}</span>
+        <span className={'team-bar-big tone-' + VERDICT_TONE[score.verdict]}>{score.total}<span className="score-unit">{CT.unit100}</span></span>
         <span className={'chip chip-' + VERDICT_TONE[score.verdict]}>{VERDICT_LABEL[score.verdict]}</span>
       </span>
     </div>
     <div className="team-bar-top">
       <DamageSplit names={names} />
-      {side === 'ally' && (
-        <span className="row-gap">
-          {result.scaling.map((p) => (
-            <span key={p.phase} className={'chip chip-' + (p.verdict === 'advantage' ? 'pos' : p.verdict === 'disadvantage' ? 'neg' : 'plain')} title={phaseTitle(p.phase)}>
-              {PHASE_SHORT[p.phase]} {SCALING_VERDICT_LABEL[p.verdict]}
-            </span>
-          ))}
-        </span>
-      )}
     </div>
     <div className="team-bar-crits">
       {score.criteria.map((c) => (
@@ -114,7 +102,6 @@ export const EnemyCard = ({ row, allies, dispatch, picker }: { row: RoleResult; 
     <section aria-label={D.roleRegion(role) + ', ' + CT.enemy} className={'pcard is-enemy' + (name ? '' : ' is-empty')}>
       <Splash name={name} />
       <div className="pcard-head">
-        <span className="role-name enemy-text">{role}</span>
         {stats && name && <ScalingBars scaling={stats.scaling} />}
       </div>
       <div className="pcard-id">

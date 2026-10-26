@@ -1,9 +1,27 @@
 import { ROLES, type Role, type Trait } from '@draft/schemas';
 import { compScore } from './composition';
 import { avgScal, clamp, wrScore } from './math';
-import type { AllyEffect, CompMember, EnemyEffect, Entry, Evaluation, Expected, Phase, Reason, ScoringOptions, SuggestionMode } from './types';
+import type { AllyEffect, CompMember, EnemyEffect, Entry, Evaluation, Expected, Phase, Points, Reason, ScoringOptions, SuggestionMode } from './types';
 
 export const SYNERGY_BONUS: Record<Trait, number> = { Frontline: 12, Engage: 10, Physique: 10, Peel: 6 };
+/** Points sur 20 d'un trait que la compo n'a pas encore. */
+export const FIT_BONUS: Record<Trait, number> = { Frontline: 0.5, Engage: 0.5, Physique: 0.5, Peel: 0.25 };
+/**
+ * Porteurs d'un même trait sans malus : deux tanks, deux engages ou deux sources de dégâts magiques restent sains. Les
+ * dégâts physiques n'ont pas de malus : une compo à un seul AP (quatre AD) est courante.
+ */
+export const REDUNDANCY_FREE = 2;
+/** Malus d'un porteur au-delà de REDUNDANCY_FREE, multiplié par le rang (3e : 1 fois, 4e : 2 fois…), en points sur 20. */
+export const REDUNDANCY_POINTS = 0.5;
+/** Même malus en points de synergie de la maquette (données d'exemple). */
+const REDUNDANCY_SYN = 3;
+/** Points sur 20 par frontline ennemie (2 au plus) quand ta compo n'a pas encore de dégâts soutenus. */
+export const SUSTAINED_POINTS = 0.5;
+/** Picks alliés déjà là à partir desquels un pick sans dégâts soutenus prend le malus (il reste peu de rôles pour en apporter). */
+export const SUSTAINED_LATE = 3;
+
+/** Points sur 20 par point de win rate attendu : 50 % vaut 10, 60 % vaut 20, sans plafond atteint en pratique. */
+export const POINTS_PER_WR = 1;
 export const LOW_SAMPLE_GAMES = 500;
 /** Parties « fictives » à la moyenne de la paire de classes, pour lisser un duo peu joué. */
 const DUO_PRIOR_GAMES = 200;
@@ -83,6 +101,12 @@ const allyEffects = (c: Entry, ctx: readonly Entry[]): AllyEffect[] => {
   return out;
 };
 
+/** Note bornée à 0..20. */
+export const boundPoints = (raw: number): number => Math.max(0, Math.min(20, raw));
+
+/** Note sur 20 d'un win rate seul (repère d'un rôle sans pick connu). */
+export const pointsOfWr = (wr: number): number => boundPoints(10 + (wr - 50) * POINTS_PER_WR);
+
 const weighted = (rows: readonly { weight: number; delta: number }[]) => rows.reduce((s, r) => s + r.weight * r.delta, 0);
 
 /**
@@ -100,8 +124,6 @@ export const evaluate = (
   foes: Partial<Record<Role, string | null>> = {},
   options: ScoringOptions = {}
 ): Evaluation => {
-  const met = new Map<Trait, string>();
-  for (const x of ctx) for (const g of x.provides) if (!met.has(g)) met.set(g, x.name);
   const apCount = ctx.filter((x) => x.damage === 'AP').length;
   const a = avgScal(ctx);
   const e = avgScal(enemies);
@@ -111,15 +133,20 @@ export const evaluate = (
   const needScal: Phase | null = diff[wi] <= -0.5 ? wi : null;
 
   let syn = c.synergyBase;
+  // Apport à la compo en points sur 20 (stats mesurées).
+  let fit = 0;
   const reasons: Reason[] = [];
   for (const g of c.provides) {
-    const by = met.get(g);
-    if (by) {
-      syn -= 3;
-      reasons.push({ sign: '-', code: 'COVERED', trait: g, by });
-    } else {
+    const holders = ctx.filter((x) => x.provides.includes(g)).map((x) => x.name);
+    if (!holders.length) {
       syn += SYNERGY_BONUS[g];
+      fit += FIT_BONUS[g];
       reasons.push({ sign: '+', code: 'PROVIDES', trait: g });
+    } else if (holders.length >= REDUNDANCY_FREE && g !== 'Physique') {
+      const k = holders.length - REDUNDANCY_FREE + 1;
+      syn -= REDUNDANCY_SYN * k;
+      fit -= REDUNDANCY_POINTS * k;
+      reasons.push({ sign: '-', code: 'REDUNDANT', trait: g, n: holders.length + 1, by: holders });
     }
   }
   const allyTeam = allyEffects(c, ctx);
@@ -131,15 +158,31 @@ export const evaluate = (
       if (Math.abs(d.delta) >= DUO_REASON_MIN) reasons.push({ sign: d.delta > 0 ? '+' : '-', code: 'DUO', ally: d.ally, delta: d.delta });
     }
   }
-  if (c.damage === 'AP' && apCount >= 2) {
-    syn -= 4;
+  if (c.damage === 'AP' && apCount >= REDUNDANCY_FREE) {
+    const k = apCount - REDUNDANCY_FREE + 1;
+    syn -= 4 * k;
+    fit -= REDUNDANCY_POINTS * k;
     reasons.push({ sign: '-', code: 'EXTRA_AP', n: apCount + 1 });
   }
   if (needScal !== null) {
     const v = c.scaling[needScal];
     syn += (v - 3) * 4;
+    fit += (v - 3) * 0.2;
     if (v >= 4) reasons.push({ sign: '+', code: 'SCALING_STRONG', phase: needScal });
     else if (v <= 2) reasons.push({ sign: '-', code: 'SCALING_WEAK', phase: needScal });
+  }
+  // Dégâts soutenus face à une frontline ennemie (stats mesurées) : bonus au pick qui en apporte quand la compo n'en a
+  // pas, malus aux derniers picks qui n'en apportent pas.
+  const enemyFront = enemies.filter((x) => x.provides.includes('Frontline')).map((x) => x.name);
+  if (c.measured && enemyFront.length && !ctx.some((x) => x.sustained)) {
+    const k = Math.min(enemyFront.length, 2) * SUSTAINED_POINTS;
+    if (c.sustained) {
+      fit += k;
+      reasons.push({ sign: '+', code: 'SUSTAINED', against: enemyFront });
+    } else if (ctx.length >= SUSTAINED_LATE) {
+      fit -= k;
+      reasons.push({ sign: '-', code: 'NO_SUSTAINED', against: enemyFront });
+    }
   }
   for (const n of c.notes) reasons.push({ sign: n.sign, code: 'NOTE', text: n.text });
   if (c.laneWinRate != null && c.laneWinRate - c.gameWinRate >= 3) reasons.push({ sign: '-', code: 'OUTSCALED' });
@@ -164,12 +207,25 @@ export const evaluate = (
   const delta = compScore([...ctx, c], enemies).total - compScore(ctx, enemies).total;
 
   let expected: Expected | null = null;
+  let points: Points = { value: total / 5, raw: total / 5, parts: null };
   if (c.measured) {
     const duos = weighted(allyTeam);
     const mastery = c.mastery == null ? 0 : (c.mastery / 10 - 5) * MASTERY_POINT;
     const mode = modeOf(c.role, options);
-    const score = baseWr + (mode === 'synergy' ? 0 : matchups) + (mode === 'counter' ? 0 : duos) + mastery;
+    const m = mode === 'synergy' ? 0 : matchups;
+    const d = mode === 'counter' ? 0 : duos;
+    const score = baseWr + m + d + mastery;
     expected = { base: baseWr, matchups, duos, mastery, score };
+    const parts = {
+      base: 10 + (baseWr - 50) * POINTS_PER_WR,
+      matchups: m * POINTS_PER_WR,
+      duos: d * POINTS_PER_WR,
+      mastery: mastery * POINTS_PER_WR,
+      // Le mode counter ne regarde que l'adversaire : l'apport à la compo ne compte pas.
+      fit: mode === 'counter' ? 0 : fit
+    };
+    const raw = parts.base + parts.matchups + parts.duos + parts.mastery + parts.fit;
+    points = { value: boundPoints(raw), raw, parts };
   }
 
   return {
@@ -189,6 +245,7 @@ export const evaluate = (
     enemyTeam,
     allyTeam,
     expected,
+    points,
     laneShare: c.laneShare,
     scaling: c.scaling
   };

@@ -12,9 +12,9 @@ export const TRAITS = ['Frontline', 'Engage', 'Peel', 'Physique'] as const;
 export const TraitSchema = z.enum(TRAITS);
 export type Trait = z.infer<typeof TraitSchema>;
 
-const level = z.number().int().min(1).max(5);
+const level = z.number().multipleOf(0.5).min(1).max(5);
 export const ScalingSchema = z.tuple([level, level, level]);
-/** Puissance au début, au milieu et en fin de partie, de 1 à 5. */
+/** Puissance au début, au milieu et en fin de partie, de 1 à 5 par demi-point (10 niveaux, affichés sur 10). */
 export type Scaling = z.infer<typeof ScalingSchema>;
 
 export const NoteSchema = z.object({ sign: z.enum(['+', '-']), text: z.string().min(1) });

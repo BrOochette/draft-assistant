@@ -1,7 +1,7 @@
 // Textes des écrans, regroupés par écran. Les phrases paramétrées sont des fonctions.
 import type { Archetype, PoolStatus } from '@draft/engine';
 import type { Role } from '@draft/schemas';
-import { fmt1, fmtDelta, fmtInt, fmtPct, fmtSigned } from './format';
+import { fmt1, fmtDelta, fmtInt, fmtPct, fmtSigned, fmtScal } from './format';
 
 export const ARCHETYPE_LABEL: Record<Archetype, string> = {
   dive: 'Dive',
@@ -105,9 +105,17 @@ export const DRAFT_TEXT = {
 };
 
 export const CARD_TEXT = {
-  /** Nom accessible d'une card : score attendu (stats mesurées) ou score sur 100. */
-  group: (champion: string, expected: number | null, total: number, selected: boolean) =>
-    champion + ', ' + (expected != null ? fmtPct(expected) + ' attendu' : 'score ' + total + ' sur 100') + (selected ? ', présélectionné' : ''),
+  /** Nom accessible d'une card : note sur 20. */
+  group: (champion: string, points: number, selected: boolean) => champion + ', ' + fmt1(points) + ' sur 20' + (selected ? ', présélectionné' : ''),
+  /** Note sur 20 d'un pick. */
+  points: (v: number) => fmt1(v),
+  outOf20: '/20',
+  pointsTip: (avg: number | null) =>
+    'Note sur 20 : 10 pour 50 % de win rate attendu, 1 point par point de win rate (champion, ennemis, alliés, maîtrise), plus l’apport à ta compo' +
+    (avg != null ? '. Moyenne du rôle : ' + fmt1(avg) : ''),
+  pointsSampleTip: 'Note sur 20 : score sur 100 de la maquette divisé par 5 (données d’exemple)',
+  fit: 'Compo',
+  fitTip: 'Apport à ta compo, en points sur 20 : trait qui manque (+0,5 frontline, engage ou dégâts physiques, +0,25 peel), 3e frontline, 3e engage, 3e peel ou 3e source de dégâts magiques −0,5 (4e −1…), scaling dans la phase faible de ta compo, dégâts soutenus face à la frontline ennemie (+0,5 par frontline, 2 au plus, tant que ta compo n’en a pas ; le même malus pour les derniers picks qui n’en apportent pas)',
   lock: (champion: string, role: Role) => 'Verrouiller ' + champion + ' en ' + role,
   lockTip: 'Verrouiller',
   lockButton: 'Verrouiller',
@@ -123,9 +131,9 @@ export const CARD_TEXT = {
   masteryNone: 'n/a',
   /** Aucun ennemi ou allié connu : rien à mesurer. */
   nobody: '—',
-  enemiesTip: 'Effet de toute la compo ennemie connue (matchups), en points de win rate (détail dans « vs … »)',
-  alliesTip: 'Effet de tous les alliés verrouillés (synergies de duo), en points de win rate (détail dans « avec … »)',
-  masteryTip: (note: number | null) => (note == null ? "Pas de pool pour ce rôle, la maîtrise n'entre pas dans le score" : 'Maîtrise ' + note + '/10 : (note − 5) × 0,4 point'),
+  enemiesTip: 'Effet de toute la compo ennemie connue (matchups), en points sur 20 : 1 par point de win rate (détail dans « vs … »)',
+  alliesTip: 'Effet de tous les alliés verrouillés (synergies de duo), en points sur 20 : 1 par point de win rate (détail dans « avec … »)',
+  masteryTip: (note: number | null) => (note == null ? "Pas de pool pour ce rôle, la maîtrise n'entre pas dans le score" : 'Maîtrise ' + note + '/10 : (note − 5) × 0,4 point sur 20'),
   synergy: 'Synergie',
   counter: 'Counter',
   outOf100: (label: string, v: number) => label + ' : ' + v + ' sur 100',
@@ -140,7 +148,7 @@ export const CARD_TEXT = {
     (base != null ? '. Base du win rate attendu : ' + fmtPct(base) + ' (lissé vers 50 % selon le nombre de parties)' : ''),
   scaling: 'Scaling',
   scalingTip: 'Puissance au début, au milieu et en fin de partie',
-  phaseTip: (phase: string, v: number) => phase + ' : ' + v + ' sur 5'
+  phaseTip: (phase: string, v: number) => phase + ' : ' + fmtScal(v) + ' sur 10'
 };
 
 export const POPOVER_TEXT = {
@@ -210,6 +218,8 @@ export const BANS_TEXT = {
 };
 
 export const COMPO_TEXT = {
+  unit100: '/100',
+  scalingChart: (phase: string, ally: string, enemy: string) => phase + ' · ' + ally + ' contre ' + enemy + ' (sur 10)',
   aside: 'Analyse de la composition',
   /** Barre de résumé en bas d'écran (mobile) : un clic mène à l'analyse. */
   mini: "Aller à l'analyse de la composition",
@@ -233,9 +243,10 @@ export const COMPO_TEXT = {
   helpItems: (measured: boolean): [string, string][] =>
     measured
       ? [
+          ['Note sur 20', "10 pour 50 % de win rate attendu, 1 point par point de win rate, plus l'apport à ta compo. La note d'équipe sur 100 est le cumul des notes des picks connus."],
           ['Win rate attendu', "Win rate du champion sur le rôle (lissé vers 50 %), plus l'effet des ennemis connus (vis-à-vis ×1, duo bot adverse ×3/4, autres ×1/4), plus l'effet des alliés verrouillés (ADC et support ×1, autres ×1/2), plus la maîtrise : (note − 5) × 0,4 point, −2 hors pool. En mode Synergie, sans l'effet des ennemis ; en mode Counter, sans l'effet des alliés."],
           ['Ennemis et alliés', 'Chaque paire (matchup contre un ennemi, duo avec un allié) est mesurée sur Lolalytics. Une paire peu jouée est lissée vers la moyenne de sa paire de classes (par exemple Diver contre Vanguard) : plus elle est jouée, plus sa propre mesure compte.'],
-          ['Compo +N', 'Points que ce pick ajoute à la note globale de ta compo (frontline, engage, peel, mix de dégâts, scaling).'],
+          ['Compo', 'Apport à ta compo : un trait qui manque rapporte, deux porteurs d’un même trait sont neutres, le 3e coûte 0,5 point (le 4e 1 point). Plusieurs sources de dégâts physiques ne coûtent rien.'],
           ['Peu fiable', 'Moins de 500 parties derrière le win rate : la valeur peut changer fortement.'],
           ['Scaling D, M, F', 'Puissance au début, au milieu et en fin de partie, de 1 à 5.']
         ]

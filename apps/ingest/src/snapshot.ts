@@ -59,7 +59,8 @@ export const measuredScaling = (lanes: readonly LaneStats[]): Map<LaneStats, Sca
     const sd = Math.sqrt(xs.reduce((a, b) => a + (b - mean) ** 2, 0) / (xs.length || 1)) || 1;
     return { mean, sd };
   });
-  const level = (x: number, p: number) => Math.max(1, Math.min(5, Math.round(3 + (x - stats[p]!.mean) / stats[p]!.sd)));
+  // Demi-points de 1 à 5 : 10 niveaux, un niveau par demi-écart-type.
+  const level = (x: number, p: number) => Math.max(1, Math.min(5, Math.round((3 + (x - stats[p]!.mean) / stats[p]!.sd) * 2) / 2));
   return new Map(lanes.map((s, i) => [s, diffs[i]!.map((x, p) => level(x, p)) as Scaling]));
 };
 

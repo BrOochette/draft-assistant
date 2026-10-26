@@ -401,9 +401,9 @@
           {
             "rank": 1,
             "champion": "Orianna",
-            "score": 73,
+            "score": 74,
             "compoDelta": "+11",
-            "synergy": 69,
+            "synergy": 72,
             "counter": 73,
             "mastery": 80,
             "lowSample": false
@@ -433,7 +433,7 @@
           {
             "champion": "Orianna",
             "tag": "Pool",
-            "score": 73,
+            "score": 74,
             "reasons": [
               "+ Peel",
               "+ Scaling en fin de partie",
@@ -473,11 +473,11 @@
           {
             "champion": "Galio",
             "tag": "Hors pool",
-            "score": 52,
+            "score": 55,
             "reasons": [
               "+ Scaling en fin de partie",
               "+ Résistance magique",
-              "- Frontline déjà couvert par Sejuani"
+              "- 3e source de dégâts magiques"
             ]
           }
         ]
@@ -490,9 +490,9 @@
           {
             "rank": 1,
             "champion": "Ashe",
-            "score": 71,
+            "score": 72,
             "compoDelta": "+11",
-            "synergy": 73,
+            "synergy": 76,
             "counter": 68,
             "mastery": "n/a",
             "lowSample": false
@@ -522,7 +522,7 @@
           {
             "champion": "Ashe",
             "tag": "Tous les champions",
-            "score": 71,
+            "score": 72,
             "reasons": [
               "+ Dégâts physiques",
               "+ Scaling en fin de partie",

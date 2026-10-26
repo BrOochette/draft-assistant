@@ -30,6 +30,8 @@ export interface Entry {
   priorGames: number;
   /** Stats mesurées (Lolalytics) : le classement suit le win rate attendu. */
   measured: boolean;
+  /** Dégâts soutenus (classe principale Riot : tireur, juggernaut, skirmisher, battlemage). */
+  sustained: boolean;
   /** Moyenne de la paire de classes principales avec un autre champion, null sans prior. */
   classPrior: (kind: 'duo' | 'matchup', otherRole: Role, other: string) => ClassPriorUsed | null;
 }
@@ -83,12 +85,28 @@ export interface Expected {
   score: number;
 }
 
+/**
+ * Note sur 20 d'un pick. Stats mesurées : 10 à 50 % de win rate attendu, 1 point par point de win rate (base,
+ * matchups, duos, maîtrise), plus l'apport à la compo (traits, redondances, dégâts, scaling). Données d'exemple :
+ * score sur 100 de la maquette divisé par 5, sans détail.
+ */
+export interface Points {
+  /** Note de 0 à 20. */
+  value: number;
+  /** Total avant bornage, pour classer. */
+  raw: number;
+  /** Détail en points sur 20 (stats mesurées), null avec les données d'exemple. */
+  parts: { base: number; matchups: number; duos: number; mastery: number; fit: number } | null;
+}
+
 /** Ce qu'un pick apporte à une compo. */
 export interface CompMember {
   name: string;
   damage: Damage;
   provides: Trait[];
   scaling: Scaling;
+  /** Dégâts soutenus, connu pour les picks alliés (absent : non). */
+  sustained?: boolean;
 }
 
 /** Ce qui classe les suggestions : synergie, counter, ou le mélange des deux. */
@@ -108,9 +126,13 @@ export const PHASES: readonly Phase[] = [0, 1, 2];
 
 export type Reason =
   | { sign: '+'; code: 'PROVIDES'; trait: Trait }
-  | { sign: '-'; code: 'COVERED'; trait: Trait; by: string }
+  /** 3e porteur d'un trait ou plus (`n` : rang de ce pick, `by` : les alliés qui l'ont déjà). */
+  | { sign: '-'; code: 'REDUNDANT'; trait: Trait; n: number; by: string[] }
   | { sign: '+' | '-'; code: 'DUO'; ally: string; delta: number }
   | { sign: '-'; code: 'EXTRA_AP'; n: number }
+  /** Face à une frontline ennemie, sans dégâts soutenus dans la compo : ce pick en apporte, ou n'en apporte pas. */
+  | { sign: '+'; code: 'SUSTAINED'; against: string[] }
+  | { sign: '-'; code: 'NO_SUSTAINED'; against: string[] }
   | { sign: '+'; code: 'SCALING_STRONG'; phase: Phase }
   | { sign: '-'; code: 'SCALING_WEAK'; phase: Phase }
   | { sign: '+' | '-'; code: 'NOTE'; text: string }
@@ -144,6 +166,8 @@ export interface Evaluation {
   allyTeam: AllyEffect[];
   /** Win rate attendu, avec des stats mesurées ; null avec les données d'exemple. */
   expected: Expected | null;
+  /** Note sur 20 du pick. */
+  points: Points;
   /** Part des parties du champion jouées sur ce rôle (%), null si inconnue. */
   laneShare: number | null;
   scaling: Scaling;
@@ -157,6 +181,7 @@ export interface Criterion {
 }
 export type Verdict = 'solid' | 'fair' | 'fragile' | 'fix';
 export interface CompScore {
+  /** Stats mesurées : cumul des notes sur 20 des picks connus (sur 100) ; données d'exemple : note de compo de la maquette. */
   total: number;
   criteria: Criterion[];
 }
@@ -205,7 +230,8 @@ export type AllyReadItem =
   | { sign: '-'; code: 'MAGIC_HEAVY'; ap: number; total: number }
   | { sign: '+'; code: 'MIXED_DAMAGE'; ap: number; total: number }
   | { sign: '+'; code: 'SCALING_ADVANTAGE'; phase: Phase }
-  | { sign: '-'; code: 'SCALING_DISADVANTAGE'; phase: Phase };
+  | { sign: '-'; code: 'SCALING_DISADVANTAGE'; phase: Phase }
+  | { sign: '-'; code: 'NO_SUSTAINED'; against: string[] };
 
 export type EnemyReadItem =
   | { code: 'ENEMY_FRONTLINE'; names: string[] }

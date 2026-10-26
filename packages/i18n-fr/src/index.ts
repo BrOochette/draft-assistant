@@ -40,8 +40,10 @@ export const phaseTitle = (p: Phase): string => PHASE_LABEL[p] + ' (' + PHASE_RA
 export const reasonText = (r: Reason): string => {
   switch (r.code) {
     case 'PROVIDES': return TRAIT_LABEL[r.trait];
-    case 'COVERED': return TRAIT_LABEL[r.trait] + ' déjà couvert par ' + r.by;
+    case 'REDUNDANT': return r.n + 'e ' + TRAIT_LABEL[r.trait] + ' (' + r.by.join(', ') + ')';
     case 'EXTRA_AP': return r.n + 'e source de dégâts magiques';
+    case 'SUSTAINED': return 'Dégâts soutenus face à la frontline (' + r.against.join(', ') + ')';
+    case 'NO_SUSTAINED': return 'Pas de dégâts soutenus face à la frontline (' + r.against.join(', ') + ')';
     case 'SCALING_STRONG': return 'Scaling ' + PHASE_IN[r.phase];
     case 'SCALING_WEAK': return 'Faible ' + PHASE_IN[r.phase];
     case 'DUO': return 'Duo avec ' + r.ally + ' : ' + fmtSigned(r.delta) + ' pts de win rate';
@@ -112,6 +114,7 @@ export const allyReadText = (r: AllyReadItem): string => {
     case 'MIXED_DAMAGE': return 'Dégâts mixtes : ' + r.ap + ' magiques sur ' + r.total + ' picks';
     case 'SCALING_ADVANTAGE': return 'Avantage de scaling ' + PHASE_IN[r.phase];
     case 'SCALING_DISADVANTAGE': return 'Désavantage de scaling ' + PHASE_IN[r.phase];
+    case 'NO_SUSTAINED': return 'Pas de dégâts soutenus face à la frontline (' + r.against.join(', ') + ')';
   }
 };
 

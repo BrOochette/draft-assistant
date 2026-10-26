@@ -40,12 +40,19 @@ export const entryFor = (data: EngineData, meta: RowMeta, role: Role, name: stri
     laneShare: s.laneShare ?? null,
     priorGames: data.winRatePriorGames,
     measured: data.measured,
+    sustained: SUSTAINED_CLASSES.has(mainClass(data, name) ?? ''),
     classPrior: classPriorLookup(data, role, name),
     ...poolStatus(meta, name)
   };
 };
 
 const mainClass = (data: EngineData, name: string) => data.catalog.get(name)?.classes?.[0] ?? null;
+
+/**
+ * Classes principales Riot à dégâts soutenus, capables de faire tomber une frontline (**Provisoire**). Les assassins, mages
+ * burst, artilleurs, tanks et supports n'en apportent pas ; les spécialistes, trop variés, non plus.
+ */
+export const SUSTAINED_CLASSES: ReadonlySet<string> = new Set(['Marksman', 'Juggernaut', 'Skirmisher', 'Battlemage']);
 
 /** Moyenne de la paire de classes principales de `name` (joué en `role`) avec un autre champion. */
 const classPriorLookup = (data: EngineData, role: Role, name: string): Entry['classPrior'] => {

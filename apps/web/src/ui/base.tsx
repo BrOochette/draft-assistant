@@ -64,7 +64,7 @@ export const ScalingBars = ({ scaling }: { scaling: Scaling }) => (
     <span>{CARD_TEXT.scaling}</span>
     {scaling.map((v, i) => (
       <span key={i} className="scal-col" title={CARD_TEXT.phaseTip(PHASE_LABEL[i as 0 | 1 | 2], v)}>
-        <span style={{ height: v * 4, background: v >= 4 ? 'var(--accent)' : v === 3 ? 'var(--ally)' : 'var(--muted-bar)' }} />
+        <span style={{ height: v * 4, background: v >= 4 ? 'var(--accent)' : v >= 3 ? 'var(--ally)' : 'var(--muted-bar)' }} />
         <span>{PHASE_SHORT[i as 0 | 1 | 2]}</span>
       </span>
     ))}

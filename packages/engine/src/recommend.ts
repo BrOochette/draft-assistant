@@ -34,7 +34,7 @@ export const recommendRole = (
   const evals = [...candidates, ...offRole]
     .filter((name) => !avail.gone(name, role))
     .map((name) => evaluate(entryFor(data, meta, role, name), ctx, enemies, meta.player, state.enemy, options));
-  // Tri stable : à égalité, l'ordre de la source est conservé. Win rate attendu avec des stats mesurées, score sur 100 sinon.
+  // Tri stable : à égalité, l'ordre de la source est conservé. Note sur 20 avec des stats mesurées, score sur 100 sinon.
   evals.sort((a, b) => rankScore(b) - rankScore(a));
 
   if (!meta.hasPool) {
@@ -63,8 +63,8 @@ export const recommendRole = (
 export const MAIN_ROLE_SHARE = 20;
 const isMainRole = (e: Evaluation) => e.laneShare == null || e.laneShare >= MAIN_ROLE_SHARE;
 
-/** Valeur de classement : win rate attendu (stats mesurées), sinon score sur 100 de la maquette. */
-export const rankScore = (e: Evaluation): number => e.expected?.score ?? e.total;
+/** Valeur de classement : note sur 20 avant bornage (stats mesurées), sinon score sur 100 de la maquette. */
+export const rankScore = (e: Evaluation): number => (e.points.parts ? e.points.raw : e.total);
 
 /**
  * Win rate moyen d'un rôle (stats mesurées) : moyenne des win rates lissés, pondérée par les parties, sur les champions

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState, type Dispatch } from 'react';
+import { useEffect, useMemo, useRef, useState, type Dispatch } from 'react';
 import { computeDraft, type ClientOrder, type DraftAction, type DraftResult, type DraftSession, type SuggestionMode } from '@draft/engine';
 import { APP_TEXT as A, DRAFT_TEXT as D, VIEW_TEXT as T } from '@draft/i18n-fr';
 import { ROLES, type DraftState, type Pools, type Role } from '@draft/schemas';
-import { useData } from '../ui';
+import { reducedMotion, useData } from '../ui';
 import { useSuggestionModes, type Modes } from '../draft/modes';
 import { PlayerSelect } from '../draft/PlayerSelect';
 import { QuickPick } from '../draft/QuickPick';
@@ -68,6 +68,13 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
   const open = allies.filter((r) => !r.locked);
   /** Rôle choisi, et s'il était déjà verrouillé au clic : un rôle verrouillé ensuite (ici ou dans le client) cède la place. */
   const [focus, setFocus] = useState<{ role: Role; wasLocked: boolean } | null>(null);
+  // Petit écran : le centre est sous les équipes ; choisir un rôle y fait défiler.
+  const center = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (focus && typeof window.matchMedia === 'function' && !window.matchMedia('(min-width: 1200px)').matches) {
+      center.current?.scrollIntoView?.({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    }
+  }, [focus]);
   const focused = focus ? allies.find((r) => r.role === focus.role) : undefined;
   // Sans rôle choisi d'un clic, le centre suit l'allié en train de choisir dans le client, sinon le premier rôle ouvert.
   const pickingAlly = allies.find((r) => picking.ally.includes(r.role) && !r.locked);
@@ -104,7 +111,7 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
           );
         })}
       </ul>
-      <div className="fit-center">
+      <div ref={center} className="fit-center">
         {/* Bans en cours (sauf rôle choisi d'un clic), draft complète, sinon le rôle choisi. */}
         {showBans ? (
           <BanPanel result={result} dispatch={dispatch} />
@@ -138,7 +145,10 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
   );
 };
 
-/** La draft entière dans la fenêtre, sans défilement, en vue client : l'écran Draft sur grand écran. */
+/**
+ * Écran Draft en vue client. Grand écran (1200 px et plus) : la draft entière dans la fenêtre, sans défilement. En dessous :
+ * les mêmes blocs empilés (les deux équipes côte à côte, puis le centre), la page défile.
+ */
 export const FitScreen = ({ session, dispatch, pools, liveBans = null }: Props) => {
   const { engine } = useData();
   // Side de ton équipe (draft en direct ; bleu par défaut) : le thème inverse les couleurs des deux camps côté rouge.

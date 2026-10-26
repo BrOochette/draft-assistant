@@ -3,12 +3,11 @@ import { applyClientDraft, createSession, draftReducer } from '@draft/engine';
 import { emptySlots, ROLES, type Pools, type RiotIds } from '@draft/schemas';
 import { useClientBridge } from './client';
 import { initialDraft, loadAppData, type AppData } from './data';
-import { DraftScreen } from './draft/DraftScreen';
 import { PlayersScreen } from './players/PlayersScreen';
 import { FitScreen } from './fit/FitScreen';
 import { loadPools, loadRiotIds, savePools, saveRiotIds } from './store';
 import { APP_TEXT as T, CLIENT_TEXT } from '@draft/i18n-fr';
-import { DataContext } from './ui';
+import { DataContext, TooltipLayer } from './ui';
 
 type Screen = 'draft' | 'players';
 
@@ -52,7 +51,7 @@ export const App = ({ initialData, initialPools }: Props) => {
   const [error, setError] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen>(screenFromHash);
   const wide = useWide();
-  // Vue client tenant dans la fenêtre : l'écran Draft sur grand écran.
+  // Vue client sur tous les écrans ; sur grand écran, elle tient dans la fenêtre sans défilement.
   const fit = screen === 'draft' && wide;
   const [confirmReset, setConfirmReset] = useState(false);
   const [session, dispatch] = useReducer(draftReducer, undefined, () => createSession(startDraft(initialData)));
@@ -129,6 +128,7 @@ export const App = ({ initialData, initialPools }: Props) => {
   return (
     // Vue client : en-tête et draft occupent exactement la fenêtre ; les mentions légales restent juste en dessous.
     <div className={'app' + (fit ? ' is-fit' : '')}>
+      <TooltipLayer />
       <div className="app-screen">
         <header className="header">
           <div className="brand">
@@ -170,9 +170,7 @@ export const App = ({ initialData, initialPools }: Props) => {
         {data && pools && (
           <DataContext.Provider value={data}>
             {screen === 'draft'
-              ? wide
-                ? <FitScreen session={session} dispatch={dispatch} pools={pools} liveBans={liveBans} />
-                : <DraftScreen session={session} dispatch={dispatch} pools={pools} />
+              ? <FitScreen session={session} dispatch={dispatch} pools={pools} liveBans={liveBans} />
               : <PlayersScreen pools={pools} onChange={changePools} riotIds={riotIds} onRiotIdsChange={changeRiotIds} />}
           </DataContext.Provider>
         )}
