@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { loadPools, loadRiotIds } from '../src/store';
-import { playersFileName, readPlayersFile, toPlayersFile } from '../src/players/share';
+import { playerFileName, playersFileName, readPlayersFile, toPlayerFile, toPlayersFile } from '../src/players/share';
 import { sampleAppData } from './fixtures';
 
 const known = (c: string) => c !== 'Inconnu';
@@ -108,6 +108,32 @@ describe('partage de la liste des joueurs', () => {
     expect(ask.getByText('Inès').closest('li')).toHaveTextContent('nouveau');
     await user.click(ask.getByRole('button', { name: 'Importer 1 joueur' }));
     expect(screen.getByRole('button', { name: /^Inès/ })).toBeInTheDocument();
+  });
+
+  it('exporte un seul joueur dans le même format', () => {
+    const pools = { Alex: { Top: [{ champion: 'Malphite', mastery: 8 }] }, Sam: { Mid: [{ champion: 'Lux', mastery: 4 }] } };
+    const file = toPlayerFile('Alex', pools, { Alex: 'Alex#EUW', Sam: 'Sam#EUW' }, new Date('2026-10-26T10:00:00Z'));
+    expect(file.players).toEqual([{ name: 'Alex', riotId: 'Alex#EUW', pools: pools.Alex }]);
+    const back = readPlayersFile(JSON.stringify(file), { pools: { Sam: {} }, riotIds: {} }, known);
+    if ('error' in back) throw new Error(back.error);
+    expect(Object.keys(back.pools)).toEqual(['Sam', 'Alex']);
+    expect(playerFileName('Alex', new Date('2026-10-26T10:00:00Z'))).toBe('draft-assistant-joueur-Alex-2026-10-26.json');
+    expect(playerFileName('Le Roi/Zoé?', new Date('2026-10-26T10:00:00Z'))).toBe('draft-assistant-joueur-Le-Roi-Zoé-2026-10-26.json');
+  });
+
+  it('copie le joueur affiché en JSON', async () => {
+    const user = userEvent.setup();
+    location.hash = '#/joueurs';
+    render(<App initialData={sampleAppData()} />);
+    await user.click(await screen.findByRole('button', { name: /^Lou/ }));
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    const actions = within(screen.getByRole('group', { name: 'Partager Lou' }));
+    await user.click(actions.getByRole('button', { name: 'Copier Lou' }));
+    expect(actions.getByRole('status')).toHaveTextContent('JSON copié');
+    const json = JSON.parse((writeText.mock.calls[0] as unknown as [string])[0]);
+    expect(json.kind).toBe('draft-assistant/joueurs');
+    expect(json.players.map((p: { name: string }) => p.name)).toEqual(['Lou']);
   });
 
   it('presse-papiers illisible : une zone de texte permet de coller à la main', async () => {
