@@ -1,7 +1,7 @@
 {
   "name": "@draft/desktop",
   "productName": "Draft Assistant",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Draft Assistant LoL, appli desktop Windows",
   "author": "BrOochette",
@@ -10,13 +10,15 @@
     "build:main": "esbuild src/main.ts --bundle --platform=node --format=cjs --target=node20 --outfile=dist/main.cjs --external:electron --external:bufferutil --external:utf-8-validate && esbuild src/preload.ts --bundle --platform=node --format=cjs --target=node20 --outfile=dist/preload.cjs --external:electron",
     "start": "npm run build:main && electron .",
     "dev": "npm run build:main && electron . --dev",
-    "dist": "npm run build:main && electron-builder --win --publish never"
+    "dist": "npm run build:main && electron-builder --win --publish never",
+    "release": "npm run build:main && electron-builder --win --publish always"
   },
   "devDependencies": {
     "@draft/bridge": "*",
     "@draft/ingest": "*",
     "electron": "33.4.11",
     "electron-builder": "^25.1.8",
+    "electron-updater": "^6.3.9",
     "esbuild": "^0.21.5"
   },
   "build": {
@@ -53,13 +55,23 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "icon": "build/icon.png"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "Draft Assistant"
+      "shortcutName": "Draft Assistant",
+      "artifactName": "Draft-Assistant-Setup-${version}.${ext}"
     },
-    "electronVersion": "33.4.11"
+    "electronVersion": "33.4.11",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "BrOochette",
+        "repo": "draft-assistant",
+        "releaseType": "release"
+      }
+    ]
   }
 }

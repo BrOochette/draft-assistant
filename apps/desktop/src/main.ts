@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { app, BrowserWindow, ipcMain, Menu, net, protocol, shell, type MenuItemConstructorOptions } from 'electron';
 import { startBridge, type Bridge } from '@draft/bridge/server';
 import { createStatsUpdater, localSnapshot, type StatsPaths } from './stats';
+import { startUpdater } from './updater';
 
 // Appli desktop Windows : l'appli web dans une fenêtre, avec le pont vers le client LoL démarré dans ce processus.
 // Le mot de passe du client LoL reste ici (processus principal) : la page n'y a pas accès, elle lit la draft par le
@@ -27,7 +28,9 @@ const webDir = () => (app.isPackaged ? join(process.resourcesPath, 'web') : join
 /** Stats collectées dans l'appli (dossier de l'utilisateur) et attributs des champions embarqués (ou data/ du dépôt). */
 const statsPaths = (): StatsPaths => ({
   dir: join(app.getPath('userData'), 'stats'),
-  data: app.isPackaged ? join(process.resourcesPath, 'data') : join(__dirname, '..', '..', '..', 'data')
+  data: app.isPackaged ? join(process.resourcesPath, 'data') : join(__dirname, '..', '..', '..', 'data'),
+  web: webDir(),
+  images: join(app.getPath('userData'), 'images')
 });
 
 /** Préférences de la fenêtre, gardées entre deux lancements. */
@@ -59,6 +62,12 @@ const serveWeb = () => {
     const { pathname } = new URL(req.url);
     // Stats mises à jour dans l'appli : prioritaires sur celles de l'installeur.
     if (pathname === '/data/snapshot.json' && existsSync(localSnapshot(statsPaths()))) return net.fetch(pathToFileURL(localSnapshot(statsPaths())).toString());
+    // Portraits et illustrations des champions sortis après l'installeur, téléchargés par la mise à jour des stats.
+    if (pathname.startsWith('/champions/')) {
+      const images = statsPaths().images;
+      const extra = normalize(join(images, decodeURIComponent(pathname)));
+      if (extra.startsWith(images + sep) && existsSync(extra)) return net.fetch(pathToFileURL(extra).toString());
+    }
     const file = normalize(join(root, decodeURIComponent(pathname === '/' ? '/index.html' : pathname)));
     // Rien en dehors du dossier de l'appli.
     if (file !== root && !file.startsWith(root + sep)) return new Response('Introuvable', { status: 404 });
@@ -104,6 +113,8 @@ const createWindow = () => {
     minWidth: 420,
     minHeight: 600,
     backgroundColor: '#121212',
+    // Appli installée : l'icône est celle de l'exécutable ; en développement, celle du dossier build.
+    ...(!app.isPackaged && { icon: join(__dirname, '..', 'build', 'icon.png') }),
     alwaysOnTop: prefs.alwaysOnTop,
     autoHideMenuBar: true,
     show: false,
@@ -171,6 +182,7 @@ if (!app.requestSingleInstanceLock()) {
     ipcMain.handle('stats:start', () => stats.start());
     ipcMain.handle('stats:cancel', () => stats.cancel());
     createWindow();
+    startUpdater(() => BrowserWindow.getAllWindows()[0], () => bridge?.inChampSelect() ?? false);
   });
   app.on('window-all-closed', () => {
     bridge?.close();

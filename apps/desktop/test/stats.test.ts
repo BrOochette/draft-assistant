@@ -2,13 +2,13 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { createStatsUpdater, STATS_INTERVAL_MS } from '../src/stats';
+import { createStatsUpdater, STATS_INTERVAL_MS, withNewChampions } from '../src/stats';
 
 // Refus avant toute requête : aucun appel réseau dans ces tests.
 const setup = async (lastUpdate: string | null, inChampSelect = false) => {
   const dir = await mkdtemp(join(tmpdir(), 'draft-stats-'));
   if (lastUpdate) await writeFile(join(dir, 'state.json'), JSON.stringify({ lastUpdate, patch: '16.21' }));
-  return createStatsUpdater({ dir, data: dir }, () => inChampSelect, () => {});
+  return createStatsUpdater({ dir, data: dir, web: dir, images: dir }, () => inChampSelect, () => {});
 };
 
 describe('mise à jour des stats (appli desktop)', () => {
@@ -28,5 +28,15 @@ describe('mise à jour des stats (appli desktop)', () => {
   it('refusée pendant une sélection des champions', async () => {
     const updater = await setup(null, true);
     expect(await updater.start()).toMatchObject({ running: false, error: 'IN_CHAMP_SELECT' });
+  });
+
+  it('ajoute les champions du wiki absents de l’installeur, garde les autres tels quels', async () => {
+    const champ = (name: string, key: number) => ({ name, key, ddragonId: name, damage: 'AD' as const, provides: [], roles: ['Top' as const], classes: ['Fighter'] });
+    const bundled = [champ('Garen', 86)];
+    const r = await withNewChampions(bundled, async () => [{ ...champ('Garen', 86), damage: 'AP' as const }, champ('Zaahen', 999)]);
+    expect(r.added.map((c) => c.name)).toEqual(['Zaahen']);
+    expect(r.list.map((c) => c.name + ' ' + c.damage)).toEqual(['Garen AD', 'Zaahen AD']);
+    // Wiki inaccessible : la liste de l'installeur seule.
+    expect((await withNewChampions(bundled, () => Promise.reject(new Error('hors ligne')))).list).toEqual(bundled);
   });
 });

@@ -7,7 +7,8 @@
     "./http": "./src/http.ts",
     "./lolalytics": "./src/lolalytics.ts",
     "./snapshot": "./src/snapshot.ts",
-    "./wiki": "./src/wiki.ts"
+    "./wiki": "./src/wiki.ts",
+    "./portraits": "./src/portraits.ts"
   },
   "scripts": {
     "cli": "tsx src/cli.ts"

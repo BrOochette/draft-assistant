@@ -134,7 +134,8 @@ export const assembleLolalyticsSnapshot = (
       provides: traits,
       scaling: (main && scaling.get(main)) ?? [3, 3, 3],
       roles: o?.roles ?? ROLES.filter((r) => a.roles.includes(r) || playedRoles.includes(r)),
-      classes: a.classes
+      classes: a.classes,
+      ...(o?.sustained != null && { sustained: o.sustained })
     });
     for (const [role, s] of lanes) {
       const sc = scaling.get(s);

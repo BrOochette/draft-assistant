@@ -1,14 +1,17 @@
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ChampionAttributesSchema, ChampionOverridesSchema } from '@draft/schemas';
+import { ChampionAttributesSchema, ChampionOverridesSchema, type ChampionAttributes } from '@draft/schemas';
 import { CrawlStopped, politeFetch } from '@draft/ingest/http';
 import { crawlLolalytics } from '@draft/ingest/lolalytics';
+import { downloadIllustrations, downloadPortraits, latestDdragonVersion } from '@draft/ingest/portraits';
 import { assembleLolalyticsSnapshot } from '@draft/ingest/snapshot';
-import { applyOverrides } from '@draft/ingest/wiki';
+import { applyOverrides, importWikiAttributes } from '@draft/ingest/wiki';
 
-// Mise à jour des stats depuis l'appli desktop : la collecte Lolalytics de `npm run ingest -- lolalytics`, puis
-// l'assemblage du snapshot, écrit dans le dossier de l'utilisateur. L'appli le charge à la place de celui de
-// l'installeur. Une fois par semaine au plus (rythme des patchs), en pause pendant une sélection des champions.
+// Mise à jour des stats depuis l'appli desktop : nouveaux champions (wiki, portraits et illustrations Data Dragon), la
+// collecte Lolalytics de `npm run ingest -- lolalytics`, puis l'assemblage du snapshot, écrits dans le dossier de
+// l'utilisateur. L'appli les charge à la place de ceux de l'installeur. Une fois par semaine au plus (rythme des
+// patchs), en pause pendant une sélection des champions.
 
 /** Délai minimal entre deux collectes réussies. */
 export const STATS_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -44,6 +47,10 @@ export interface StatsPaths {
   dir: string;
   /** Dossier des attributs embarqués : champions.json, champions-overrides.json, ddragon-version.txt. */
   data: string;
+  /** Appli web embarquée : ses portraits et illustrations (champions/, champions/centered/). */
+  web: string;
+  /** Portraits et illustrations téléchargés pour les nouveaux champions (même arborescence que champions/). */
+  images: string;
 }
 
 interface State {
@@ -57,6 +64,22 @@ const stateFile = (paths: StatsPaths) => join(paths.dir, 'state.json');
 const readJson = async (file: string): Promise<unknown> => JSON.parse(await readFile(file, 'utf8'));
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Champions du wiki absents des attributs embarqués (sortis après l'installeur), ajoutés à la liste. Wiki inaccessible :
+ * la liste embarquée seule.
+ */
+export const withNewChampions = async (bundled: ChampionAttributes[], fetchWiki: () => Promise<ChampionAttributes[]>): Promise<{ list: ChampionAttributes[]; added: ChampionAttributes[] }> => {
+  let wiki: ChampionAttributes[] = [];
+  try {
+    wiki = await fetchWiki();
+  } catch (e) {
+    if (e instanceof CrawlStopped) throw e;
+  }
+  const known = new Set(bundled.map((c) => c.name));
+  const added = wiki.filter((c) => !known.has(c.name));
+  return { list: [...bundled, ...added], added };
+};
 
 export const createStatsUpdater = (paths: StatsPaths, inChampSelect: () => boolean, emit: (s: StatsStatus) => void) => {
   let running = false;
@@ -107,12 +130,26 @@ export const createStatsUpdater = (paths: StatsPaths, inChampSelect: () => boole
     void push();
     void (async () => {
       try {
-        const attributes = ChampionAttributesSchema.array().parse(await readJson(join(paths.data, 'champions.json')));
+        const bundled = ChampionAttributesSchema.array().parse(await readJson(join(paths.data, 'champions.json')));
         const overrides = ChampionOverridesSchema.parse(await readJson(join(paths.data, 'champions-overrides.json')).catch(() => ({})));
-        const version = (await readFile(join(paths.data, 'ddragon-version.txt'), 'utf8').catch(() => '16.21.1')).trim();
+        let version = (await readFile(join(paths.data, 'ddragon-version.txt'), 'utf8').catch(() => '16.21.1')).trim();
         // Cache du jour : une collecte interrompue (annulée, appli fermée) reprend là où elle s'est arrêtée.
         const cacheDir = join(paths.dir, 'cache', new Date().toISOString().slice(0, 10));
         const options = { delayMs: DELAY_MS, cacheDir, beforeRequest: gate };
+
+        // Nouveaux champions : attributs du wiki, portrait et illustration (ceux de l'installeur sont déjà là).
+        const { list: attributes, added } = await withNewChampions(bundled, async () => (await importWikiAttributes(politeFetch(options))).champions);
+        const missing = (file: (id: string) => string) => attributes.map((c) => c.ddragonId).filter((id) => !existsSync(join(paths.web, file(id))) && !existsSync(join(paths.images, file(id))));
+        const portraits = missing((id) => join('champions', id + '.png'));
+        const illustrations = missing((id) => join('champions', 'centered', id + '.jpg'));
+        if (portraits.length || illustrations.length) {
+          await gate();
+          version = await latestDdragonVersion().catch(() => version);
+          await downloadPortraits(portraits, join(paths.images, 'champions'), version);
+          await gate();
+          await downloadIllustrations(illustrations, join(paths.images, 'champions', 'centered'));
+        }
+        if (added.length) await writeFile(join(paths.dir, 'new-champions.json'), JSON.stringify(added.map((c) => c.name)), 'utf8').catch(() => {});
         const { dump } = await crawlLolalytics(
           attributes,
           politeFetch(options),

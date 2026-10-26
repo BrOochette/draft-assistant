@@ -1,0 +1,40 @@
+# Release de l'appli desktop : à chaque tag v* (par exemple v0.2.0, égal à la version de apps/desktop/package.json),
+# tests, construction de l'installeur Windows et publication dans la release GitHub du tag, avec latest.yml pour la
+# mise à jour automatique de l'appli installée.
+name: Release desktop
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Version du tag = version de l'appli
+        shell: bash
+        run: |
+          version=$(node -p "require('./apps/desktop/package.json').version")
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME, version de l'appli $version"; exit 1; }
+
+      - run: npm test
+
+      # Snapshot réassemblé avec les stats commitées, puis appli web.
+      - run: npm run build
+
+      - name: Installeur et publication
+        run: npm run release -w @draft/desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

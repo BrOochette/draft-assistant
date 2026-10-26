@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Icône de Draft Assistant : le logo de l'en-tête (Λ dans un carré arrondi), dégradé des deux équipes. -->
+  <defs>
+    <linearGradient id="teams" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4da3ff" />
+      <stop offset="1" stop-color="#ff4d5e" />
+    </linearGradient>
+  </defs>
+  <rect x="28" y="28" width="456" height="456" rx="104" fill="#14161b" stroke="url(#teams)" stroke-width="32" />
+  <path d="M150 346 L256 152 L362 346" fill="none" stroke="url(#teams)" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

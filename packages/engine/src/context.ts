@@ -40,7 +40,7 @@ export const entryFor = (data: EngineData, meta: RowMeta, role: Role, name: stri
     laneShare: s.laneShare ?? null,
     priorGames: data.winRatePriorGames,
     measured: data.measured,
-    sustained: SUSTAINED_CLASSES.has(mainClass(data, name) ?? ''),
+    sustained: data.catalog.get(name)?.sustained ?? SUSTAINED_CLASSES.has(mainClass(data, name) ?? ''),
     classPrior: classPriorLookup(data, role, name),
     ...poolStatus(meta, name)
   };
@@ -50,7 +50,8 @@ const mainClass = (data: EngineData, name: string) => data.catalog.get(name)?.cl
 
 /**
  * Classes principales Riot à dégâts soutenus, capables de faire tomber une frontline (**Provisoire**). Les assassins, mages
- * burst, artilleurs, tanks et supports n'en apportent pas ; les spécialistes, trop variés, non plus.
+ * burst, artilleurs, tanks et supports n'en apportent pas ; les spécialistes, trop variés, non plus. Un champion peut être
+ * corrigé à la main (`sustained` dans data/champions-overrides.json).
  */
 export const SUSTAINED_CLASSES: ReadonlySet<string> = new Set(['Marksman', 'Juggernaut', 'Skirmisher', 'Battlemage']);
 

@@ -30,7 +30,9 @@ export const ChampionSchema = z.object({
   /** Identifiant numérique Riot (aussi utilisé par Lolalytics). Absent des données d'exemple. */
   key: z.number().int().positive().optional(),
   /** Classes Riot (Diver, Vanguard…), la première est la classe principale. Absentes des données d'exemple. */
-  classes: z.array(z.string()).optional()
+  classes: z.array(z.string()).optional(),
+  /** Dégâts soutenus fixés à la main (corrections) ; absent : déduits de la classe principale. */
+  sustained: z.boolean().optional()
 });
 export type Champion = z.infer<typeof ChampionSchema>;
 
@@ -48,7 +50,9 @@ export type ChampionAttributes = z.infer<typeof ChampionAttributesSchema>;
 /** Corrections manuelles par nom de champion (`data/champions-overrides.json`). */
 export const ChampionOverridesSchema = z.record(
   z.string(),
-  z.object({ damage: DamageSchema.optional(), provides: z.array(TraitSchema).optional(), roles: z.array(RoleSchema).min(1).optional() }).strict()
+  z
+    .object({ damage: DamageSchema.optional(), provides: z.array(TraitSchema).optional(), roles: z.array(RoleSchema).min(1).optional(), sustained: z.boolean().optional() })
+    .strict()
 );
 export type ChampionOverrides = z.infer<typeof ChampionOverridesSchema>;
 

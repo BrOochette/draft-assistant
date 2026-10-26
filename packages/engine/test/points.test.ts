@@ -28,6 +28,8 @@ const snapshot: StatsSnapshot = {
     tank('Sejuani', 'Jungle'),
     tank('Galio', 'Mid'),
     { name: 'Ahri', damage: 'AP', provides: [], scaling: [3, 3, 3], roles: ['Mid'], ddragonId: 'Ahri' },
+    // Spécialiste à dégâts soutenus, corrigé à la main.
+    { name: 'Azir', damage: 'AP', provides: [], scaling: [3, 3, 3], roles: ['Mid'], ddragonId: 'Azir', classes: ['Specialist'], sustained: true },
     tank('Leona', 'Support'),
     ...(['Darius', 'Lee Sin', 'Jinx'] as const).map((name, i) => ({ name, damage: 'AD' as const, provides: ['Physique'] as Trait[], scaling: [3, 3, 3] as [3, 3, 3], roles: [(['Top', 'Jungle', 'ADC'] as const)[i]!], ddragonId: name, ...(name === 'Jinx' && { classes: ['Marksman'] }) }))
   ],
@@ -35,7 +37,7 @@ const snapshot: StatsSnapshot = {
     Top: [cand('Malphite'), cand('Darius', { provides: ['Physique'], damage: 'AD' })],
     Jungle: [cand('Sejuani'), cand('Lee Sin', { provides: ['Physique'], damage: 'AD' })],
     ADC: [cand('Jinx', { provides: ['Physique'], damage: 'AD' })],
-    Mid: [cand('Galio'), cand('Ahri', { gameWinRate: 52, provides: [], damage: 'AP' })],
+    Mid: [cand('Galio'), cand('Ahri', { gameWinRate: 52, provides: [], damage: 'AP' }), cand('Azir', { provides: [], damage: 'AP' })],
     Support: [cand('Leona')]
   },
   matchupNotes: { matchups: {}, fixedInfo: {} },
@@ -99,6 +101,11 @@ describe('dégâts soutenus face à la frontline', () => {
     expect(evalOf(state, 'Support', 'Leona').reasons).toContainEqual({ sign: '-', code: 'NO_SUSTAINED', against: ['Malphite'] });
     const early = { ...state, ally: { ...empty.ally, Top: 'Darius' } };
     expect(evalOf(early, 'Support', 'Leona').reasons.some((r) => r.code === 'NO_SUSTAINED')).toBe(false);
+  });
+
+  it('une correction manuelle compte comme dégâts soutenus, quelle que soit la classe', () => {
+    const s = { ...state, ally: { ...state.ally, Mid: null } };
+    expect(evalOf(s, 'Mid', 'Azir').reasons).toContainEqual({ sign: '+', code: 'SUSTAINED', against: ['Malphite'] });
   });
 
   it('rien sans frontline ennemie, ou quand ta compo en a déjà', () => {
