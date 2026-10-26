@@ -814,3 +814,9 @@ button:disabled { cursor: not-allowed; }
 .chip-action:disabled { opacity: .35; cursor: default; }
 .stats-bar { display: inline-block; width: 48px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .15); overflow: hidden; }
 .stats-bar > span { display: block; height: 100%; background: var(--ally); transition: width .3s; }
+
+/* Partage de la liste des joueurs : zone de collage du JSON (secours), ligne secondaire des fichiers, discrète. */
+.share-paste { min-height: 120px; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.share-files { display: flex; flex-wrap: nowrap; gap: 4px; }
+.share-files .btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; background: transparent; color: var(--muted); font-weight: 500; }
+.share-files .btn-sm:hover:not(:disabled) { color: var(--text); background: var(--raise); }

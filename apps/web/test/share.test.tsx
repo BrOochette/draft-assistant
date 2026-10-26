@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { loadPools, loadRiotIds } from '../src/store';
 import { playersFileName, readPlayersFile, toPlayersFile } from '../src/players/share';
@@ -74,5 +74,54 @@ describe('partage de la liste des joueurs', () => {
     const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
     await user.upload(share.getByLabelText('Fichier de joueurs à importer'), new File(['{"a":1}'], 'autre.json', { type: 'application/json' }));
     expect(await share.findByRole('alert')).toHaveTextContent('n’est pas une liste de joueurs');
+  });
+
+  it('copie la liste en JSON dans le presse-papiers', async () => {
+    const user = userEvent.setup();
+    location.hash = '#/joueurs';
+    render(<App initialData={sampleAppData()} />);
+    await screen.findByRole('button', { name: /^Lou/ });
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    await user.click(share.getByRole('button', { name: 'Copier' }));
+    expect(share.getByRole('status')).toHaveTextContent('JSON copié');
+    const json = JSON.parse((writeText.mock.calls[0] as unknown as [string])[0]);
+    expect(json.kind).toBe('draft-assistant/joueurs');
+    expect(json.players.map((p: { name: string }) => p.name)).toContain('Lou');
+  });
+
+  it('« Coller » lit le presse-papiers et montre les joueurs avant import', async () => {
+    const user = userEvent.setup();
+    location.hash = '#/joueurs';
+    render(<App initialData={sampleAppData()} />);
+    await screen.findByRole('button', { name: /^Lou/ });
+    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    const readText = vi.fn(() => Promise.resolve('pas du json'));
+    Object.defineProperty(navigator, 'clipboard', { value: { readText }, configurable: true });
+    await user.click(share.getByRole('button', { name: 'Coller' }));
+    expect(share.getByRole('alert')).toHaveTextContent('ce n’est pas du JSON');
+
+    readText.mockResolvedValue(JSON.stringify(toPlayersFile({ Inès: { Support: [{ champion: 'Janna', mastery: 7 }] } }, {})));
+    await user.click(share.getByRole('button', { name: 'Coller' }));
+    const ask = within(share.getByRole('group', { name: 'Importer ces joueurs' }));
+    expect(ask.getByText('Inès').closest('li')).toHaveTextContent('nouveau');
+    await user.click(ask.getByRole('button', { name: 'Importer 1 joueur' }));
+    expect(screen.getByRole('button', { name: /^Inès/ })).toBeInTheDocument();
+  });
+
+  it('presse-papiers illisible : une zone de texte permet de coller à la main', async () => {
+    const user = userEvent.setup();
+    location.hash = '#/joueurs';
+    render(<App initialData={sampleAppData()} />);
+    await screen.findByRole('button', { name: /^Lou/ });
+    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    Object.defineProperty(navigator, 'clipboard', { value: { readText: () => Promise.reject(new Error('refusé')) }, configurable: true });
+    await user.click(share.getByRole('button', { name: 'Coller' }));
+    await user.click(share.getByRole('textbox', { name: 'JSON des joueurs' }));
+    await user.paste(JSON.stringify(toPlayersFile({ Yanis: {} }, {})));
+    await user.click(share.getByRole('button', { name: 'Lire le JSON' }));
+    expect(within(share.getByRole('group', { name: 'Importer ces joueurs' })).getByText('Yanis')).toBeInTheDocument();
+    expect(share.queryByRole('textbox', { name: 'JSON des joueurs' })).not.toBeInTheDocument();
   });
 });

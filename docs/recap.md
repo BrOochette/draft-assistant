@@ -429,7 +429,7 @@ Principes :
 
 ## 14. Partage de la liste des joueurs
 
-**Décidé** (26/10/2026) : export et import de la liste des joueurs en JSON, depuis l'écran Joueurs (bloc « Partager la liste »).
+**Décidé** (26/10/2026) : export et import de la liste des joueurs en JSON, depuis l'écran Joueurs (bloc « Partager la liste »). En premier, sans fichier : « Copier » (JSON dans le presse-papiers) et « Coller » (lit directement le presse-papiers ; zone de texte de secours s'il est inaccessible) ; en dessous, sur une ligne et plus discrets, « Exporter » et « Importer » (fichier).
 
 - Format (`PlayersFileSchema`) : `{ kind: "draft-assistant/joueurs", version: 1, exportedAt, players: [{ name, riotId?, pools }] }`, joueurs dans l'ordre d'affichage.
 - Import : récapitulatif avant confirmation (chaque joueur marqué « remplacé » ou « nouveau »). Un joueur du même nom est remplacé en entier (pools et Riot ID) ; les nouveaux sont ajoutés à la fin ; les autres ne changent pas. Champions inconnus du catalogue ignorés (listés), doublons d'un rôle retirés. Fichier illisible, d'un autre format ou vide : message, rien n'est changé.

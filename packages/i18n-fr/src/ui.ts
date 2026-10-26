@@ -329,10 +329,19 @@ export const PLAYERS_TEXT = {
   ] as const,
   traits: { frontline: 'Frontline', engage: 'Engage', peel: 'Peel', physical: 'Dégâts physiques', early: 'Early game', late: 'Scaling tardif' },
   share: 'Partager la liste',
+  copyButton: 'Copier',
+  copyTip: 'Copie la liste des joueurs (Riot ID et pools) en JSON, à coller ailleurs',
+  copied: 'JSON copié',
+  copyFailed: 'Copie impossible : presse-papiers indisponible',
+  pasteButton: 'Coller',
+  pasteTip: 'Lit le JSON copié depuis Draft Assistant (presse-papiers) : les joueurs du même nom sont remplacés, les autres ajoutés',
+  pasteLabel: 'JSON des joueurs',
+  pastePlaceholder: 'Coller ici le JSON copié',
+  pasteRead: 'Lire le JSON',
   exportButton: 'Exporter',
-  exportTip: 'Fichier JSON avec tous les joueurs, leurs Riot ID et leurs pools',
+  exportTip: 'Télécharge un fichier JSON avec tous les joueurs, leurs Riot ID et leurs pools',
   importButton: 'Importer',
-  importTip: 'Fichier JSON exporté depuis Draft Assistant : les joueurs du même nom sont remplacés, les autres ajoutés',
+  importTip: 'Lit un fichier JSON exporté depuis Draft Assistant : les joueurs du même nom sont remplacés, les autres ajoutés',
   importFile: 'Fichier de joueurs à importer',
   importAsk: 'Importer ces joueurs',
   importReplaced: 'remplacé',
@@ -341,9 +350,9 @@ export const PLAYERS_TEXT = {
   importConfirm: (n: number) => 'Importer ' + n + (n > 1 ? ' joueurs' : ' joueur'),
   importDone: (n: number) => n + (n > 1 ? ' joueurs importés' : ' joueur importé'),
   importError: {
-    NOT_JSON: 'Fichier illisible : ce n’est pas du JSON.',
-    BAD_FORMAT: 'Ce fichier n’est pas une liste de joueurs exportée depuis Draft Assistant.',
-    EMPTY: 'Le fichier ne contient aucun joueur.'
+    NOT_JSON: 'Illisible : ce n’est pas du JSON.',
+    BAD_FORMAT: 'Ce n’est pas une liste de joueurs exportée depuis Draft Assistant.',
+    EMPTY: 'La liste ne contient aucun joueur.'
   } as Record<'NOT_JSON' | 'BAD_FORMAT' | 'EMPTY', string>
 };
 

@@ -42,14 +42,59 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
   const [newPlayer, setNewPlayer] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const player = pools[sel] ? sel : names[0] ?? '';
-  // Partage : fichier choisi en attente de confirmation, erreur de lecture, ou nombre de joueurs importés.
+  // Partage : JSON collé ou fichier choisi, en attente de confirmation ; erreur de lecture ; résultat de la dernière action.
   const fileInput = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [importError, setImportError] = useState<ImportError | null>(null);
   const [imported, setImported] = useState<number | null>(null);
+  const [copied, setCopied] = useState<boolean | null>(null);
+  /** Zone de collage à la main (presse-papiers illisible), et son contenu. */
+  const [pasting, setPasting] = useState(false);
+  const [pasted, setPasted] = useState('');
+
+  const playersJson = () => JSON.stringify(toPlayersFile(pools, riotIds), null, 2) + '\n';
+  const resetShare = () => {
+    setImported(null);
+    setPreview(null);
+    setImportError(null);
+    setCopied(null);
+  };
+  const copyPlayers = async () => {
+    resetShare();
+    setPasting(false);
+    try {
+      await navigator.clipboard.writeText(playersJson());
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
+  const readJson = (text: string) => {
+    resetShare();
+    const r = readPlayersFile(text, { pools, riotIds }, (c) => engine.catalog.has(c));
+    if ('error' in r) setImportError(r.error);
+    else {
+      setPreview(r);
+      setPasting(false);
+      setPasted('');
+    }
+  };
+
+  // « Coller » lit directement le presse-papiers ; s'il est illisible (accès refusé), une zone de texte prend le relais.
+  const pasteClipboard = async () => {
+    resetShare();
+    let text: string | null = null;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      text = null;
+    }
+    if (text?.trim()) readJson(text);
+    else setPasting(true);
+  };
 
   const exportPlayers = () => {
-    const blob = new Blob([JSON.stringify(toPlayersFile(pools, riotIds), null, 2) + '\n'], { type: 'application/json' });
+    const blob = new Blob([playersJson()], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -58,15 +103,11 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
     URL.revokeObjectURL(url);
   };
   const readFile = async (file: File | undefined) => {
-    setImported(null);
-    setPreview(null);
-    setImportError(null);
+    resetShare();
     if (!file) return;
     const text = await readText(file).catch(() => null);
     if (text == null) return setImportError('NOT_JSON');
-    const r = readPlayersFile(text, { pools, riotIds }, (c) => engine.catalog.has(c));
-    if ('error' in r) setImportError(r.error);
-    else setPreview(r);
+    readJson(text);
   };
   const confirmImport = () => {
     if (!preview) return;
@@ -157,8 +198,29 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
           <section className="card col gap-10" aria-label={T.share}>
             <h2 className="h3">{T.share}</h2>
             <div className="row-gap wrap">
-              <button type="button" className="btn" title={T.exportTip} disabled={names.length === 0} onClick={exportPlayers}><Icon name="download" />{T.exportButton}</button>
-              <button type="button" className="btn" title={T.importTip} onClick={() => fileInput.current?.click()}><Icon name="upload" />{T.importButton}</button>
+              <button type="button" className="btn" title={T.copyTip} disabled={names.length === 0} onClick={() => void copyPlayers()}><Icon name="copy" />{T.copyButton}</button>
+              <button type="button" className="btn" title={T.pasteTip} onClick={() => void pasteClipboard()}><Icon name="paste" />{T.pasteButton}</button>
+            </div>
+            {pasting && (
+              <div className="col gap-8">
+                <textarea
+                  className="input share-paste"
+                  aria-label={T.pasteLabel}
+                  placeholder={T.pastePlaceholder}
+                  spellCheck={false}
+                  autoFocus
+                  value={pasted}
+                  onChange={(e) => setPasted(e.target.value)}
+                />
+                <div className="row-gap wrap">
+                  <button type="button" className="btn btn-accent" disabled={!pasted.trim()} onClick={() => readJson(pasted)}>{T.pasteRead}</button>
+                  <button type="button" className="btn" onClick={() => { setPasting(false); setPasted(''); setImportError(null); }}>{T.cancel}</button>
+                </div>
+              </div>
+            )}
+            <div className="share-files">
+              <button type="button" className="btn btn-sm" title={T.exportTip} disabled={names.length === 0} onClick={exportPlayers}><Icon name="download" />{T.exportButton}</button>
+              <button type="button" className="btn btn-sm" title={T.importTip} onClick={() => fileInput.current?.click()}><Icon name="upload" />{T.importButton}</button>
               <input
                 ref={fileInput}
                 type="file"
@@ -174,6 +236,7 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
             </div>
             {importError && <span role="alert" className="small neg-text">{T.importError[importError]}</span>}
             {imported != null && <span role="status" className="small pos-text">{T.importDone(imported)}</span>}
+            {copied != null && <span role="status" className={'small ' + (copied ? 'pos-text' : 'neg-text')}>{copied ? T.copied : T.copyFailed}</span>}
             {preview && (
               <div role="group" aria-label={T.importAsk} className="col gap-8">
                 <ul className="plain-list gap-4">

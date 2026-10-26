@@ -43,7 +43,9 @@ const PATHS = {
   ban: 'M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM4.1 4.1l7.8 7.8',
   download: 'M8 2.5v8M4.5 7L8 10.5 11.5 7M3 13.5h10',
   upload: 'M8 10.5v-8M4.5 6L8 2.5 11.5 6M3 13.5h10',
-  refresh: 'M13 8a5 5 0 1 1-1.5-3.55M13 2.5v3h-3'
+  refresh: 'M13 8a5 5 0 1 1-1.5-3.55M13 2.5v3h-3',
+  copy: 'M5.5 5.5V3h7.5v7.5h-2.5M3 5.5h7.5V13H3z',
+  paste: 'M5.5 3.5H3.5v10h9v-10h-2M6 2.5h4v2H6z'
 } as const;
 
 export const Icon = ({ name, size = 14, rotate = false }: { name: keyof typeof PATHS; size?: number; rotate?: boolean }) => (
