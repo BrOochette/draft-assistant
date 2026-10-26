@@ -5,3 +5,4 @@ dist/
 *.log
 coverage/
 data/stats/.cache/
+apps/desktop/release/

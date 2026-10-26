@@ -14,7 +14,15 @@ interface Options {
   retries?: number;
   referer?: string;
   log?: (msg: string) => void;
+  /**
+   * Attendu avant chaque requête réseau (pas pour une page en cache) : l'appli desktop y met la collecte en pause
+   * pendant une sélection des champions, et y arrête une collecte annulée (en levant CrawlStopped).
+   */
+  beforeRequest?: () => Promise<void>;
 }
+
+/** Collecte arrêtée volontairement : remonte telle quelle, sans être prise pour l'erreur d'un champion. */
+export class CrawlStopped extends Error {}
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -22,7 +30,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * Récupération polie : une requête à la fois, un délai entre chaque, un User-Agent identifiable,
  * des reprises espacées sur coupure réseau, 429 et 5xx, et un arrêt net sur 401 ou 403.
  */
-export const politeFetch = ({ delayMs = 1200, cacheDir, retries = 3, referer, log = () => {} }: Options = {}): PoliteFetch => {
+export const politeFetch = ({ delayMs = 1200, cacheDir, retries = 3, referer, log = () => {}, beforeRequest }: Options = {}): PoliteFetch => {
   let last = 0;
   return async (url) => {
     const cacheFile = cacheDir ? join(cacheDir, createHash('sha1').update(url).digest('hex') + '.txt') : null;
@@ -31,6 +39,7 @@ export const politeFetch = ({ delayMs = 1200, cacheDir, retries = 3, referer, lo
       if (cached != null) return cached;
     }
     for (let attempt = 0; ; attempt++) {
+      if (beforeRequest) await beforeRequest();
       const wait = last + delayMs - Date.now();
       if (wait > 0) await sleep(wait);
       last = Date.now();

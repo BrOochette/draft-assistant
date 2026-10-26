@@ -8,6 +8,7 @@ import { FitScreen } from './fit/FitScreen';
 import { loadPools, loadRiotIds, savePools, saveRiotIds } from './store';
 import { APP_TEXT as T, CLIENT_TEXT } from '@draft/i18n-fr';
 import { DataContext, TooltipLayer } from './ui';
+import { StatsUpdate } from './desktop';
 
 type Screen = 'draft' | 'players';
 
@@ -144,8 +145,11 @@ export const App = ({ initialData, initialPools }: Props) => {
           </nav>
           <span className="grow" />
           {data && (
-            <span className="chip chip-plain" title={T.dataTip(data.snapshot.source === 'sample', data.snapshot.region)}>
-              {T.dataChip(data.snapshot.patch, data.snapshot.rank, data.snapshot.region, data.snapshot.source === 'lolalytics')}
+            <span className="chip chip-plain">
+              <span title={T.dataTip(data.snapshot.source === 'sample', data.snapshot.region)}>
+                {T.dataChip(data.snapshot.patch, data.snapshot.rank, data.snapshot.region, data.snapshot.source === 'lolalytics')}
+              </span>
+              <StatsUpdate />
             </span>
           )}
           {data?.snapshot.source === 'sample' && <span className="chip chip-warn">{T.sampleData}</span>}

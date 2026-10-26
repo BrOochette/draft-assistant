@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { masteryLevel, PLAYERS_TEXT as T } from '@draft/i18n-fr';
 import { ROLES, type Champion, type PoolEntry, type Pools, type RiotIds, type Role } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, useData } from '../ui';
 import { filterChampions } from '../draft/ChampionPicker';
+import { playersFileName, readPlayersFile, toPlayersFile, type ImportError, type ImportPreview } from './share';
 
 interface Props {
   pools: Pools;
@@ -20,6 +21,15 @@ const TRAIT_CHIPS: { label: string; has: (c: Champion) => boolean }[] = [
   { label: T.traits.late, has: (c) => c.scaling[2] >= 5 }
 ];
 
+/** Texte d'un fichier choisi (FileReader : pris en charge partout). */
+const readText = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ''));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+
 export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Props) => {
   const { engine } = useData();
   const names = Object.keys(pools);
@@ -32,6 +42,40 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
   const [newPlayer, setNewPlayer] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const player = pools[sel] ? sel : names[0] ?? '';
+  // Partage : fichier choisi en attente de confirmation, erreur de lecture, ou nombre de joueurs importés.
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<ImportPreview | null>(null);
+  const [importError, setImportError] = useState<ImportError | null>(null);
+  const [imported, setImported] = useState<number | null>(null);
+
+  const exportPlayers = () => {
+    const blob = new Blob([JSON.stringify(toPlayersFile(pools, riotIds), null, 2) + '\n'], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = playersFileName();
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const readFile = async (file: File | undefined) => {
+    setImported(null);
+    setPreview(null);
+    setImportError(null);
+    if (!file) return;
+    const text = await readText(file).catch(() => null);
+    if (text == null) return setImportError('NOT_JSON');
+    const r = readPlayersFile(text, { pools, riotIds }, (c) => engine.catalog.has(c));
+    if ('error' in r) setImportError(r.error);
+    else setPreview(r);
+  };
+  const confirmImport = () => {
+    if (!preview) return;
+    onChange(preview.pools);
+    onRiotIdsChange(preview.riotIds);
+    setImported(preview.players.length);
+    if (preview.players[0]) select(preview.players[0].name);
+    setPreview(null);
+  };
 
   const select = (p: string) => {
     setSel(p);
@@ -109,6 +153,44 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
             <label htmlFor="player-name" className="small muted">{T.nickname}</label>
             <input id="player-name" className="input" value={newPlayer} onChange={(e) => setNewPlayer(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addPlayer()} />
             <button type="button" className="btn btn-accent" disabled={!newPlayer.trim() || !!pools[newPlayer.trim()]} onClick={addPlayer}>{T.createButton}</button>
+          </section>
+          <section className="card col gap-10" aria-label={T.share}>
+            <h2 className="h3">{T.share}</h2>
+            <div className="row-gap wrap">
+              <button type="button" className="btn" title={T.exportTip} disabled={names.length === 0} onClick={exportPlayers}><Icon name="download" />{T.exportButton}</button>
+              <button type="button" className="btn" title={T.importTip} onClick={() => fileInput.current?.click()}><Icon name="upload" />{T.importButton}</button>
+              <input
+                ref={fileInput}
+                type="file"
+                accept=".json,application/json"
+                hidden
+                aria-label={T.importFile}
+                onChange={(e) => {
+                  void readFile(e.target.files?.[0]);
+                  // Le même fichier peut être choisi de nouveau.
+                  e.target.value = '';
+                }}
+              />
+            </div>
+            {importError && <span role="alert" className="small neg-text">{T.importError[importError]}</span>}
+            {imported != null && <span role="status" className="small pos-text">{T.importDone(imported)}</span>}
+            {preview && (
+              <div role="group" aria-label={T.importAsk} className="col gap-8">
+                <ul className="plain-list gap-4">
+                  {preview.players.map((p) => (
+                    <li key={p.name} className="row-between small">
+                      <span className="strong">{p.name}</span>
+                      <Chip tone={p.replaced ? 'warn' : 'info'}>{p.replaced ? T.importReplaced : T.importNew}</Chip>
+                    </li>
+                  ))}
+                </ul>
+                {preview.unknown.length > 0 && <span className="small warn-text">{T.importUnknown(preview.unknown)}</span>}
+                <div className="row-gap wrap">
+                  <button type="button" className="btn btn-accent" onClick={confirmImport}>{T.importConfirm(preview.players.length)}</button>
+                  <button type="button" className="btn" onClick={() => setPreview(null)}>{T.cancel}</button>
+                </div>
+              </div>
+            )}
           </section>
         </aside>
 

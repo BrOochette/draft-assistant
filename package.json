@@ -12,7 +12,10 @@
     "ingest": "npm run cli -w @draft/ingest --",
     "bridge": "npm run start -w @draft/bridge",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "desktop": "npm run build && npm run start -w @draft/desktop",
+    "desktop:dev": "npm run dev -w @draft/desktop",
+    "desktop:dist": "npm run build && npm run dist -w @draft/desktop"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",

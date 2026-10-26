@@ -1,0 +1,65 @@
+{
+  "name": "@draft/desktop",
+  "productName": "Draft Assistant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Draft Assistant LoL, appli desktop Windows",
+  "author": "BrOochette",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build:main": "esbuild src/main.ts --bundle --platform=node --format=cjs --target=node20 --outfile=dist/main.cjs --external:electron --external:bufferutil --external:utf-8-validate && esbuild src/preload.ts --bundle --platform=node --format=cjs --target=node20 --outfile=dist/preload.cjs --external:electron",
+    "start": "npm run build:main && electron .",
+    "dev": "npm run build:main && electron . --dev",
+    "dist": "npm run build:main && electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "@draft/bridge": "*",
+    "@draft/ingest": "*",
+    "electron": "33.4.11",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.21.5"
+  },
+  "build": {
+    "appId": "app.draft-assistant",
+    "productName": "Draft Assistant",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../web/dist",
+        "to": "web"
+      },
+      {
+        "from": "../../data",
+        "to": "data",
+        "filter": [
+          "champions.json",
+          "champions-overrides.json",
+          "ddragon-version.txt"
+        ]
+      }
+    ],
+    "npmRebuild": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Draft Assistant"
+    },
+    "electronVersion": "33.4.11"
+  }
+}

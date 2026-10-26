@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ROLES, type ChampionAttributes, type Role } from '@draft/schemas';
-import type { PoliteFetch } from './http';
+import { CrawlStopped, type PoliteFetch } from './http';
 import { readQwikState } from './qwik';
 
 /** Rangs analysés : Emerald et au-dessus, toutes régions, classé solo. */
@@ -143,7 +143,9 @@ export const crawlLolalytics = async (
   fetchApi: PoliteFetch,
   log: (msg: string) => void = () => {},
   region: string = DEFAULT_REGION,
-  pairRegion: string = DEFAULT_PAIR_REGION
+  pairRegion: string = DEFAULT_PAIR_REGION,
+  /** Avancement : champion `done` sur `total` en cours. */
+  progress: (done: number, total: number, name: string) => void = () => {}
 ): Promise<{ dump: LolalyticsDump; missing: string[] }> => {
   const nameOfKey = new Map(champions.map((c) => [c.key, c.name]));
   // La première page donne le patch courant et les identifiants d'URL de tous les champions.
@@ -160,6 +162,7 @@ export const crawlLolalytics = async (
       continue;
     }
     log(`[${i + 1}/${champions.length}] ${c.name}`);
+    progress(i, champions.length, c.name);
     try {
       const main = parseBuildPage(await fetchPage(buildUrl(slug, region)), nameOfKey);
       const lanes: Partial<Record<Role, LaneStats>> = { [main.role]: main.stats };
@@ -179,8 +182,8 @@ export const crawlLolalytics = async (
       }
       out[c.name] = lanes;
     } catch (e) {
-      // Un refus d'accès arrête tout ; une page atypique fait seulement sauter ce champion.
-      if (/Accès refusé/.test((e as Error).message)) throw e;
+      // Un refus d'accès ou un arrêt volontaire arrête tout ; une page atypique fait seulement sauter ce champion.
+      if (e instanceof CrawlStopped || /Accès refusé/.test((e as Error).message)) throw e;
       log(`  ${c.name} ignoré : ${(e as Error).message}`);
       missing.push(c.name);
     }

@@ -274,3 +274,22 @@ export type RiotIds = Record<string, string>;
 
 /** Riot ID comparable : sans espaces autour, sans casse. */
 export const normalizeRiotId = (id: string): string => id.trim().toLowerCase();
+
+/**
+ * Fichier de partage de la liste des joueurs (export et import, écran Joueurs) : chaque joueur avec son Riot ID et ses
+ * pools par rôle, dans l'ordre d'affichage.
+ */
+export const PLAYERS_FILE_KIND = 'draft-assistant/joueurs';
+export const PlayersFileSchema = z.object({
+  kind: z.literal(PLAYERS_FILE_KIND),
+  version: z.literal(1),
+  exportedAt: z.string(),
+  players: z.array(
+    z.object({
+      name: z.string().trim().min(1),
+      riotId: z.string().optional(),
+      pools: PlayerPoolsSchema
+    })
+  )
+});
+export type PlayersFile = z.infer<typeof PlayersFileSchema>;

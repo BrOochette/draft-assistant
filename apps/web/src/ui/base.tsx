@@ -40,7 +40,10 @@ const PATHS = {
   list: 'M5.5 4h8M5.5 8h8M5.5 12h8M2.5 4v.01M2.5 8v.01M2.5 12v.01',
   grid: 'M2.5 3h4v4h-4zM9.5 3h4v4h-4zM2.5 10h4v3h-4zM9.5 10h4v3h-4z',
   swap: 'M2.5 5.5h10M10 3l2.5 2.5L10 8M13.5 10.5h-10M6 8l-2.5 2.5L6 13',
-  ban: 'M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM4.1 4.1l7.8 7.8'
+  ban: 'M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM4.1 4.1l7.8 7.8',
+  download: 'M8 2.5v8M4.5 7L8 10.5 11.5 7M3 13.5h10',
+  upload: 'M8 10.5v-8M4.5 6L8 2.5 11.5 6M3 13.5h10',
+  refresh: 'M13 8a5 5 0 1 1-1.5-3.55M13 2.5v3h-3'
 } as const;
 
 export const Icon = ({ name, size = 14, rotate = false }: { name: keyof typeof PATHS; size?: number; rotate?: boolean }) => (

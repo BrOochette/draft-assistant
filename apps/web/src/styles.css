@@ -805,3 +805,12 @@ button:disabled { cursor: not-allowed; }
   .fit-member .fit-player .player-select { min-height: 26px; }
   .fcard-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Appli desktop : mise à jour des stats dans le chip du patch (icône, ou avancement et croix), séparée par un filet. */
+.chip-extra { display: inline-flex; align-items: center; gap: 6px; margin-left: 2px; padding-left: 8px; border-left: 1px solid rgba(255, 255, 255, .14); }
+.chip-action { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-right: -4px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+.chip-action svg { color: currentColor; }
+.chip-action:hover:not(:disabled), .chip-action:focus-visible { color: var(--text); background: rgba(255, 255, 255, .1); }
+.chip-action:disabled { opacity: .35; cursor: default; }
+.stats-bar { display: inline-block; width: 48px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .15); overflow: hidden; }
+.stats-bar > span { display: block; height: 100%; background: var(--ally); transition: width .3s; }

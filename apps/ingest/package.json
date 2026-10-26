@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./http": "./src/http.ts",
+    "./lolalytics": "./src/lolalytics.ts",
+    "./snapshot": "./src/snapshot.ts",
+    "./wiki": "./src/wiki.ts"
+  },
   "scripts": {
     "cli": "tsx src/cli.ts"
   },

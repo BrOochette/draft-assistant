@@ -39,6 +39,30 @@ export const APP_TEXT = {
   snapshotMissing: (status: number) => 'Snapshot introuvable (' + status + '). Lancer « npm run ingest -- sample ».'
 };
 
+/** Appli desktop : mise à jour des stats Lolalytics dans l'appli. */
+const dateFr = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+export const STATS_TEXT = {
+  start: 'Mettre à jour les stats',
+  startTip: (last: string | null) =>
+    'Collecte Lolalytics complète, environ 15 minutes, une fois par semaine' + (last ? '. Dernière : ' + dateFr(last) : ''),
+  nextTip: (next: string, last: string | null) => 'Prochaine mise à jour possible le ' + dateFr(next) + (last ? ' (dernière : ' + dateFr(last) + ')' : ''),
+  running: 'Mise à jour des stats',
+  progress: (done: number, total: number) => 'Stats ' + done + '/' + total,
+  runningTip: (champion: string) => 'Collecte Lolalytics en cours' + (champion ? ' : ' + champion : ''),
+  paused: 'Stats en pause',
+  pausedTip: 'Sélection des champions en cours : la collecte reprend après la draft',
+  cancel: 'Annuler',
+  error: {
+    TOO_SOON: 'Une mise à jour par semaine',
+    IN_CHAMP_SELECT: 'Draft en cours',
+    RUNNING: 'Mise à jour déjà en cours',
+    ACCESS_DENIED: 'Lolalytics refuse l’accès',
+    NETWORK: 'Échec de la mise à jour (réseau)',
+    CANCELLED: 'Mise à jour annulée',
+    NO_DATA: 'Aucune stat récupérée'
+  } as Record<'TOO_SOON' | 'IN_CHAMP_SELECT' | 'RUNNING' | 'ACCESS_DENIED' | 'NETWORK' | 'CANCELLED' | 'NO_DATA', string>
+};
+
 /** Client LoL lu par le pont local. */
 export const CLIENT_TEXT = {
   status: { closed: 'Client LoL fermé', idle: 'Client LoL connecté', champSelect: 'Draft en direct', outdated: 'Pont obsolète' } as Record<'closed' | 'idle' | 'champSelect' | 'outdated', string>,
@@ -303,7 +327,24 @@ export const PLAYERS_TEXT = {
     ['7 à 8', 'Solide : combos, matchups et timings acquis.'],
     ['9 à 10', 'Maîtrise : tu peux porter une partie avec.']
   ] as const,
-  traits: { frontline: 'Frontline', engage: 'Engage', peel: 'Peel', physical: 'Dégâts physiques', early: 'Early game', late: 'Scaling tardif' }
+  traits: { frontline: 'Frontline', engage: 'Engage', peel: 'Peel', physical: 'Dégâts physiques', early: 'Early game', late: 'Scaling tardif' },
+  share: 'Partager la liste',
+  exportButton: 'Exporter',
+  exportTip: 'Fichier JSON avec tous les joueurs, leurs Riot ID et leurs pools',
+  importButton: 'Importer',
+  importTip: 'Fichier JSON exporté depuis Draft Assistant : les joueurs du même nom sont remplacés, les autres ajoutés',
+  importFile: 'Fichier de joueurs à importer',
+  importAsk: 'Importer ces joueurs',
+  importReplaced: 'remplacé',
+  importNew: 'nouveau',
+  importUnknown: (names: readonly string[]) => 'Champions inconnus ignorés : ' + names.join(', '),
+  importConfirm: (n: number) => 'Importer ' + n + (n > 1 ? ' joueurs' : ' joueur'),
+  importDone: (n: number) => n + (n > 1 ? ' joueurs importés' : ' joueur importé'),
+  importError: {
+    NOT_JSON: 'Fichier illisible : ce n’est pas du JSON.',
+    BAD_FORMAT: 'Ce fichier n’est pas une liste de joueurs exportée depuis Draft Assistant.',
+    EMPTY: 'Le fichier ne contient aucun joueur.'
+  } as Record<'NOT_JSON' | 'BAD_FORMAT' | 'EMPTY', string>
 };
 
 export const PICKER_TEXT = {

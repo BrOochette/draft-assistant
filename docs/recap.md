@@ -414,3 +414,24 @@ Principes :
 - **Sélection** (meilleure suggestion, rôle choisi) : seule la bordure change, prise dans la couleur de ton équipe ; le fond reste.
 - **Arrondis** de la vue client : 12 px les grands blocs, 8 px les contrôles et portraits, 6 px les petits éléments, pastilles rondes.
 - **Écarts avec les règles 9 et 11** : les suggestions détaillées ne portent que sur le rôle choisi (les autres rôles montrent leur meilleur champion), et le face-à-face par lane n'est plus côte à côte. Pas encore repris : le panneau de suggestions de bans par rôle, la lecture de la compo ennemie, les archétypes, le bloc « Équipe » et « Lire les scores ».
+
+## 13. Appli desktop Windows
+
+**Décidé** (26/10/2026) : l'appli existe aussi en appli Windows, avec **Electron** (retenu face à Tauri : le pont est en Node et s'intègre tel quel, tout reste en TypeScript ; installeur d'environ 100 Mo).
+
+- `apps/desktop` : processus principal en un seul fichier (esbuild), qui démarre le pont (`startBridge` de `apps/bridge/src/server.ts`, la CLI `npm run bridge` utilise le même) et ouvre une fenêtre sur l'appli web construite.
+- L'appli web est servie par un schéma maison `app://draft-assistant` (stockage local et fetch comme sur un site https), sans serveur ni appel réseau ; le pont accepte cette origine en plus des siennes. Le mot de passe du client LoL reste dans le processus principal ; la page lit la draft par le WebSocket local, comme l'appli web.
+- Une seule instance (un second lancement ramène la fenêtre) ; si un pont tourne déjà sur le port, l'appli s'y connecte.
+- Fenêtre : taille, position et « Toujours au premier plan » (menu Affichage, Ctrl+T) gardés entre deux lancements ; liens externes ouverts dans le navigateur.
+- Installeur NSIS (`npm run desktop:dist`), non signé : avertissement SmartScreen au premier lancement. Pas encore d'icône propre (icône Electron par défaut) ni de mise à jour automatique : **Ouvert**.
+- **Mise à jour des stats dans l'appli** (décidé le 26/10/2026) : bouton dans l'en-tête (appli desktop seulement). Le processus principal lance la collecte Lolalytics (même code que la CLI, `@draft/ingest`), puis l'assemblage du snapshot avec les attributs embarqués (`data/champions.json`, `champions-overrides.json`, `ddragon-version.txt`) ; snapshot, collecte brute et cache du jour dans le dossier de l'utilisateur. Le snapshot local est servi à la place de celui de l'installeur. **Une fois par semaine** au plus (rythme des patchs), comptée depuis la dernière collecte réussie. Refusée pendant une sélection des champions, et en pause tant qu'une draft est en cours (règle « aucun appel réseau pendant une draft »). Annulable. Avancement dans l'en-tête (« Stats 42/173 »), rechargement de la page à la fin. Les nouveaux champions (wiki, portraits, illustrations) restent hors de cette mise à jour.
+- Polices : chargées depuis Google Fonts au démarrage, comme l'appli web ; sans réseau, la police système prend le relais. **Ouvert** : les embarquer.
+
+## 14. Partage de la liste des joueurs
+
+**Décidé** (26/10/2026) : export et import de la liste des joueurs en JSON, depuis l'écran Joueurs (bloc « Partager la liste »).
+
+- Format (`PlayersFileSchema`) : `{ kind: "draft-assistant/joueurs", version: 1, exportedAt, players: [{ name, riotId?, pools }] }`, joueurs dans l'ordre d'affichage.
+- Import : récapitulatif avant confirmation (chaque joueur marqué « remplacé » ou « nouveau »). Un joueur du même nom est remplacé en entier (pools et Riot ID) ; les nouveaux sont ajoutés à la fin ; les autres ne changent pas. Champions inconnus du catalogue ignorés (listés), doublons d'un rôle retirés. Fichier illisible, d'un autre format ou vide : message, rien n'est changé.
+- Sert aussi à passer ses joueurs du site à l'appli desktop, qui ont chacun leur stockage.
+

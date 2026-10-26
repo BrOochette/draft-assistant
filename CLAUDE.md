@@ -15,15 +15,15 @@ Application web personnelle d'aide à la draft sur League of Legends. Elle recom
 - **Règle de pool** : les recommandations par défaut viennent du pool du joueur placé sur le rôle. Les champions hors pool n'apparaissent que dans le détail d'une ligne.
 - **Score** : note sur 20 par pick, tirée du win rate attendu (Lolalytics) : win rate du champion, plus les écarts des matchups contre les ennemis connus et des duos avec les alliés verrouillés, lissés vers la moyenne de leur paire de classes, plus la maîtrise (décidé le 24/10/2026), 1 point par point de win rate et 10 à 50 %, plus l'apport à la compo ; note d'équipe sur 100 = cumul des notes des picks connus (décidé le 26/10/2026, voir `docs/recap.md`). Les % ne servent qu'aux win rates. Pas de win rate de lane depuis l'abandon de l'API Riot (décidé le 23/10/2026).
 - **Usage solo** : pas de comptes ni de serveur au départ.
-- **Sécurité** : la clé API Riot ne doit jamais apparaître dans le code web ni dans le dépôt. Elle passe par une variable d'environnement de l'outil d'ingestion. Le mot de passe de l'API locale du client LoL reste dans `apps/bridge`, jamais transmis à l'appli ni affiché.
+- **Sécurité** : la clé API Riot ne doit jamais apparaître dans le code web ni dans le dépôt. Elle passe par une variable d'environnement de l'outil d'ingestion. Le mot de passe de l'API locale du client LoL reste dans `apps/bridge` (et le processus principal de `apps/desktop`, qui l'embarque), jamais transmis à l'appli ni affiché.
 
 ## Stack
 
 TypeScript partout, validé avec le porteur du projet :
-- monorepo en workspaces npm : `packages/schemas`, `packages/engine` (logique pure), `packages/i18n-fr` (tous les textes d'interface), `apps/web` (React + Vite), `apps/ingest` (CLI Node) et `apps/bridge` (pont local vers le client LoL, lecture seule) ;
+- monorepo en workspaces npm : `packages/schemas`, `packages/engine` (logique pure), `packages/i18n-fr` (tous les textes d'interface), `apps/web` (React + Vite), `apps/ingest` (CLI Node), `apps/bridge` (pont local vers le client LoL, lecture seule) et `apps/desktop` (appli Windows Electron, pont intégré) ;
 - Vitest pour les tests.
 
-Commandes : `npm run dev`, `npm run bridge`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits|illustrations` (voir `README.md`).
+Commandes : `npm run dev`, `npm run bridge`, `npm run desktop`, `npm run desktop:dist`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits|illustrations` (voir `README.md`).
 
 ## Première étape suggérée
 
