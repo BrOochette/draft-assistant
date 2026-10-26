@@ -12,7 +12,7 @@ export const recommendRole = (
   enemies: readonly CompMember[],
   avail: Availability,
   options: ScoringOptions = {}
-): RoleResult => {
+): Omit<RoleResult, 'enemyEval' | 'counterPick'> => {
   const meta = rowMeta(state, pools, role);
   const ctx = allyContext(state, pools, data, role);
   const allyPick = state.ally[role];

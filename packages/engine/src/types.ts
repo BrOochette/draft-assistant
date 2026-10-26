@@ -32,6 +32,8 @@ export interface Entry {
   measured: boolean;
   /** Dégâts soutenus (classe principale Riot : tireur, juggernaut, skirmisher, battlemage). */
   sustained: boolean;
+  /** Win rate d'un autre champion sur un rôle (50 sans stats), pour l'écart à somme nulle d'un matchup. */
+  winRateOf: (role: Role, name: string) => number;
   /** Moyenne de la paire de classes principales avec un autre champion, null sans prior. */
   classPrior: (kind: 'duo' | 'matchup', otherRole: Role, other: string) => ClassPriorUsed | null;
 }
@@ -55,6 +57,11 @@ export interface EnemyEffect {
   weight: number;
   /** Win rate mesuré de ce champion contre lui, null sans partie. */
   winRate: number | null;
+  /**
+   * Win rate attendu face à lui d'après les deux win rates seuls (stats mesurées : 50 + WR du champion − WR de
+   * l'ennemi ; données d'exemple : WR du champion). L'écart se mesure à partir de là.
+   */
+  baseline: number;
   games: number;
   prior: ClassPriorUsed | null;
   /** Écart en points, lissé vers la moyenne de classe, avant poids. */
@@ -214,6 +221,21 @@ export interface RoleResult {
   note: RecNote | null;
   /** Stats mesurées : win rate moyen du rôle (lissé, pondéré par les parties, champions dont c'est un rôle principal), null sinon. */
   averageWr: number | null;
+  /** Pick ennemi du rôle évalué de son côté (matchups contre tes picks, duos, apport à sa compo, sans maîtrise), null sans pick. */
+  enemyEval: Evaluation | null;
+  /** Rôle ouvert au vis-à-vis inconnu (stats mesurées) : gain à choisir après lui, null sinon. */
+  counterPick: CounterPick | null;
+}
+
+/** Gain à choisir après avoir vu le vis-à-vis, en points sur 20 (ordre de pick). */
+export interface CounterPick {
+  gain: number;
+  /** Meilleure option à l'aveugle. */
+  blind: string;
+  /** Options comparées (pool, sinon premières suggestions). */
+  options: number;
+  /** Adversaires probables pris en compte. */
+  opponents: number;
 }
 
 export type ScalingVerdict = 'advantage' | 'even' | 'disadvantage';

@@ -13,8 +13,8 @@ const PopoverChamp = ({ name, sub }: { name: string; sub: string }) => (
 );
 
 /** Mesure brute : valeur et parties, ou « Pas de données ». */
-const Measured = ({ value, games }: { value: string | null; games: number }) =>
-  value == null ? <span className="muted">{P.noData}</span> : <>{value}<br /><span className="muted">{P.games(games)}</span></>;
+const Measured = ({ value, games, baseline }: { value: string | null; games: number; baseline?: string }) =>
+  value == null ? <span className="muted">{P.noData}</span> : <>{value}<br /><span className="muted">{P.games(games)}</span>{baseline && <><br /><span className="muted">{P.baseline(baseline)}</span></>}</>;
 
 /** Écart lissé, avec la moyenne de classe utilisée. */
 const Gap = ({ delta, prior, text }: { delta: number; prior: ClassPriorUsed | null; text: (a: string, b: string) => string }) => (
@@ -65,7 +65,7 @@ const MatchupPopover = ({ e }: { e: Evaluation }) => {
         rows={e.enemyTeam}
         cells={(r) => [
           <PopoverChamp name={r.opponent} sub={r.lane ? P.vsLane : r.role} />,
-          <Measured value={r.winRate != null ? fmtPct(r.winRate) : null} games={r.games} />,
+          <Measured value={r.winRate != null ? fmtPct(r.winRate) : null} games={r.games} baseline={fmtPct(r.baseline)} />,
           <Gap delta={r.delta} prior={r.prior} text={P.classVs} />
         ]}
       />

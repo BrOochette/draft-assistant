@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DataContext, POPOVER_LOADER_MS, WinRateChips } from '../src/ui';
 import { sampleAppData } from './fixtures';
 
-const jinx: EnemyEffect = { opponent: 'Jinx', role: 'ADC', lane: true, weight: 1, winRate: 54.9, games: 3115, prior: null, delta: 2.2 };
-const leona: EnemyEffect = { opponent: 'Leona', role: 'Support', lane: false, weight: 0.75, winRate: 47.5, games: 1419, prior: null, delta: -2.7 };
+const jinx: EnemyEffect = { opponent: 'Jinx', role: 'ADC', lane: true, weight: 1, winRate: 54.9, baseline: 52.7, games: 3115, prior: null, delta: 2.2 };
+const leona: EnemyEffect = { opponent: 'Leona', role: 'Support', lane: false, weight: 0.75, winRate: 47.5, baseline: 50.2, games: 1419, prior: null, delta: -2.7 };
 const e = {
   champion: 'Twitch',
   laneWinRate: null,
@@ -64,7 +64,7 @@ describe('fenêtre flottante des ennemis', () => {
 
   it('montre la moyenne de classe pour un ennemi sans données', () => {
     const amumu: EnemyEffect = {
-      opponent: 'Amumu', role: 'Jungle', lane: false, weight: 0.25, winRate: null, games: 0,
+      opponent: 'Amumu', role: 'Jungle', lane: false, weight: 0.25, winRate: null, baseline: 51, games: 0,
       prior: { classes: ['Marksman', 'Vanguard'], delta: -0.5, games: 9000 }, delta: -0.5
     };
     renderChips({ ...e, enemyTeam: [jinx, amumu, leona] } as Evaluation);

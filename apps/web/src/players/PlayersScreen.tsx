@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { masteryLevel, PLAYERS_TEXT as T } from '@draft/i18n-fr';
 import { ROLES, type Champion, type PoolEntry, type Pools, type RiotIds, type Role } from '@draft/schemas';
-import { Bar, Chip, Icon, Portrait, useData } from '../ui';
+import { Bar, Chip, Icon, Portrait, SplitButton, useData } from '../ui';
 import { filterChampions } from '../draft/ChampionPicker';
-import { playersFileName, readPlayersFile, toPlayersFile, type ImportError, type ImportPreview } from './share';
+import { onePlayer, playersFileName, readPlayersFile, toPlayersFile, type ImportError, type ImportPreview } from './share';
 
 interface Props {
   pools: Pools;
@@ -52,7 +52,10 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
   const [pasting, setPasting] = useState(false);
   const [pasted, setPasted] = useState('');
 
-  const playersJson = () => JSON.stringify(toPlayersFile(pools, riotIds), null, 2) + '\n';
+  /** JSON de toute la liste, ou d'un seul joueur. */
+  const playersJson = (only?: string) => JSON.stringify(toPlayersFile(only ? onePlayer(pools, only) : pools, riotIds), null, 2) + '\n';
+  /** Résultat de la copie du joueur affiché (en-tête de ses pools). */
+  const [copiedOne, setCopiedOne] = useState<boolean | null>(null);
   const resetShare = () => {
     setImported(null);
     setPreview(null);
@@ -93,12 +96,21 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
     else setPasting(true);
   };
 
-  const exportPlayers = () => {
-    const blob = new Blob([playersJson()], { type: 'application/json' });
+  const copyOne = async () => {
+    try {
+      await navigator.clipboard.writeText(playersJson(player));
+      setCopiedOne(true);
+    } catch {
+      setCopiedOne(false);
+    }
+  };
+
+  const exportPlayers = (only?: string) => {
+    const blob = new Blob([playersJson(only)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = playersFileName();
+    a.download = playersFileName(new Date(), only);
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -121,6 +133,7 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
   const select = (p: string) => {
     setSel(p);
     setConfirmDelete(false);
+    setCopiedOne(null);
   };
 
   const deletePlayer = () => {
@@ -197,9 +210,25 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
           </section>
           <section className="card col gap-10" aria-label={T.share}>
             <h2 className="h3">{T.share}</h2>
+            {/* Copier / Coller en premier ; la flèche de chaque bouton propose la même chose en fichier. */}
             <div className="row-gap wrap">
-              <button type="button" className="btn" title={T.copyTip} disabled={names.length === 0} onClick={() => void copyPlayers()}><Icon name="copy" />{T.copyButton}</button>
-              <button type="button" className="btn" title={T.pasteTip} onClick={() => void pasteClipboard()}><Icon name="paste" />{T.pasteButton}</button>
+              <SplitButton
+                title={T.copyTip}
+                disabled={names.length === 0}
+                onClick={() => void copyPlayers()}
+                moreLabel={T.exportMore}
+                more={{ label: <><Icon name="download" />{T.exportFile}</>, title: T.exportTip, onClick: () => exportPlayers() }}
+              >
+                <Icon name="copy" />{T.copyButton}
+              </SplitButton>
+              <SplitButton
+                title={T.pasteTip}
+                onClick={() => void pasteClipboard()}
+                moreLabel={T.importMore}
+                more={{ label: <><Icon name="upload" />{T.importFileButton}</>, title: T.importTip, onClick: () => fileInput.current?.click() }}
+              >
+                <Icon name="paste" />{T.pasteButton}
+              </SplitButton>
             </div>
             {pasting && (
               <div className="col gap-8">
@@ -218,10 +247,7 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
                 </div>
               </div>
             )}
-            <div className="share-files">
-              <button type="button" className="btn btn-sm" title={T.exportTip} disabled={names.length === 0} onClick={exportPlayers}><Icon name="download" />{T.exportButton}</button>
-              <button type="button" className="btn btn-sm" title={T.importTip} onClick={() => fileInput.current?.click()}><Icon name="upload" />{T.importButton}</button>
-              <input
+            <input
                 ref={fileInput}
                 type="file"
                 accept=".json,application/json"
@@ -233,7 +259,6 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
                   e.target.value = '';
                 }}
               />
-            </div>
             {importError && <span role="alert" className="small neg-text">{T.importError[importError]}</span>}
             {imported != null && <span role="status" className="small pos-text">{T.importDone(imported)}</span>}
             {copied != null && <span role="status" className={'small ' + (copied ? 'pos-text' : 'neg-text')}>{copied ? T.copied : T.copyFailed}</span>}
@@ -268,9 +293,20 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
                 <button type="button" className="btn" onClick={() => setConfirmDelete(false)}>{T.cancel}</button>
               </div>
             ) : (
-              <button type="button" className="btn neg-text" onClick={() => setConfirmDelete(true)}>
-                <Icon name="close" size={14} />{T.deletePlayer}
-              </button>
+              <div className="row-gap wrap player-actions">
+                {copiedOne != null && <span role="status" className={'small ' + (copiedOne ? 'pos-text' : 'neg-text')}>{copiedOne ? T.copied : T.copyFailed}</span>}
+                <SplitButton
+                  title={T.copyOneTip(player)}
+                  onClick={() => void copyOne()}
+                  moreLabel={T.exportMore}
+                  more={{ label: <><Icon name="download" />{T.exportFile}</>, title: T.exportOneTip(player), onClick: () => exportPlayers(player) }}
+                >
+                  <Icon name="copy" />{T.copyOne}
+                </SplitButton>
+                <button type="button" className="btn neg-text" onClick={() => setConfirmDelete(true)}>
+                  <Icon name="close" size={14} />{T.deletePlayer}
+                </button>
+              </div>
             )}
           </div>
           <div className="row-gap wrap">

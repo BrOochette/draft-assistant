@@ -68,8 +68,9 @@ export const measuredScaling = (lanes: readonly LaneStats[]): Map<LaneStats, Sca
 export const classPairKey = (role: Role, cls: string, otherRole: Role, otherCls: string) => role + '|' + cls + '|' + otherRole + '|' + otherCls;
 
 /**
- * Moyennes par paire de classes principales, pondérées par les parties : écart de duo, et écart de matchup
- * (win rate contre l'ennemi moins win rate du champion), pour le vis-à-vis comme pour les autres lanes.
+ * Moyennes par paire de classes principales, pondérées par les parties : écart de duo, et écart de matchup à somme
+ * nulle (win rate contre l'ennemi moins 50 + WR du champion − WR de l'ennemi sur son rôle), pour le vis-à-vis comme
+ * pour les autres lanes. Ennemi sans stats sur son rôle : compté à 50 %.
  */
 export const classPriors = (candidates: Partial<Record<Role, Candidate[]>>, classOf: ReadonlyMap<string, string>): ClassPriors => {
   const sums = { duo: new Map<string, [number, number]>(), matchup: new Map<string, [number, number]>() };
@@ -77,19 +78,21 @@ export const classPriors = (candidates: Partial<Record<Role, Candidate[]>>, clas
     const cur = sums[kind].get(key) ?? [0, 0];
     sums[kind].set(key, [cur[0] + delta * games, cur[1] + games]);
   };
+  const wrOf = (role: Role, name: string) => candidates[role]?.find((x) => x.name === name)?.gameWinRate ?? 50;
   for (const [role, list] of Object.entries(candidates) as [Role, Candidate[]][]) {
     for (const c of list) {
       const cls = classOf.get(c.name);
       if (!cls) continue;
-      const pairs = (kind: keyof typeof sums, otherRole: Role, map: Record<string, [number, number]> | undefined, toDelta: (v: number) => number) => {
+      const pairs = (kind: keyof typeof sums, otherRole: Role, map: Record<string, [number, number]> | undefined, toDelta: (v: number, other: string) => number) => {
         for (const [other, [v, games]] of Object.entries(map ?? {})) {
           const oc = classOf.get(other);
-          if (oc) add(kind, classPairKey(role, cls, otherRole, oc), toDelta(v), games);
+          if (oc) add(kind, classPairKey(role, cls, otherRole, oc), toDelta(v, other), games);
         }
       };
+      const zeroSum = (otherRole: Role) => (wr: number, other: string) => wr - (50 + c.gameWinRate - wrOf(otherRole, other));
       for (const [r, m] of Object.entries(c.duos ?? {}) as [Role, Record<string, [number, number]>][]) pairs('duo', r, m, (d) => d);
-      pairs('matchup', role, c.matchups, (wr) => wr - c.gameWinRate);
-      for (const [r, m] of Object.entries(c.crossMatchups ?? {}) as [Role, Record<string, [number, number]>][]) pairs('matchup', r, m, (wr) => wr - c.gameWinRate);
+      pairs('matchup', role, c.matchups, zeroSum(role));
+      for (const [r, m] of Object.entries(c.crossMatchups ?? {}) as [Role, Record<string, [number, number]>][]) pairs('matchup', r, m, zeroSum(r));
     }
   }
   const out = (m: Map<string, [number, number]>) =>

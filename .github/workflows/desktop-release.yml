@@ -1,6 +1,7 @@
-# Release de l'appli desktop : à chaque tag v* (par exemple v0.2.0, égal à la version de apps/desktop/package.json),
-# tests, construction de l'installeur Windows et publication dans la release GitHub du tag, avec latest.yml pour la
-# mise à jour automatique de l'appli installée.
+# Release de l'appli desktop : à chaque tag v* (par exemple v0.4.0, égal à la version de apps/desktop/package.json),
+# tests, construction de l'installeur Windows, installation silencieuse et test de démarrage de l'appli installée, puis
+# publication dans la release GitHub du tag, avec latest.yml pour la mise à jour automatique de l'appli installée.
+# Si l'appli installée ne démarre pas, rien n'est publié.
 name: Release desktop
 
 on:
@@ -14,9 +15,9 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -31,10 +32,30 @@ jobs:
 
       - run: npm test
 
-      # Snapshot réassemblé avec les stats commitées, puis appli web.
-      - run: npm run build
+      # Snapshot réassemblé avec les stats commitées, appli web, puis installeur (sans publication).
+      - run: npm run desktop:dist
 
-      - name: Installeur et publication
-        run: npm run release -w @draft/desktop
+      - name: Installation silencieuse et démarrage de l'appli installée
+        shell: pwsh
+        run: |
+          $version = node -p "require('./apps/desktop/package.json').version"
+          $setup = "apps/desktop/release/Draft-Assistant-Setup-$version.exe"
+          $dir = Join-Path $env:RUNNER_TEMP 'draft-assistant'
+          $install = Start-Process -FilePath $setup -ArgumentList '/S', "/D=$dir" -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "Installation : code $($install.ExitCode)" }
+          $exe = Join-Path $dir 'Draft Assistant.exe'
+          if (-not (Test-Path $exe)) { throw "Appli installée introuvable : $exe" }
+          $data = Join-Path $env:RUNNER_TEMP 'draft-assistant-data'
+          $run = Start-Process -FilePath $exe -ArgumentList '--smoke', "--user-data-dir=$data" -Wait -PassThru -RedirectStandardOutput smoke.out -RedirectStandardError smoke.err
+          Get-Content smoke.out, smoke.err -ErrorAction SilentlyContinue
+          if ($run.ExitCode -ne 0) { throw "L'appli installée ne démarre pas (code $($run.ExitCode))" }
+
+      - name: Publication de la release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(node -p "require('./apps/desktop/package.json').version")
+          cd apps/desktop/release
+          gh release create "$GITHUB_REF_NAME" "Draft-Assistant-Setup-$version.exe" "Draft-Assistant-Setup-$version.exe.blockmap" latest.yml \
+            --title "Draft Assistant $version" --generate-notes

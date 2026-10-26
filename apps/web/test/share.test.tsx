@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { loadPools, loadRiotIds } from '../src/store';
-import { playersFileName, readPlayersFile, toPlayersFile } from '../src/players/share';
+import { onePlayer, playersFileName, readPlayersFile, toPlayersFile } from '../src/players/share';
 import { sampleAppData } from './fixtures';
 
 const known = (c: string) => c !== 'Inconnu';
@@ -123,5 +123,41 @@ describe('partage de la liste des joueurs', () => {
     await user.click(share.getByRole('button', { name: 'Lire le JSON' }));
     expect(within(share.getByRole('group', { name: 'Importer ces joueurs' })).getByText('Yanis')).toBeInTheDocument();
     expect(share.queryByRole('textbox', { name: 'JSON des joueurs' })).not.toBeInTheDocument();
+  });
+
+  it('un seul joueur : même format, il s’importe comme une liste', () => {
+    const pools = { Alex: { Top: [{ champion: 'Malphite', mastery: 8 }] }, Sam: {} };
+    const file = toPlayersFile(onePlayer(pools, 'Alex'), { Alex: 'Alex#EUW', Sam: 'Sam#EUW' });
+    expect(file.players).toEqual([{ name: 'Alex', riotId: 'Alex#EUW', pools: pools.Alex }]);
+    const r = readPlayersFile(JSON.stringify(file), { pools: { Sam: {} }, riotIds: {} }, known);
+    expect(r).toMatchObject({ players: [{ name: 'Alex', replaced: false }] });
+    expect(playersFileName(new Date('2026-10-26T10:00:00Z'), 'Zoé Lee')).toBe('draft-assistant-joueur-Zoé_Lee-2026-10-26.json');
+  });
+
+  it('copie le joueur affiché seulement', async () => {
+    const user = userEvent.setup();
+    location.hash = '#/joueurs';
+    render(<App initialData={sampleAppData()} />);
+    await user.click(await screen.findByRole('button', { name: /^Noa/ }));
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await user.click(screen.getByRole('button', { name: 'Copier le joueur' }));
+    const json = JSON.parse((writeText.mock.calls[0] as unknown as [string])[0]);
+    expect(json.players.map((p: { name: string }) => p.name)).toEqual(['Noa']);
+    expect(screen.getAllByRole('status').some((s) => s.textContent === 'JSON copié')).toBe(true);
+  });
+
+  it('la flèche de « Coller » propose d’ouvrir un fichier', async () => {
+    const user = userEvent.setup();
+    location.hash = '#/joueurs';
+    render(<App initialData={sampleAppData()} />);
+    await screen.findByRole('button', { name: /^Lou/ });
+    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    const input = share.getByLabelText('Fichier de joueurs à importer') as HTMLInputElement;
+    const pick = vi.spyOn(input, 'click').mockImplementation(() => {});
+    await user.click(share.getByRole('button', { name: 'Autre façon d’importer' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Ouvrir un fichier' }));
+    expect(pick).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

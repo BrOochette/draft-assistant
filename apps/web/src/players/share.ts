@@ -12,8 +12,12 @@ export const toPlayersFile = (pools: Pools, riotIds: RiotIds, now = new Date()):
   }))
 });
 
-/** Nom du fichier exporté : « draft-assistant-joueurs-2026-10-26.json ». */
-export const playersFileName = (now = new Date()): string => 'draft-assistant-joueurs-' + now.toISOString().slice(0, 10) + '.json';
+/** Nom du fichier exporté : « draft-assistant-joueurs-2026-10-26.json », ou « draft-assistant-joueur-Alex-2026-10-26.json » pour un seul joueur. */
+export const playersFileName = (now = new Date(), player?: string): string =>
+  'draft-assistant-' + (player ? 'joueur-' + player.replace(/[\\/:*?"<>|\s]+/g, '_') : 'joueurs') + '-' + now.toISOString().slice(0, 10) + '.json';
+
+/** Pools d'un seul joueur, au format de la liste (même import). */
+export const onePlayer = (pools: Pools, player: string): Pools => (pools[player] ? { [player]: pools[player] } : {});
 
 export interface ImportPreview {
   pools: Pools;

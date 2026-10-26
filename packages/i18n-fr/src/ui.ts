@@ -110,7 +110,6 @@ export const DRAFT_TEXT = {
   searchIn: (role: Role) => 'Rechercher un champion dans la liste ' + role,
   notFound: 'Aucun champion trouvé.',
   headPool: 'Pool',
-  headAll: (role: Role, hasPlayer: boolean) => 'Tous les champions ' + role + (hasPlayer ? ' (aucun pool)' : ' (aucun joueur)'),
   headOut: 'Hors pool',
   headSecondary: 'Rôle secondaire, non classés',
   secondaryTip: (share: number, role: Role) => 'Moins de ' + share + ' % des parties de ces champions sont jouées en ' + role,
@@ -180,6 +179,7 @@ export const POPOVER_TEXT = {
   vsLane: 'Vis-à-vis',
   vs: (opponent: string) => 'vs ' + opponent,
   vsCompo: 'vs compo',
+  baseline: (wr: string) => 'attendu ' + wr,
   pts: (v: number) => fmtSigned(v) + ' pts',
   with: (ally: string) => 'avec ' + ally,
   withAllies: 'avec alliés',
@@ -198,7 +198,7 @@ export const POPOVER_TEXT = {
   classVs: (a: string, b: string) => 'Moyenne ' + a + ' contre ' + b,
   classWith: (a: string, b: string) => 'Moyenne ' + a + ' avec ' + b,
   enemyFoot:
-    "Écart : win rate contre cet ennemi moins win rate du champion, lissé vers la moyenne de leur paire de classes (1 000 parties fictives). L'effet s'ajoute au win rate attendu.",
+    "Écart : win rate contre cet ennemi moins celui attendu des deux win rates seuls (50 + win rate du champion − win rate de l'ennemi), lissé vers la moyenne de leur paire de classes (1 000 parties fictives). Ce que l'un gagne, l'autre le perd. L'effet s'ajoute au win rate attendu.",
   allyFoot:
     "Écart : win rate du duo par rapport à l'attendu, lissé vers la moyenne de leur paire de classes (200 parties fictives). L'effet s'ajoute au win rate attendu."
 };
@@ -330,6 +330,13 @@ export const PLAYERS_TEXT = {
   traits: { frontline: 'Frontline', engage: 'Engage', peel: 'Peel', physical: 'Dégâts physiques', early: 'Early game', late: 'Scaling tardif' },
   share: 'Partager la liste',
   copyButton: 'Copier',
+  exportMore: 'Autre façon d’exporter',
+  exportFile: 'Télécharger un fichier',
+  importMore: 'Autre façon d’importer',
+  importFileButton: 'Ouvrir un fichier',
+  copyOne: 'Copier le joueur',
+  copyOneTip: (player: string) => 'Copie ' + player + ' (Riot ID et pools) en JSON, à coller dans « Partager la liste » de quelqu’un d’autre',
+  exportOneTip: (player: string) => 'Télécharge ' + player + ' (Riot ID et pools) dans un fichier JSON',
   copyTip: 'Copie la liste des joueurs (Riot ID et pools) en JSON, à coller ailleurs',
   copied: 'JSON copié',
   copyFailed: 'Copie impossible : presse-papiers indisponible',
@@ -338,9 +345,7 @@ export const PLAYERS_TEXT = {
   pasteLabel: 'JSON des joueurs',
   pastePlaceholder: 'Coller ici le JSON copié',
   pasteRead: 'Lire le JSON',
-  exportButton: 'Exporter',
   exportTip: 'Télécharge un fichier JSON avec tous les joueurs, leurs Riot ID et leurs pools',
-  importButton: 'Importer',
   importTip: 'Lit un fichier JSON exporté depuis Draft Assistant : les joueurs du même nom sont remplacés, les autres ajoutés',
   importFile: 'Fichier de joueurs à importer',
   importAsk: 'Importer ces joueurs',
@@ -382,6 +387,9 @@ export const QUICK_TEXT = {
 
 /** Vue client de l'écran Draft (grand écran) : textes propres à cette vue. */
 export const VIEW_TEXT = {
+  counterPick: (gain: number) => 'Contre-pick +' + fmt1(gain),
+  counterPickTip: (gain: number, blind: string, opponents: number) =>
+    'Gain moyen, en points sur 20, à choisir après avoir vu le vis-à-vis (' + opponents + ' adversaires probables) plutôt qu’à l’aveugle (' + blind + '). Plus il est haut, plus ce rôle a intérêt à choisir tard.',
   focus: (role: Role) => 'Suggestions en ' + role,
   manual: 'Choix manuel',
   manualIn: (role: Role) => 'Choix manuel du champion en ' + role,

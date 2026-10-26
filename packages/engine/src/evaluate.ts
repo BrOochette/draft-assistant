@@ -74,7 +74,8 @@ const enemyEffects = (c: Entry, foes: Partial<Record<Role, string | null>>): Ene
 };
 
 /**
- * Effet d'un ennemi `name` joué en `role` sur le champion `c` : écart lissé vers la moyenne de la paire de classes.
+ * Effet d'un ennemi `name` joué en `role` sur le champion `c` : écart (à somme nulle avec des stats mesurées) lissé vers
+ * la moyenne de la paire de classes.
  * null sans aucune donnée avec les données d'exemple.
  */
 export const matchupEffect = (c: Entry, role: Role, name: string): EnemyEffect | null => {
@@ -83,8 +84,11 @@ export const matchupEffect = (c: Entry, role: Role, name: string): EnemyEffect |
   const prior = c.classPrior('matchup', role, name);
   if (!m && !prior && !c.measured) return null;
   const games = m?.[1] ?? 0;
-  const delta = smooth(m ? m[0] - c.gameWinRate : 0, games, prior?.delta ?? 0, MATCHUP_PRIOR_GAMES);
-  return { opponent: name, role, lane, weight: lane ? 1 : otherEnemyWeight(c.role, role), winRate: m?.[0] ?? null, games, prior, delta };
+  // Stats mesurées, écart « à somme nulle » : mesuré contre le win rate attendu des deux champions seuls
+  // (50 + WR de ce champion − WR de l'ennemi). Ce que l'un gagne dans le face-à-face, l'autre le perd.
+  const baseline = c.measured ? 50 + c.gameWinRate - c.winRateOf(role, name) : c.gameWinRate;
+  const delta = smooth(m ? m[0] - baseline : 0, games, prior?.delta ?? 0, MATCHUP_PRIOR_GAMES);
+  return { opponent: name, role, lane, weight: lane ? 1 : otherEnemyWeight(c.role, role), winRate: m?.[0] ?? null, baseline, games, prior, delta };
 };
 
 /** Effets des alliés verrouillés : écart de win rate en duo, lissé vers la moyenne de la paire de classes. */

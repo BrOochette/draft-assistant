@@ -32,6 +32,9 @@ const MemberArt = ({ name, faded }: { name: string | null; faded: boolean }) => 
   );
 };
 
+/** Gain à contre-picker (points sur 20) en dessous duquel rien n'est affiché : le rôle peut choisir quand il veut. */
+const COUNTER_MIN = 0.3;
+
 type Picker = ReturnType<typeof usePicker>;
 interface ClientProps {
   result: DraftResult;
@@ -64,6 +67,8 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
   const inOrder = (roles: readonly Role[] | undefined) =>
     roles ? roles.flatMap((r) => result.roles.find((x) => x.role === r) ?? []) : result.roles;
   const allies = inOrder(order?.ally);
+  // Ordre de pick : le rôle ouvert qui gagne le plus à choisir après son vis-à-vis est mis en avant.
+  const bestCounter = Math.max(0, ...allies.map((r) => r.counterPick?.gain ?? 0));
   const enemies = inOrder(order?.enemy);
   const open = allies.filter((r) => !r.locked);
   /** Rôle choisi, et s'il était déjà verrouillé au clic : un rôle verrouillé ensuite (ici ou dans le client) cède la place. */
@@ -99,7 +104,14 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
               <Face side="ally" role={row.role} name={row.allyPick} hover={hover[row.role]} size={52} label={T.focus(row.role)} onOpen={() => setFocus({ role: row.role, wasLocked: !!row.locked })} onRemove={() => dispatch({ type: 'unlock', role: row.role })} />
               <div className="fit-member-body">
                 <button type="button" className="fit-member-info" aria-pressed={current?.role === row.role} aria-label={T.focus(row.role)} onClick={() => setFocus({ role: row.role, wasLocked: !!row.locked })}>
-                  <span className="role-name">{row.role}</span>
+                  <span className="role-name">
+                    {row.role}
+                    {row.counterPick && row.counterPick.gain >= COUNTER_MIN && (
+                      <span className={'counter-chip' + (row.counterPick.gain === bestCounter ? ' is-top' : '')} title={T.counterPickTip(row.counterPick.gain, row.counterPick.blind, row.counterPick.opponents)}>
+                        {T.counterPick(row.counterPick.gain)}
+                      </span>
+                    )}
+                  </span>
                   {isPicking && <span className="picking-chip">{D.picking}</span>}
                   {row.locked
                     ? <span className="small strong ellipsis">{row.locked.champion}</span>
@@ -116,7 +128,7 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
         {showBans ? (
           <BanPanel result={result} dispatch={dispatch} />
         ) : complete ? (
-          <TeamPanel result={result} dispatch={dispatch} picker={picker} />
+          <TeamPanel result={result} />
         ) : current ? (
           current.locked
             ? <LockedPanel rows={allies} current={current} />

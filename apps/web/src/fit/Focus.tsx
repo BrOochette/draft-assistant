@@ -18,12 +18,16 @@ const NO_POOL_CARDS = 6;
  * Carte détaillée : identité, score, contributions, chips WR/vs/avec, raisons, scaling, échantillon.
  * Suggestion : rang et bouton « Verrouiller ». Pick verrouillé : rôle et joueur à la place.
  */
-export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = false }: {
+export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = false, side = 'ally', sub }: {
   e: Evaluation; row: RoleResult; rank?: number; onLock?: () => void; highlight?: boolean;
   /** Version basse (les deux équipes en fin de draft) : petit portrait, sans les raisons. */
   compact?: boolean;
+  /** Pick ennemi (fin de draft) : couleur de l'adversaire, sans état « Verrouillé ». */
+  side?: 'ally' | 'enemy';
+  /** Sous le nom, à la place du joueur. */
+  sub?: string;
 }) => (
-  <article className={'fcard' + (rank === 1 || highlight ? ' is-first' : '') + (compact ? ' is-compact' : '')} aria-label={C.group(e.champion, e.points.value, false)}>
+  <article className={'fcard' + (rank === 1 || highlight ? ' is-first' : '') + (compact ? ' is-compact' : '') + (side === 'enemy' ? ' is-enemy' : '')} aria-label={C.group(e.champion, e.points.value, false)}>
     <Splash name={e.champion} />
     <div className="fcard-top">
       <span className="rec-face">
@@ -33,7 +37,7 @@ export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = f
       <span className="col gap-4 min0 grow">
         {rank == null && !compact && <span className="role-name">{row.role}</span>}
         <span className="fcard-name">{e.champion}</span>
-        {rank == null && <span className="small muted ellipsis">{row.player ?? D.noPlayer}</span>}
+        {rank == null && <span className="small muted ellipsis">{sub ?? row.player ?? D.noPlayer}</span>}
         <ScalingBars scaling={e.scaling} />
       </span>
       <span className="col fcard-score">
@@ -51,7 +55,7 @@ export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = f
       <SampleText e={e} />
       {onLock
         ? <button type="button" className="btn btn-sm btn-lock" aria-label={C.lock(e.champion, row.role)} onClick={onLock}><Icon name="lock" size={14} />{C.lockButton}</button>
-        : <span className="state state-locked"><Icon name="lock" />{D.locked}</span>}
+        : side === 'ally' && <span className="state state-locked"><Icon name="lock" />{D.locked}</span>}
     </div>
   </article>
 );
@@ -109,7 +113,7 @@ export const FocusPanel = ({ row, onLock, onManual, mode, onModeChange }: {
   const head = (kind: Kind) =>
     kind === 'out' ? <span className="detail-head warn-text">{D.headOut}</span>
       : kind === 'secondary' ? <span className="detail-head muted" title={D.secondaryTip(MAIN_ROLE_SHARE, row.role)}>{D.headSecondary}</span>
-      : <span className="detail-head accent-text">{D.headAll(row.role, !!row.player)}</span>;
+      : null;
 
   return (
     <section aria-label={D.roleRegion(row.role)} className="card fit-focus">
@@ -125,7 +129,8 @@ export const FocusPanel = ({ row, onLock, onManual, mode, onModeChange }: {
       </div>
       <div className="focus-body">
         <div className="focus-cards">
-          <span className="detail-head accent-text">{row.hasPool ? D.headPool : D.headAll(row.role, !!row.player)}</span>
+          {/* Sans pool, pas d'en-tête : ce sont tous les champions du rôle. */}
+          {row.hasPool && <span className="detail-head accent-text">{D.headPool}</span>}
           {cards.length === 0 && <span className="empty-box">{D.notFound}</span>}
           <div className="fcard-grid">
             {cards.map((e, i) => <FocusCard key={e.champion} e={e} row={row} rank={i + 1} onLock={() => lock(e.champion)} />)}

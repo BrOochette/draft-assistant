@@ -65,9 +65,10 @@ describe('stats réelles (format Lolalytics)', () => {
 
   it("avec l'adversaire de lane connu, ajoute l'écart du matchup lissé", () => {
     const e = mid({ ...base, enemy: { ...base.enemy, Mid: 'Zed' } });
-    // Écart : (56 − 52) × 2000 / (2000 + 1000) = 2,67 points, sans prior de classe (lissé vers 0).
+    // Écart à somme nulle : Zed n'a pas de stats en Mid (50 %), attendu 50 + 52 − 50 = 52.
+    // (56 − 52) × 2000 / (2000 + 1000) = 2,67 points, sans prior de classe (lissé vers 0).
     const delta = (4 * 2000) / 3000;
-    expect(e.matchup).toEqual({ opponent: 'Zed', role: 'Mid', lane: true, weight: 1, winRate: 56, games: 2000, prior: null, delta });
+    expect(e.matchup).toEqual({ opponent: 'Zed', role: 'Mid', lane: true, weight: 1, winRate: 56, baseline: 52, games: 2000, prior: null, delta });
     expect(e.expected!.score).toBeCloseTo(52 + delta);
     expect(e.counter).toBe(wrScore(52 + delta));
   });
@@ -169,10 +170,13 @@ describe('stats réelles (format Lolalytics)', () => {
       }
     });
     const bans = computeDraft(base, { C: { Mid: [{ champion: 'Ahri', mastery: 5 }] } }, d).bans.suggestions.filter((b) => b.role === 'Mid');
-    // Zed : force +2, et Ahri (notre seule option, 52 %) perd (44 − 52) × 3000 / 4000 = 6 pts contre lui. Ahri, notre option, n'est pas proposée.
+    // Zed : force +2. Ahri (notre seule option, 52 %) contre Zed (52 %) : attendu 50 % à somme nulle, (44 − 50) × 3000 / 4000
+    // = −4,5 pts. Syndra (53 %) : attendu 49 %, Ahri gagne (52 − 49) × 3000 / 4000 = 2,25 pts :
+    // la « baisse » est négative, et bannir Syndra rapporte 3 − 2,25 = 0,75.
+    // Ahri, notre option, n'est pas proposée.
     expect(bans.map((b) => [b.champion, b.impact])).toEqual([
-      ['Zed', { value: 8, strength: 2, drop: 6, ours: 'Ahri' }],
-      ['Syndra', { value: 3, strength: 3, drop: 0, ours: 'Ahri' }]
+      ['Zed', { value: 6.5, strength: 2, drop: 4.5, ours: 'Ahri' }],
+      ['Syndra', { value: 0.75, strength: 3, drop: -2.25, ours: 'Ahri' }]
     ]);
   });
 

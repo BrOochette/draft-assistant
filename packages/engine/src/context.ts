@@ -40,6 +40,7 @@ export const entryFor = (data: EngineData, meta: RowMeta, role: Role, name: stri
     laneShare: s.laneShare ?? null,
     priorGames: data.winRatePriorGames,
     measured: data.measured,
+    winRateOf: (r, other) => data.stats.getRoleStats(other, r).gameWinRate,
     sustained: data.catalog.get(name)?.sustained ?? SUSTAINED_CLASSES.has(mainClass(data, name) ?? ''),
     classPrior: classPriorLookup(data, role, name),
     ...poolStatus(meta, name)

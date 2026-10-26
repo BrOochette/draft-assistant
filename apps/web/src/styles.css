@@ -589,22 +589,38 @@ button:disabled { cursor: not-allowed; }
 .team-panel { container-type: size; }
 .team-lanes { display: none; flex-direction: column; gap: 4px; }
 .lane-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 8px; }
-.lane-side { min-width: 0; display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 10px; background: var(--raise); border: 1px solid var(--border); container-type: inline-size; }
+/* Un pick par côté, même grille des deux côtés, en miroir pour l'ennemi : identité, contributions, note et scaling sur la
+   première ligne, chips WR / vs / avec dessous. */
+.lane-side {
+  min-width: 0; min-height: 40px; display: grid; align-items: center; gap: 2px 10px; padding: 5px 8px; border-radius: 10px;
+  background: var(--raise); border: 1px solid var(--border); container-type: inline-size;
+  grid-template-columns: 40px minmax(92px, 1fr) auto auto auto;
+  grid-template-areas: "face id contribs score scaling" "face chips chips chips chips";
+}
 .lane-side.is-ally { border-left: 3px solid var(--ally); }
-.lane-side.is-enemy { border-left: 3px solid var(--enemy); }
-.lane-side > .col.min0 { flex: 1 1 0; }
-.lane-score { flex: none; align-items: flex-end; }
-.lane-contribs .fit-contribs { flex-direction: column; flex-wrap: nowrap; gap: 0; line-height: 1.3; }
-.lane-chips { display: flex; gap: 4px; flex: none; }
-.lane-chips .chip { min-height: 22px; padding: 0 7px; }
+.lane-side.is-enemy {
+  border-right: 3px solid var(--enemy); text-align: right;
+  grid-template-columns: auto auto auto minmax(92px, 1fr) 40px;
+  grid-template-areas: "scaling score contribs id face" "chips chips chips chips face";
+}
+.lane-face { grid-area: face; align-self: start; }
+.lane-id { grid-area: id; }
+.lane-side.is-enemy .lane-id { align-items: flex-end; }
+.lane-contribs { grid-area: contribs; }
+.lane-score { grid-area: score; }
+.lane-extra { grid-area: scaling; }
+.lane-contribs .fit-contribs { display: grid; grid-template-columns: auto auto; gap: 0 10px; font-size: 12px; line-height: 1.35; }
+.lane-chips { grid-area: chips; display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.lane-side.is-enemy .lane-chips { justify-content: flex-end; }
+.lane-chips .chip { min-height: 22px; padding: 0 7px; font-size: 12px; }
 @container (max-height: 980px) {
   .team-panel .team-row { display: none; }
   .team-panel .team-lanes { display: flex; }
 }
-/* Ligne étroite : le scaling (et l'archétype) passent après l'essentiel. */
-@container (max-width: 400px) { .lane-extra { display: none; } }
-/* Dégâts et archétype restent dans la répartition des dégâts de l'équipe et dans les archétypes de la lecture. */
-@container (max-width: 500px) { .lane-chips { display: none; } }
+/* Ligne étroite : le scaling par pick passe après l'essentiel (le graphe de scaling des compos reste dessous). */
+@container (max-width: 520px) { .lane-extra { display: none; } }
+/* Ligne très étroite : contributions dans l'infobulle de la note, place aux chips. */
+@container (max-width: 340px) { .lane-contribs { display: none; } }
 /* Bandeau d'équipe étroit : critères en texte avec leur valeur, plutôt que des libellés tronqués. */
 .team-bar { container-type: inline-size; }
 .team-bar-value { display: none; }
@@ -816,8 +832,24 @@ button:disabled { cursor: not-allowed; }
 .stats-bar { display: inline-block; width: 48px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .15); overflow: hidden; }
 .stats-bar > span { display: block; height: 100%; background: var(--ally); transition: width .3s; }
 
-/* Partage de la liste des joueurs : zone de collage du JSON (secours), ligne secondaire des fichiers, discrète. */
+/* Partage de la liste des joueurs : zone de collage du JSON (secours, presse-papiers inaccessible). */
 .share-paste { min-height: 120px; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
-.share-files { display: flex; flex-wrap: nowrap; gap: 4px; }
-.share-files .btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; background: transparent; color: var(--muted); font-weight: 500; }
-.share-files .btn-sm:hover:not(:disabled) { color: var(--text); background: var(--raise); }
+
+/* Bouton double (partage des joueurs) : action principale et flèche collées, menu sous la flèche. */
+.split { position: relative; display: inline-flex; }
+.split-main { display: inline-flex; align-items: center; gap: 6px; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; }
+.split-more { padding: 0 8px; margin-left: 1px; border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; }
+.split-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+.split-menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 20; min-width: 100%; padding: 4px; border-radius: 8px;
+  background: var(--raise-2); border: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+}
+.split-item {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: transparent;
+  color: var(--text); font: inherit; font-size: 13px; white-space: nowrap; cursor: pointer; text-align: left;
+}
+.split-item:hover, .split-item:focus-visible { background: rgba(255, 255, 255, .08); }
+
+/* Ordre de pick : gain à choisir après le vis-à-vis, à côté du rôle ; le plus grand des rôles ouverts mis en avant. */
+.counter-chip { display: inline-block; margin-left: 8px; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); background: rgba(255, 255, 255, .08); vertical-align: 1px; }
+.counter-chip.is-top { color: #14110a; background: var(--warn); }

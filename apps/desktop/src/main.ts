@@ -18,6 +18,13 @@ const ORIGIN = SCHEME + '://' + HOST;
 const DEV_URL = process.argv.includes('--dev') ? 'http://localhost:5173' : null;
 /** `--capture=fichier.png` (vérification) : capture de la page une fois chargée, puis l'appli se ferme. */
 const CAPTURE = process.argv.find((a) => a.startsWith('--capture='))?.slice('--capture='.length) ?? null;
+/**
+ * `--smoke` (workflow de release) : l'appli s'ouvre, attend l'écran Draft avec ses stats (chip du patch, cartes des
+ * joueurs), écrit « SMOKE OK » et quitte avec le code 0 ; code 1 si rien n'apparaît en 30 s ou si la page plante.
+ */
+const SMOKE = process.argv.includes('--smoke');
+const SMOKE_TIMEOUT_MS = 30_000;
+const SMOKE_CHECK = "!!document.querySelector('.brand-logo') && /Patch/.test(document.querySelector('.header')?.innerText ?? '') && document.querySelectorAll('.fit-member').length === 10";
 
 // Schéma « standard » et « sécurisé » : stockage local (IndexedDB, localStorage) et fetch comme sur un site https.
 protocol.registerSchemesAsPrivileged([{ scheme: SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }]);
@@ -141,6 +148,26 @@ const createWindow = () => {
   });
   // Hors appli installée : la console de la page est recopiée dans le terminal.
   if (!app.isPackaged) win.webContents.on('console-message', (_ev, level, message) => console.log('[page:' + level + '] ' + message));
+  if (SMOKE) {
+    const fail = (why: string) => {
+      console.error('SMOKE ÉCHEC : ' + why);
+      app.exit(1);
+    };
+    const timer = setTimeout(() => fail('écran Draft absent après ' + SMOKE_TIMEOUT_MS / 1000 + ' s'), SMOKE_TIMEOUT_MS);
+    win.webContents.on('render-process-gone', (_ev, d) => fail('page arrêtée (' + d.reason + ')'));
+    win.webContents.on('did-fail-load', (_ev, code, desc) => fail('chargement impossible (' + code + ' ' + desc + ')'));
+    win.webContents.once('did-finish-load', () => {
+      const poll = setInterval(() => {
+        void win.webContents.executeJavaScript(SMOKE_CHECK).then((ok: boolean) => {
+          if (!ok) return;
+          clearInterval(poll);
+          clearTimeout(timer);
+          console.log('SMOKE OK');
+          app.exit(0);
+        }, () => {});
+      }, 500);
+    });
+  }
   if (CAPTURE) {
     win.webContents.once('did-finish-load', () => {
       setTimeout(() => {
@@ -182,7 +209,7 @@ if (!app.requestSingleInstanceLock()) {
     ipcMain.handle('stats:start', () => stats.start());
     ipcMain.handle('stats:cancel', () => stats.cancel());
     createWindow();
-    startUpdater(() => BrowserWindow.getAllWindows()[0], () => bridge?.inChampSelect() ?? false);
+    if (!SMOKE) startUpdater(() => BrowserWindow.getAllWindows()[0], () => bridge?.inChampSelect() ?? false);
   });
   app.on('window-all-closed', () => {
     bridge?.close();

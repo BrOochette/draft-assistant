@@ -1,3 +1,5 @@
+import { appendFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { app, dialog, type BrowserWindow } from 'electron';
 import { autoUpdater } from 'electron-updater';
 
@@ -10,8 +12,23 @@ const START_DELAY_MS = 15_000;
 const POLL_MS = 5_000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Journal de la mise à jour (%APPDATA%\Draft Assistant\logs\updater.log), pour comprendre un échec après coup. */
+const fileLogger = () => {
+  const dir = join(app.getPath('userData'), 'logs');
+  const write = (level: string) => (...args: unknown[]) => {
+    try {
+      mkdirSync(dir, { recursive: true });
+      appendFileSync(join(dir, 'updater.log'), new Date().toISOString() + ' ' + level + ' ' + args.map(String).join(' ') + '\n');
+    } catch {
+      // Journal impossible à écrire : la mise à jour continue.
+    }
+  };
+  return { info: write('INFO'), warn: write('WARN'), error: write('ERROR'), debug: () => {} };
+};
+
 export const startUpdater = (window: () => BrowserWindow | undefined, inChampSelect: () => boolean) => {
   if (!app.isPackaged) return;
+  autoUpdater.logger = fileLogger();
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
   // Pas de mise à jour possible (hors ligne, release sans latest.yml) : rien à signaler, l'appli continue.
@@ -33,7 +50,8 @@ export const startUpdater = (window: () => BrowserWindow | undefined, inChampSel
       cancelId: 1
     };
     const { response } = win ? await dialog.showMessageBox(win, options) : await dialog.showMessageBox(options);
-    if (response === 0) autoUpdater.quitAndInstall();
+    // Installation silencieuse (sans les étapes de l'installeur), puis relance de l'appli.
+    if (response === 0) autoUpdater.quitAndInstall(true, true);
   });
 
   // Nouvelle version trouvée : téléchargée hors draft.

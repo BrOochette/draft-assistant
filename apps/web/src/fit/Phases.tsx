@@ -1,26 +1,21 @@
 import { useLayoutEffect, useRef, useState, type Dispatch } from 'react';
-import { ARCHETYPE_OF_CLASS, LOW_SAMPLE_GAMES, type ArchetypeGroup, type DraftAction, type DraftResult, type RoleResult } from '@draft/engine';
+import { ARCHETYPE_OF_CLASS, type ArchetypeGroup, type DraftAction, type DraftResult, type Evaluation, type RoleResult } from '@draft/engine';
 import {
   allyReadText,
   ARCHETYPE_LABEL,
   BANS_TEXT as B,
-  CARD_TEXT as C,
   COMPO_TEXT as CT,
   DRAFT_TEXT as D,
   enemyReadText,
-  fmtInt,
-  fmtPct,
-  fmtSigned,
   VIEW_TEXT as T
 } from '@draft/i18n-fr';
 import { ROLES } from '@draft/schemas';
-import { Chip, Icon, Portrait, ScalingBars, toneOf, useData } from '../ui';
-import { ScoreSub, ScoreValue } from '../draft/score';
+import { Chip, Icon, Portrait, ScalingBars, toneOf, useData, WinRateChips } from '../ui';
+import { ScoreValue } from '../draft/score';
 import { Contribs, ScalingChart } from './parts';
 import { BanReason } from '../draft/BanBar';
-import { EnemyCard, Splash, TeamBar } from './Cards';
+import { Splash, TeamBar } from './Cards';
 import { FocusCard } from './Focus';
-import type { usePicker } from './parts';
 
 // Centre de la vue client selon la phase : suggestions de bans pendant les bans, les deux équipes une fois la draft complète.
 
@@ -113,64 +108,46 @@ const Archetypes = ({ groups }: { groups: ArchetypeGroup[] }) => (
   <>{groups.map((g) => <Chip key={g.archetype} tone="info" title={CT.archetypeTip}>{CT.archetype(ARCHETYPE_LABEL[g.archetype], g.names)}</Chip>)}</>
 );
 
-/**
- * Une lane sur une ligne (panneau des deux équipes sur un écran moins haut) : ton pick (score, « Compo +N »,
- * contributions, scaling) face au pick ennemi (win rate, parties, dégâts, archétype, effet sur ton vis-à-vis ;
- * l'effet sur tes autres picks est dans l'infobulle).
- */
-const LaneRow = ({ row, allies }: { row: RoleResult; allies: RoleResult[] }) => {
+/** Sous le nom d'un pick ennemi : type de dégâts et archétype (le joueur adverse n'est pas connu). */
+const useEnemySub = () => {
   const { engine } = useData();
-  const e = row.locked;
-  const enemy = row.enemyPick;
-  const champ = enemy ? engine.catalog.get(enemy) : undefined;
-  const stats = enemy ? engine.stats.getRoleStats(enemy, row.role) : null;
-  const archetype = champ?.classes?.[0] ? ARCHETYPE_OF_CLASS[champ.classes[0]] : undefined;
-  const effects = enemy
-    ? allies.flatMap((a) => {
-        const x = a.locked?.enemyTeam.find((m) => m.opponent === enemy);
-        return a.locked && x ? [{ ally: a.locked.champion, lane: x.lane, effect: x.delta * x.weight }] : [];
-      })
-    : [];
-  const lane = effects.find((x) => x.lane);
+  return (name: string) => {
+    const champ = engine.catalog.get(name);
+    if (!champ) return '';
+    const archetype = champ.classes?.[0] ? ARCHETYPE_OF_CLASS[champ.classes[0]] : undefined;
+    return T.damage[champ.damage] + (archetype ? ' · ' + ARCHETYPE_LABEL[archetype] : '');
+  };
+};
+
+/**
+ * Un pick de la ligne d'une lane, même contenu des deux côtés (en miroir pour l'ennemi) : identité, note sur 20,
+ * contributions, chips WR, vs et avec (fenêtres flottantes), scaling.
+ */
+const LaneSide = ({ e, side, sub, avg }: { e: Evaluation | null; side: 'ally' | 'enemy'; sub: string; avg: number | null }) => (
+  <div className={'lane-side is-' + side}>
+    {e && (
+      <>
+        <span className="lane-face"><Portrait name={e.champion} size={40} /></span>
+        <span className="col min0 lane-id">
+          <span className="strong ellipsis">{e.champion}</span>
+          <span className="small muted ellipsis">{sub}</span>
+        </span>
+        <span className="lane-contribs"><Contribs e={e} /></span>
+        <span className="lane-score"><ScoreValue e={e} className="fit-score" avg={avg} /></span>
+        <span className="lane-extra"><ScalingBars scaling={e.scaling} /></span>
+        <span className="lane-chips"><WinRateChips e={e} /></span>
+      </>
+    )}
+  </div>
+);
+
+/** Une lane sur une ligne (panneau des deux équipes sur un écran moins haut) : ton pick face au pick ennemi. */
+const LaneRow = ({ row }: { row: RoleResult }) => {
+  const enemySub = useEnemySub();
   return (
     <section aria-label={D.roleRegion(row.role)} className="lane-row">
-      <div className="lane-side is-ally">
-        {e && (
-          <>
-            <Portrait name={e.champion} size={40} />
-            <span className="col min0">
-              <span className="strong ellipsis">{e.champion}</span>
-              <span className="small muted ellipsis">{row.player ?? D.noPlayer}</span>
-            </span>
-            <span className="col lane-score">
-              <ScoreValue e={e} className="fit-score" avg={row.averageWr} />
-              <ScoreSub e={e} />
-            </span>
-            <span className="lane-contribs"><Contribs e={e} /></span>
-            <span className="lane-extra"><ScalingBars scaling={e.scaling} /></span>
-          </>
-        )}
-      </div>
-      <div className="lane-side is-enemy" title={effects.map((x) => T.versus(x.ally) + ' ' + fmtSigned(x.effect)).join('\n') || undefined}>
-        {enemy && champ && stats && (
-          <>
-            <Portrait name={enemy} size={40} />
-            <span className="col min0">
-              <span className="strong ellipsis">{enemy}</span>
-              <span className="small nowrap" title={T.enemyWrTip(row.role)}>
-                <span className="muted">{T.enemyWr}</span> <span className="strong">{fmtPct(stats.gameWinRate)}</span>{' '}
-                <span className={stats.games < LOW_SAMPLE_GAMES ? 'warn-text' : 'muted'}>· {fmtInt(stats.games)}</span>
-              </span>
-            </span>
-            <span className="lane-chips">
-              <Chip>{T.damage[champ.damage]}</Chip>
-              {archetype && <Chip>{ARCHETYPE_LABEL[archetype]}</Chip>}
-            </span>
-            {lane && <span className={'small strong nowrap ' + toneOf(lane.effect)}>{T.versus(lane.ally)} {fmtSigned(lane.effect)}</span>}
-            <span className="lane-extra"><ScalingBars scaling={stats.scaling} /></span>
-          </>
-        )}
-      </div>
+      <LaneSide e={row.locked} side="ally" sub={row.player ?? D.noPlayer} avg={row.averageWr} />
+      <LaneSide e={row.enemyEval} side="enemy" sub={row.enemyPick ? enemySub(row.enemyPick) : ''} avg={row.averageWr} />
     </section>
   );
 };
@@ -180,7 +157,8 @@ const LaneRow = ({ row, allies }: { row: RoleResult; allies: RoleResult[] }) => 
  * (note, dégâts, critères), tes picks en cartes détaillées, les picks ennemis (win rate, dégâts, archétype,
  * effet sur tes picks), puis la lecture des deux compos.
  */
-export const TeamPanel = ({ result, dispatch, picker }: { result: DraftResult; dispatch: Dispatch<DraftAction>; picker: ReturnType<typeof usePicker> }) => {
+export const TeamPanel = ({ result }: { result: DraftResult }) => {
+  const enemySub = useEnemySub();
   const allyNames = result.roles.flatMap((r) => r.allyPick ?? []);
   const enemyNames = result.roles.flatMap((r) => r.enemyPick ?? []);
   return (
@@ -193,11 +171,11 @@ export const TeamPanel = ({ result, dispatch, picker }: { result: DraftResult; d
         {result.roles.flatMap((r) => (r.locked ? [<FocusCard key={r.role} e={r.locked} row={r} compact />] : []))}
       </div>
       <div className="team-row">
-        {result.roles.map((r) => <EnemyCard key={r.role} row={r} allies={result.roles} dispatch={dispatch} picker={picker} />)}
+        {result.roles.flatMap((r) => (r.enemyEval ? [<FocusCard key={r.role} e={r.enemyEval} row={r} compact side="enemy" sub={enemySub(r.enemyEval.champion)} />] : []))}
       </div>
       {/* Écran moins haut : une ligne par lane à la place des deux rangées de cartes (bascule en CSS). */}
       <div className="team-lanes">
-        {result.roles.map((r) => <LaneRow key={r.role} row={r} allies={result.roles} />)}
+        {result.roles.map((r) => <LaneRow key={r.role} row={r} />)}
       </div>
       <div className="team-reads">
         <section aria-label={CT.ally} className="col gap-4">
