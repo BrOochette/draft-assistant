@@ -133,10 +133,8 @@ export const App = ({ initialData, initialPools }: Props) => {
       <div className="app-screen">
         <header className="header">
           <div className="brand">
-            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect x="1" y="1" width="26" height="26" rx="6" stroke="var(--accent)" strokeWidth="2" />
-              <path d="M8 19l6-11 6 11" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            {/* Même logo que l'icône de l'appli desktop et le favicon du site. */}
+            <img className="brand-logo" src={import.meta.env.BASE_URL + 'favicon.svg'} alt="" width={30} height={30} />
             <span>{T.brand}</span>
           </div>
           <nav aria-label={T.nav} className="row-gap">

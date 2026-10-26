@@ -108,6 +108,7 @@ button:disabled { cursor: not-allowed; }
 /* En-tête */
 .app { min-height: 100vh; }
 .header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 14px 32px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+.brand-logo { display: block; flex: none; }
 .brand { display: flex; align-items: center; gap: 12px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; letter-spacing: .02em; }
 .nav-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 8px; color: var(--muted); text-decoration: none; font-weight: 600; border: 1px solid transparent; }
 .nav-link.is-on { background: var(--raise); color: var(--text); border-color: var(--accent); }
@@ -335,7 +336,7 @@ button:disabled { cursor: not-allowed; }
   /* En-tête : marque et « Nouvelle draft » sur une ligne, navigation dessous ; le patch reste dans « Lire les scores ». */
   .header { gap: 8px 12px; padding: 10px 16px; }
   .brand { font-size: 21px; gap: 8px; }
-  .brand svg { width: 24px; height: 24px; }
+  .brand-logo { width: 26px; height: 26px; }
   .header > .chip { display: none; }
   .header > .grow { display: none; }
   .header > nav { order: 3; flex-basis: 100%; }
