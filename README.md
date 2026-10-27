@@ -43,7 +43,7 @@ npm run ingest -- lolalytics  # environ 15 min (toutes régions) : écrit data/s
 npm run dev                   # le snapshot est réassemblé avec les stats les plus récentes
 ```
 
-Puis commiter `data/stats/` et `apps/web/public/data/snapshot.json`, et pousser : Cloudflare redéploie le site. Après la sortie d'un champion, `npm run ingest -- portraits` ajoute son portrait dans `apps/web/public/champions/` et `npm run ingest -- illustrations` son illustration dans `apps/web/public/champions/centered/` (à commiter aussi).
+Puis commiter `data/stats/` et `apps/web/public/data/snapshot.json`, et pousser : Cloudflare redéploie le site. Après la sortie d'un champion, `npm run ingest -- portraits` ajoute son portrait dans `apps/web/public/champions/` et `npm run ingest -- illustrations` son illustration dans `apps/web/public/champions/centered/` (à commiter aussi). Après un patch qui ajoute des objets, `npm run ingest -- build` met à jour les objets, runes et sorts des builds.
 
 Les attributs des champions (Frontline, Engage, Peel, type de dégâts, rôles) viennent du wiki LoL. Pour les régénérer, par exemple après la sortie d'un champion :
 
@@ -66,6 +66,7 @@ Pour corriger un attribut à la main, modifier `data/champions-overrides.json` :
 | `npm run ingest -- sample` | Force le snapshot sur les données d'exemple de la maquette |
 | `npm run ingest -- portraits` | Télécharge les portraits manquants dans `apps/web/public/champions/` |
 | `npm run ingest -- illustrations` | Télécharge les illustrations centrées manquantes (fond des cartes joueurs) dans `apps/web/public/champions/centered/` |
+| `npm run ingest -- build` | Objets, runes et sorts d'invocateur (Data Dragon, en français) : `apps/web/public/data/build-catalog.json`, icônes manquantes dans `apps/web/public/build/` |
 | `npm run bridge` | Pont local vers le client LoL pour la draft en direct (lecture seule) |
 | `npm run desktop` | Appli desktop Electron, pont compris |
 | `npm run desktop:dev` | Appli desktop sur le serveur Vite (`npm run dev` lancé à côté) |

@@ -19,6 +19,26 @@ describe('draftReducer', () => {
     expect(computeDraft(u.draft, samplePools(), sampleData()).composition.ally.total).toBe(29);
   });
 
+  it('déplace un pick vers un autre rôle : seul le champion change, les joueurs restent, annulable', () => {
+    // État d'exemple : Aurora alliée en Top (joueur Alex), Jungle vide (joueur Sam).
+    const s0 = start();
+    const s = run(s0, { type: 'movePick', from: { side: 'ally', role: 'Top' }, to: { side: 'ally', role: 'Jungle' } });
+    expect([s.draft.ally.Top, s.draft.ally.Jungle]).toEqual([null, 'Aurora']);
+    expect(s.draft.assign).toEqual(s0.draft.assign);
+    expect(s.toast).toEqual({ code: 'MOVED', champion: 'Aurora', side: 'ally', role: 'Jungle' });
+    expect(run(s, { type: 'undo' }).draft).toEqual(s0.draft);
+  });
+
+  it('déplace un pick allié chez l’ennemi : les deux champions s’échangent, les joueurs restent', () => {
+    const s0 = start();
+    const s = run(s0, { type: 'movePick', from: { side: 'ally', role: 'Top' }, to: { side: 'enemy', role: 'Top' } });
+    expect([s.draft.ally.Top, s.draft.enemy.Top]).toEqual(['Ornn', 'Aurora']);
+    expect(s.draft.assign).toEqual(s0.draft.assign);
+    // Case vide ou même case : rien ne change.
+    expect(run(s0, { type: 'movePick', from: { side: 'ally', role: 'ADC' }, to: { side: 'ally', role: 'Mid' } })).toBe(s0);
+    expect(run(s0, { type: 'movePick', from: { side: 'ally', role: 'Top' }, to: { side: 'ally', role: 'Top' } })).toBe(s0);
+  });
+
   it('inverse les picks allié et ennemi d’un rôle, annulable', () => {
     // État d'exemple : Aurora alliée et Ornn ennemi en Top.
     const s = run(start(), { type: 'swapRole', role: 'Top' });

@@ -8,7 +8,8 @@
     "./lolalytics": "./src/lolalytics.ts",
     "./snapshot": "./src/snapshot.ts",
     "./wiki": "./src/wiki.ts",
-    "./portraits": "./src/portraits.ts"
+    "./portraits": "./src/portraits.ts",
+    "./build-catalog": "./src/build-catalog.ts"
   },
   "scripts": {
     "cli": "tsx src/cli.ts"

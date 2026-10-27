@@ -10,7 +10,7 @@ Application web personnelle d'aide à la draft sur League of Legends. Elle recom
 
 ## Contraintes non négociables
 
-- **Performance** : le moteur répond en moins d'une seconde. Le budget visé est de 50 ms pour le moteur et de 100 ms entre un clic et l'écran à jour. Aucun appel réseau pendant une draft.
+- **Performance** : le moteur répond en moins d'une seconde. Le budget visé est de 50 ms pour le moteur et de 100 ms entre un clic et l'écran à jour. Aucun appel réseau pendant une draft, sauf la vérification et le téléchargement de la mise à jour de l'appli desktop au lancement (décidé le 27/10/2026).
 - **Ton de l'interface** : informations factuelles uniquement. Pas de phrases de conseil, pas d'instructions d'usage, pas de compteurs inutiles. Interface en français.
 - **Règle de pool** : les recommandations par défaut viennent du pool du joueur placé sur le rôle. Les champions hors pool n'apparaissent que dans le détail d'une ligne.
 - **Score** : note sur 20 par pick, tirée du win rate attendu (Lolalytics) : win rate du champion, plus les écarts des matchups contre les ennemis connus et des duos avec les alliés verrouillés, lissés vers la moyenne de leur paire de classes, plus la maîtrise (décidé le 24/10/2026), 1 point par point de win rate et 10 à 50 %, plus l'apport à la compo ; note d'équipe sur 100 = cumul des notes des picks connus (décidé le 26/10/2026, voir `docs/recap.md`). Les % ne servent qu'aux win rates. Pas de win rate de lane depuis l'abandon de l'API Riot (décidé le 23/10/2026).
@@ -23,7 +23,7 @@ TypeScript partout, validé avec le porteur du projet :
 - monorepo en workspaces npm : `packages/schemas`, `packages/engine` (logique pure), `packages/i18n-fr` (tous les textes d'interface), `apps/web` (React + Vite), `apps/ingest` (CLI Node), `apps/bridge` (pont local vers le client LoL, lecture seule) et `apps/desktop` (appli Windows Electron, pont intégré) ;
 - Vitest pour les tests.
 
-Commandes : `npm run dev`, `npm run bridge`, `npm run desktop`, `npm run desktop:dist`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits|illustrations` (voir `README.md`).
+Commandes : `npm run dev`, `npm run bridge`, `npm run desktop`, `npm run desktop:dist`, `npm test`, `npm run typecheck`, et pour les données `npm run ingest -- wiki|lolalytics|snapshot|sample|portraits|illustrations|build` (voir `README.md`).
 
 ## Première étape suggérée
 

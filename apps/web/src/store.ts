@@ -4,6 +4,7 @@ import { seedPools } from './data';
 
 const KEY = 'draft-assistant:pools:v1';
 const RIOT_IDS_KEY = 'draft-assistant:riot-ids:v1';
+const ME_KEY = 'draft-assistant:me:v1';
 
 /** Joueurs et pools depuis IndexedDB. Au premier lancement, les pools d'exemple sont enregistrés. */
 export const loadPools = async (): Promise<Pools> => {
@@ -23,3 +24,11 @@ export const loadRiotIds = async (): Promise<RiotIds> => {
 };
 
 export const saveRiotIds = (ids: RiotIds): Promise<void> => set(RIOT_IDS_KEY, ids);
+
+/** Joueur marqué « Moi » : build proposé pour son pick hors draft en direct. */
+export const loadMe = async (): Promise<string | null> => {
+  const stored: unknown = await get(ME_KEY);
+  return typeof stored === 'string' && stored ? stored : null;
+};
+
+export const saveMe = (me: string | null): Promise<void> => set(ME_KEY, me);

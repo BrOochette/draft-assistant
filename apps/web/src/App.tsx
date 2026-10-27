@@ -5,7 +5,7 @@ import { useClientBridge } from './client';
 import { initialDraft, loadAppData, type AppData } from './data';
 import { PlayersScreen } from './players/PlayersScreen';
 import { FitScreen } from './fit/FitScreen';
-import { loadPools, loadRiotIds, savePools, saveRiotIds } from './store';
+import { loadMe, loadPools, loadRiotIds, saveMe, savePools, saveRiotIds } from './store';
 import { APP_TEXT as T, CLIENT_TEXT } from '@draft/i18n-fr';
 import { DataContext, TooltipLayer } from './ui';
 import { StatsUpdate } from './desktop';
@@ -57,6 +57,7 @@ export const App = ({ initialData, initialPools }: Props) => {
   const [confirmReset, setConfirmReset] = useState(false);
   const [session, dispatch] = useReducer(draftReducer, undefined, () => createSession(startDraft(initialData)));
   const [riotIds, setRiotIds] = useState<RiotIds>({});
+  const [me, setMe] = useState<string | null>(null);
   const client = useClientBridge();
   // Draft en direct : bans encore attendus dans le client (null hors draft en direct).
   const liveBans = client.draft ? client.draft.bansPending : null;
@@ -79,6 +80,7 @@ export const App = ({ initialData, initialPools }: Props) => {
     if (!initialPools) {
       loadPools().then(setPools, (e: Error) => setError(e.message));
       loadRiotIds().then(setRiotIds, (e: Error) => setError(e.message));
+      loadMe().then(setMe, (e: Error) => setError(e.message));
     }
   }, [initialData, initialPools]);
 
@@ -119,15 +121,22 @@ export const App = ({ initialData, initialPools }: Props) => {
     saveRiotIds(next).catch((e: Error) => setError(e.message));
   }, []);
 
+  const changeMe = useCallback((next: string | null) => {
+    setMe(next);
+    saveMe(next).catch((e: Error) => setError(e.message));
+  }, []);
+
   const changePools = useCallback((next: Pools) => {
     setPools(next);
     savePools(next).catch((e: Error) => setError(e.message));
     // Un joueur supprimé perd son Riot ID.
     if (Object.keys(riotIds).some((p) => !next[p])) changeRiotIds(Object.fromEntries(Object.entries(riotIds).filter(([p]) => next[p])));
-  }, [riotIds, changeRiotIds]);
+    if (me && !next[me]) changeMe(null);
+  }, [riotIds, changeRiotIds, me, changeMe]);
 
   return (
-    // Vue client : en-tête et draft occupent exactement la fenêtre ; les mentions légales restent juste en dessous.
+    // Vue client : en-tête et draft occupent exactement la fenêtre, sans défilement ; les mentions légales sont sur les
+    // autres écrans (Joueurs, mise en page en lignes).
     <div className={'app' + (fit ? ' is-fit' : '')}>
       <TooltipLayer />
       <div className="app-screen">
@@ -135,7 +144,7 @@ export const App = ({ initialData, initialPools }: Props) => {
           <div className="brand">
             {/* Même logo que l'icône de l'appli desktop et le favicon du site. */}
             <img className="brand-logo" src={import.meta.env.BASE_URL + 'favicon.svg'} alt="" width={30} height={30} />
-            <span>{T.brand}</span>
+            <span className="visually-hidden">{T.brand}</span>
           </div>
           <nav aria-label={T.nav} className="row-gap">
             <a href="#/joueurs" className={'nav-link' + (screen === 'players' ? ' is-on' : '')} aria-current={screen === 'players' ? 'page' : undefined}>{T.players}</a>
@@ -172,15 +181,15 @@ export const App = ({ initialData, initialPools }: Props) => {
         {data && pools && (
           <DataContext.Provider value={data}>
             {screen === 'draft'
-              ? <FitScreen session={session} dispatch={dispatch} pools={pools} liveBans={liveBans} />
-              : <PlayersScreen pools={pools} onChange={changePools} riotIds={riotIds} onRiotIdsChange={changeRiotIds} />}
+              ? <FitScreen session={session} dispatch={dispatch} pools={pools} liveBans={liveBans} me={me} />
+              : <PlayersScreen pools={pools} onChange={changePools} riotIds={riotIds} onRiotIdsChange={changeRiotIds} me={me} onMeChange={changeMe} />}
           </DataContext.Provider>
         )}
       </div>
-      <footer className="footer" aria-label={T.footer}>
+      {!fit && <footer className="footer" aria-label={T.footer}>
         <p>{T.legalSources}</p>
         <p lang="en">{T.legalRiot}</p>
-      </footer>
+      </footer>}
     </div>
   );
 };

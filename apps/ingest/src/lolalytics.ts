@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ROLES, type ChampionAttributes, type Role } from '@draft/schemas';
+import { BuildSchema, ROLES, type Build, type ChampionAttributes, type Role } from '@draft/schemas';
 import { CrawlStopped, type PoliteFetch } from './http';
 import { readQwikState } from './qwik';
 
@@ -33,7 +33,9 @@ export const LaneStatsSchema = z.object({
   /** Rôle de l'ennemi (autre lane), puis ennemi vers [win rate de ce champion, parties]. */
   crossMatchups: z.record(z.string(), z.record(z.string(), pair)).default({}),
     /** Rôle de l'allié, puis allié vers [écart de win rate normalisé en duo, parties]. */
-  duos: z.record(z.string(), z.record(z.string(), pair))
+  duos: z.record(z.string(), z.record(z.string(), pair)),
+  /** Build général sur cette lane. Absent des collectes antérieures. */
+  build: BuildSchema.optional()
 });
 export type LaneStats = z.infer<typeof LaneStatsSchema>;
 
@@ -52,6 +54,62 @@ export type LolalyticsDump = z.infer<typeof LolalyticsDumpSchema>;
 
 type Row = [number, ...number[]];
 const rows = (v: unknown): Row[] => (Array.isArray(v) ? (v.filter((r) => Array.isArray(r) && typeof r[0] === 'number') as Row[]) : []);
+
+/** Options de build gardées à partir de ce pick rate (en %). */
+const SPELL_MIN_PR = 5;
+const START_MIN_PR = 3;
+const BOOTS_MIN_PR = 2;
+const ITEM_MIN_PR = 1;
+/** Options d'un slot d'objet gardées à partir de ce pick rate (en %), au plus SLOT_MAX. */
+const SLOT_MIN_PR = 5;
+const SLOT_MAX = 4;
+/** Page de runes au meilleur win rate gardée à partir de ce nombre de parties. */
+const RUNE_PAGE_MIN_GAMES = 500;
+/** Bottes de base, « sans bottes » et bottes de la rune Chaussures magiques : pas des choix de bottes. */
+const NOT_BOOTS = new Set([1001, 9999, 2422]);
+
+const ids = (key: unknown) => String(key).split('_').filter(Boolean).map(Number);
+const int = (v: unknown) => Math.round(Number(v) || 0);
+
+/**
+ * Build général d'une page build : runes, sorts, départs et bottes (lignes [clé, win rate, pick rate, parties…]),
+ * trois premiers objets, puis objets construits (les plus construits, complétés par les 4e et 5e objets).
+ */
+export const parseBuild = (data: Record<string, unknown>): Build => {
+  type Summary = {
+    runes?: { wr?: number; n?: number; set?: { pri?: number[]; sec?: number[]; mod?: number[] } };
+    items?: { core?: { set?: number[]; wr?: number; n?: number } };
+  };
+  const summary = (data.summary ?? {}) as { pick?: Summary; win?: Summary };
+  const pick = summary.pick ?? {};
+  const sets = (list: unknown, minPr: number, max: number) =>
+    (Array.isArray(list) ? list : [])
+      .filter((r): r is [string, number, number, number] => Array.isArray(r) && String(r[0]) !== '' && Number(r[2]) >= minPr)
+      .slice(0, max)
+      .map((r): [number[], number, number] => [ids(r[0]), Number(r[1]), int(r[3])]);
+  const singles = (list: unknown, minPr: number) =>
+    rows(list).filter((r) => Number(r[2]) >= minPr).map((r): [number, number, number] => [r[0], Number(r[1]), int(r[3])]);
+  const boots = singles(data.boots, BOOTS_MIN_PR).filter(([id]) => !NOT_BOOTS.has(id)).slice(0, 6);
+  const bootIds = new Set([...rows(data.boots).map((r) => r[0])]);
+  const items: [number, number, number][] = [];
+  for (const list of [data.popularItem, data.item4, data.item5])
+    for (const it of singles(list, ITEM_MIN_PR)) if (!bootIds.has(it[0]) && !items.some((x) => x[0] === it[0])) items.push(it);
+  const page = (r: Summary['runes']) =>
+    r?.set?.pri?.length ? [{ primary: r.set.pri, secondary: r.set.sec ?? [], shards: r.set.mod ?? [], winRate: Number(r.wr ?? 0), games: int(r.n) }] : [];
+  const same = (a: Build['runes'][number], b: Build['runes'][number]) => JSON.stringify([a.primary, a.secondary, a.shards]) === JSON.stringify([b.primary, b.secondary, b.shards]);
+  const runes = page(pick.runes);
+  for (const w of page(summary.win?.runes)) if (w.games >= RUNE_PAGE_MIN_GAMES && !runes.some((p) => same(p, w))) runes.push(w);
+  const core = pick.items?.core;
+  return {
+    runes,
+    spells: sets(data.spells, SPELL_MIN_PR, 3),
+    starts: sets(data.startSet, START_MIN_PR, 3),
+    boots,
+    ...(core?.set?.length && { core: { items: core.set, winRate: Number(core.wr ?? 0), games: int(core.n) } }),
+    slots: [data.item1, data.item2, data.item3].map((list) => singles(list, SLOT_MIN_PR).slice(0, SLOT_MAX)),
+    items: items.slice(0, 30)
+  };
+};
 
 /** Données d'une page « build » d'un champion sur une lane. */
 export const parseBuildPage = (html: string, nameOfKey: ReadonlyMap<number, string>) => {
@@ -104,7 +162,8 @@ export const parseBuildPage = (html: string, nameOfKey: ReadonlyMap<number, stri
       byDuration,
       matchups,
       crossMatchups,
-      duos: {}
+      duos: {},
+      build: parseBuild(data)
     } satisfies LaneStats
   };
 };

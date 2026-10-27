@@ -251,6 +251,7 @@ export type AllyReadItem =
   | { sign: '-'; code: 'MISSING_TRAIT'; trait: Trait }
   | { sign: '-'; code: 'MAGIC_HEAVY'; ap: number; total: number }
   | { sign: '+'; code: 'MIXED_DAMAGE'; ap: number; total: number }
+  | { sign: '-'; code: 'NO_MAGIC' }
   | { sign: '+'; code: 'SCALING_ADVANTAGE'; phase: Phase }
   | { sign: '-'; code: 'SCALING_DISADVANTAGE'; phase: Phase }
   | { sign: '-'; code: 'NO_SUSTAINED'; against: string[] };
@@ -300,6 +301,23 @@ export interface ArchetypeGroup {
 }
 export type Archetype = 'dive' | 'engage' | 'poke' | 'protect' | 'pick' | 'teamfight' | 'split';
 
+/** Paire marquante d'une équipe : un pick et l'ennemi (matchup) ou l'allié (duo) concerné, avec l'effet pondéré en points. */
+export interface PairHighlight {
+  champion: string;
+  other: string;
+  effect: number;
+}
+
+/** Faits marquants d'une équipe (picks connus). */
+export interface TeamHighlights {
+  bestMatchup: PairHighlight | null;
+  worstMatchup: PairHighlight | null;
+  bestDuo: PairHighlight | null;
+  worstDuo: PairHighlight | null;
+  strongest: { champion: string; points: number } | null;
+  weakest: { champion: string; points: number } | null;
+}
+
 export interface DraftResult {
   roles: RoleResult[];
   composition: {
@@ -313,4 +331,6 @@ export interface DraftResult {
   bans: { suggestions: BanCard[]; allyFull: boolean };
   /** Archétypes de chaque compo (au moins 2 champions du même archétype), avec des classes connues. */
   archetypes: { ally: ArchetypeGroup[]; enemy: ArchetypeGroup[] };
+  /** Faits marquants de chaque équipe : meilleur et pire matchup, meilleur et pire duo, pick le plus fort et le plus faible. */
+  highlights: { ally: TeamHighlights; enemy: TeamHighlights };
 }

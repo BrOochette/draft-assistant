@@ -61,6 +61,54 @@ const rateSample = z.tuple([z.number().min(0).max(100), z.number().int().nonnega
 /** [écart de win rate en points, nombre de parties]. */
 const deltaSample = z.tuple([z.number(), z.number().int().nonnegative()]);
 
+const itemId = z.number().int().positive();
+/** [identifiants, win rate en %, nombre de parties] : un ensemble d'objets ou de sorts. */
+const setSample = z.tuple([z.array(itemId), z.number().min(0).max(100), z.number().int().nonnegative()]);
+/** [identifiant, win rate en %, nombre de parties]. */
+const idSample = z.tuple([itemId, z.number().min(0).max(100), z.number().int().nonnegative()]);
+
+/**
+ * Build général d'un champion sur un rôle (Lolalytics), options du plus joué au moins joué. Le moteur choisit parmi
+ * ces options selon le vis-à-vis et les deux compos.
+ */
+export const BuildSchema = z.object({
+  /**
+   * Pages de runes : la plus jouée, puis celle au meilleur win rate si elle diffère. 4 runes de l'arbre principal,
+   * 2 du secondaire, 3 fragments.
+   */
+  runes: z.array(z.object({ primary: z.array(itemId), secondary: z.array(itemId), shards: z.array(itemId), winRate: z.number(), games: z.number().int() })),
+  /** Paires de sorts d'invocateur. */
+  spells: z.array(setSample),
+  /** Objets de départ. */
+  starts: z.array(setSample),
+  boots: z.array(idSample),
+  /** Trois premiers objets les plus joués ensemble, bottes comprises. */
+  core: z.object({ items: z.array(itemId), winRate: z.number(), games: z.number().int() }).optional(),
+  /** Options du 1er, du 2e et du 3e objet, bottes comprises, du plus joué au moins joué. */
+  slots: z.array(z.array(idSample)),
+  /** Objets construits sur ce rôle, hors bottes, du plus joué au moins joué. */
+  items: z.array(idSample)
+});
+export type Build = z.infer<typeof BuildSchema>;
+
+/** Étiquettes d'objet lues par le moteur pour adapter le build. */
+export const ITEM_TAGS = ['boots', 'mr', 'armor', 'antiheal', 'antitank'] as const;
+export const ItemTagSchema = z.enum(ITEM_TAGS);
+export type ItemTag = z.infer<typeof ItemTagSchema>;
+
+/** Objets, runes et sorts d'invocateur (Data Dragon, en français), fournis avec l'appli. */
+export const BuildCatalogSchema = z.object({
+  version: z.string(),
+  items: z.record(z.string(), z.object({ name: z.string(), tags: z.array(ItemTagSchema) })),
+  /** Runes et fragments ; `tree` : arbre de la rune (absent pour les fragments). */
+  runes: z.record(z.string(), z.object({ name: z.string(), tree: z.number().int().optional() })),
+  trees: z.record(z.string(), z.object({ name: z.string() })),
+  spells: z.record(z.string(), z.object({ name: z.string() })),
+  /** Identifiants Data Dragon des champions à distance (portée d'attaque d'au moins 300). */
+  ranged: z.array(z.string())
+});
+export type BuildCatalog = z.infer<typeof BuildCatalogSchema>;
+
 /**
  * Stats d'un champion sur un rôle. Les attributs (apports, scaling, dégâts) sont ceux du candidat
  * et priment sur le catalogue. L'ordre de `provides` est conservé : il fixe l'ordre des raisons.
@@ -83,9 +131,10 @@ export const CandidateSchema = z.object({
   /** Part des parties du champion jouées sur ce rôle, en %. Absente : rôle principal supposé. */
   laneShare: z.number().min(0).max(100).optional(),
   /** Rôle de l'ennemi (autre lane), puis ennemi vers [win rate de ce champion, parties]. */
-  crossMatchups: z.record(RoleSchema, z.record(z.string(), rateSample)).optional()
+  crossMatchups: z.record(RoleSchema, z.record(z.string(), rateSample)).optional(),
+  build: BuildSchema.optional()
 });
-export type Candidate = z.infer<typeof CandidateSchema>;
+export type Candidate =z.infer<typeof CandidateSchema>;
 
 export const CandidatesSchema = z.record(RoleSchema, z.array(CandidateSchema));
 export type Candidates = Partial<Record<Role, Candidate[]>>;

@@ -126,8 +126,8 @@ describe('écran Draft sur grand écran', () => {
       await user.click(screen.getAllByRole('button', { name: 'Suggestions en Jungle' })[0]!);
       await user.click(screen.getByRole('button', { name: 'Verrouiller Sejuani en Jungle' }));
       expect(screen.getByRole('button', { name: 'Retirer Sejuani et rouvrir les suggestions en Jungle' })).toBeInTheDocument();
-      // Les mentions légales restent sous la draft.
-      expect(screen.getByRole('contentinfo', { name: 'Mentions' })).toBeInTheDocument();
+      // Vue client : pas de mentions légales sous la draft (pas de défilement) ; elles restent sur les autres écrans.
+      expect(screen.queryByRole('contentinfo', { name: 'Mentions' })).not.toBeInTheDocument();
     } finally {
       vi.unstubAllGlobals();
     }

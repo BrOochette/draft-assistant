@@ -14,6 +14,7 @@ export type ActionMessage =
   | { code: 'BANNED'; champion: string }
   | { code: 'BAN_REMOVED'; champion: string }
   | { code: 'SWAPPED'; role: Role }
+  | { code: 'MOVED'; champion: string; side: Side; role: Role }
   | { code: 'RESET' };
 
 interface Snapshot {
@@ -34,6 +35,8 @@ export interface DraftSession extends Snapshot {
   picking: ClientOrder;
   /** Side de ton équipe dans le client, null s'il est inconnu. */
   side: 'blue' | 'red' | null;
+  /** Rôle du joueur connecté au client, null hors draft en direct. */
+  localRole: Role | null;
 }
 
 export type DraftAction =
@@ -43,6 +46,12 @@ export type DraftAction =
   | { type: 'clearEnemy'; role: Role }
   /** Échange le pick allié et le pick ennemi d'un rôle (saisie du mauvais côté, ou vue de l'autre équipe). */
   | { type: 'swapRole'; role: Role }
+  /**
+   * Déplace un pick vers une autre case (glisser-déposer), le pick de cette case prenant sa place. Seuls les champions
+   * changent de case : les joueurs restent sur leur rôle. Pendant une draft en direct, un rôle donné par le client reste
+   * prioritaire.
+   */
+  | { type: 'movePick'; from: { side: Side; role: Role }; to: { side: Side; role: Role } }
   | { type: 'addBan'; side: Side; champion: string }
   | { type: 'removeBan'; side: Side; champion: string }
   | { type: 'assignPlayer'; role: Role; player: string | null }
@@ -51,13 +60,13 @@ export type DraftAction =
   /** Remplace la draft sans historique (chargement de l'état de départ). */
   | { type: 'load'; draft: DraftState }
   /** Draft lue dans le client LoL (voir `applyClientDraft`), sans historique. */
-  | { type: 'syncClient'; draft: DraftState; hover: Partial<Record<Role, string>>; order?: ClientOrder; picking?: ClientOrder; side?: 'blue' | 'red' | null }
+  | { type: 'syncClient'; draft: DraftState; hover: Partial<Record<Role, string>>; order?: ClientOrder; picking?: ClientOrder; side?: 'blue' | 'red' | null; localRole?: Role | null }
   | { type: 'undo' }
   | { type: 'dismissToast' };
 
 const HISTORY_LIMIT = 50;
 
-export const createSession = (draft: DraftState): DraftSession => ({ draft, selected: {}, history: [], toast: null, hover: {}, order: null, picking: { ally: [], enemy: [] }, side: null });
+export const createSession = (draft: DraftState): DraftSession => ({ draft, selected: {}, history: [], toast: null, hover: {}, order: null, picking: { ally: [], enemy: [] }, side: null, localRole: null });
 
 const commit = (s: DraftSession, message: ActionMessage, draft: DraftState, selected = s.selected): DraftSession => ({
   ...s,
@@ -97,6 +106,19 @@ export const draftReducer = (s: DraftSession, a: DraftAction): DraftSession => {
       const { [a.role]: _, ...selected } = s.selected;
       return commit(s, { code: 'SWAPPED', role: a.role }, { ...d, ally: { ...d.ally, [a.role]: enemy }, enemy: { ...d.enemy, [a.role]: ally } }, selected);
     }
+    case 'movePick': {
+      const { from, to } = a;
+      if (from.side === to.side && from.role === to.role) return s;
+      const champion = d[from.side][from.role];
+      if (!champion) return s;
+      const other = d[to.side][to.role];
+      const slots = { ally: { ...d.ally }, enemy: { ...d.enemy } };
+      slots[to.side][to.role] = champion;
+      slots[from.side][from.role] = other;
+      // Les présélections des deux rôles n'ont plus lieu d'être.
+      const selected = Object.fromEntries(Object.entries(s.selected).filter(([r]) => r !== from.role && r !== to.role));
+      return commit(s, { code: 'MOVED', champion, side: to.side, role: to.role }, { ...d, ...slots }, selected);
+    }
     case 'addBan': {
       const key = banKey(a.side);
       if (d[key].length >= MAX_BANS || availability(d).banBlocked(a.champion)) return s;
@@ -122,7 +144,7 @@ export const draftReducer = (s: DraftSession, a: DraftAction): DraftSession => {
       const selected = Object.fromEntries(Object.entries(s.selected).filter(([r]) => !a.draft.ally[r as Role]));
       // Sans ordre (fin de la sélection), l'ordre lu reste affiché avec la draft.
       // Fin de la sélection : plus personne ne choisit ; le side reste affiché avec la draft.
-      return { ...s, draft: a.draft, hover: a.hover, order: a.order ?? s.order, picking: a.picking ?? { ally: [], enemy: [] }, side: a.side !== undefined ? a.side : s.side, selected };
+      return { ...s, draft: a.draft, hover: a.hover, order: a.order ?? s.order, picking: a.picking ?? { ally: [], enemy: [] }, side: a.side !== undefined ? a.side : s.side, localRole: a.localRole !== undefined ? a.localRole : s.localRole, selected };
     }
     case 'reset':
       return { ...commit(s, { code: 'RESET' }, { assign: d.assign, ally: emptySlots(), enemy: emptySlots(), allyBans: [], enemyBans: [] }, {}), hover: {}, order: null };

@@ -115,6 +115,12 @@ describe('lecture du client', () => {
     expect(draft.assign).toMatchObject({ Mid: 'Alex', Top: null });
   });
 
+  it('donne le rôle du joueur connecté au client, null sans case locale', () => {
+    const local = applyClientDraft(empty(), client({ ally: [ally(0, 'Top'), ally(1, 'Mid', undefined, { local: true })] }), data, [], false);
+    expect(local.localRole).toBe('Mid');
+    expect(applyClientDraft(empty(), client({ ally: [ally(0, 'Top')] }), data, [], false).localRole).toBeNull();
+  });
+
   it("donne l'ordre des cases du client, avec les rôles déduits des picks", () => {
     const { order } = applyClientDraft(
       empty(),

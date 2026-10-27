@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type Dispatch } from 'react';
-import { computeDraft, type ClientOrder, type DraftAction, type DraftResult, type DraftSession, type SuggestionMode } from '@draft/engine';
-import { APP_TEXT as A, DRAFT_TEXT as D, VIEW_TEXT as T } from '@draft/i18n-fr';
+import { useEffect, useMemo, useRef, useState, type Dispatch, type DragEvent } from 'react';
+import { computeDraft, proposeBuild, type BuildProposal, type ClientOrder, type DraftAction, type DraftResult, type DraftSession, type Side, type SuggestionMode } from '@draft/engine';
+import { APP_TEXT as A, BUILD_TEXT as B, DRAFT_TEXT as D, VIEW_TEXT as T } from '@draft/i18n-fr';
 import { ROLES, type DraftState, type Pools, type Role } from '@draft/schemas';
 import { reducedMotion, useData } from '../ui';
 import { useSuggestionModes, type Modes } from '../draft/modes';
 import { PlayerSelect } from '../draft/PlayerSelect';
 import { QuickPick } from '../draft/QuickPick';
 import './member-cards.css';
+import { BuildPanel } from './Build';
 import { FocusPanel, LockedPanel } from './Focus';
 import { BanPanel, PANEL_BANS_PER_ROLE, TeamPanel } from './Phases';
 import { BanStrip, CompoCompact, Face, usePicker } from './parts';
@@ -17,6 +18,8 @@ interface Props {
   pools: Pools;
   /** Draft en direct : bans encore attendus dans le client ; null sans draft en direct. */
   liveBans?: boolean | null;
+  /** Joueur marqué « Moi » : son pick reçoit un build proposé (en direct : le joueur connecté au client). */
+  me?: string | null;
 }
 
 /** Illustration centrée du champion en fond de carte (fichier local, npm run ingest -- illustrations) : champion
@@ -35,6 +38,46 @@ const MemberArt = ({ name, faded }: { name: string | null; faded: boolean }) => 
 /** Gain à contre-picker (points sur 20) en dessous duquel rien n'est affiché : le rôle peut choisir quand il veut. */
 const COUNTER_MIN = 0.3;
 
+/** Type des données d'un pick glissé (case d'origine). */
+const DRAG_TYPE = 'application/x-draft-pick';
+
+/**
+ * Glisser-déposer d'un pick d'une case de joueur vers une autre (autre rôle, ou autre équipe) : corrige un champion
+ * placé sur le mauvais rôle. La case visée s'éclaire pendant le survol.
+ */
+const useDragPick = (dispatch: Dispatch<DraftAction>) => {
+  const [over, setOver] = useState<string | null>(null);
+  return (side: Side, role: Role, hasPick: boolean) => {
+    const key = side + '|' + role;
+    return {
+      draggable: hasPick,
+      onDragStart: (e: DragEvent) => {
+        e.dataTransfer.setData(DRAG_TYPE, JSON.stringify({ side, role }));
+        e.dataTransfer.effectAllowed = 'move';
+      },
+      onDragOver: (e: DragEvent) => {
+        if (!e.dataTransfer.types.includes(DRAG_TYPE)) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (over !== key) setOver(key);
+      },
+      onDragLeave: (e: DragEvent) => {
+        if (!(e.currentTarget as Node).contains(e.relatedTarget as Node | null)) setOver((o) => (o === key ? null : o));
+      },
+      onDrop: (e: DragEvent) => {
+        setOver(null);
+        const raw = e.dataTransfer.getData(DRAG_TYPE);
+        if (!raw) return;
+        e.preventDefault();
+        const from = JSON.parse(raw) as { side: Side; role: Role };
+        dispatch({ type: 'movePick', from, to: { side, role } });
+      },
+      onDragEnd: () => setOver(null),
+      dropClass: over === key ? ' is-drop' : ''
+    };
+  };
+};
+
 type Picker = ReturnType<typeof usePicker>;
 interface ClientProps {
   result: DraftResult;
@@ -52,6 +95,8 @@ interface ClientProps {
   banPhase: boolean;
   /** Draft en direct : rôles dont le joueur est en train de choisir. */
   picking: ClientOrder;
+  /** Build proposé pour ton pick, et ton vis-à-vis ; null sans pick ou sans build connu. */
+  build: { proposal: BuildProposal; opponent: string | null } | null;
 }
 
 /** Choix du joueur d'un rôle, en version compacte. */
@@ -62,7 +107,7 @@ const Player = ({ role, player, draft, pools, dispatch }: { role: Role; player: 
 );
 
 /** Vue client : équipe alliée à gauche, ennemie à droite, et au centre le rôle choisi, les bans ou les deux équipes. */
-const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, onModeChange, banPhase, picking }: ClientProps) => {
+const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, onModeChange, banPhase, picking, build }: ClientProps) => {
   // Comme dans le client : chaque équipe dans l'ordre de ses cases (ordre de pick), pas Top, Jungle, Mid…
   const inOrder = (roles: readonly Role[] | undefined) =>
     roles ? roles.flatMap((r) => result.roles.find((x) => x.role === r) ?? []) : result.roles;
@@ -72,7 +117,14 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
   const enemies = inOrder(order?.enemy);
   const open = allies.filter((r) => !r.locked);
   /** Rôle choisi, et s'il était déjà verrouillé au clic : un rôle verrouillé ensuite (ici ou dans le client) cède la place. */
-  const [focus, setFocus] = useState<{ role: Role; wasLocked: boolean } | null>(null);
+  const [focus, setFocusState] = useState<{ role: Role; wasLocked: boolean } | null>(null);
+  /** Centre : la draft, ou le build de ton pick. Choisir un rôle revient à la draft. */
+  const [view, setView] = useState<'draft' | 'build'>('draft');
+  const setFocus = (f: { role: Role; wasLocked: boolean } | null) => {
+    setFocusState(f);
+    if (f) setView('draft');
+  };
+  const showBuild = view === 'build' && build != null;
   // Petit écran : le centre est sous les équipes ; choisir un rôle y fait défiler.
   const center = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -92,14 +144,16 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
     dispatch({ type: 'lock', role, champion });
     setFocus(null);
   };
+  const drag = useDragPick(dispatch);
   return (
     <div className="fit-client">
       <ul className="plain-list fit-team-col" aria-label={D.player}>
         {allies.map((row) => {
           const best = row.recommendations[0];
           const isPicking = picking.ally.includes(row.role);
+          const { dropClass, ...dnd } = drag('ally', row.role, !!row.allyPick);
           return (
-            <li key={row.role} className={'fit-member card' + (current?.role === row.role ? ' is-focus' : '') + (isPicking ? ' is-picking' : '') + (row.allyPick ?? hover[row.role] ? ' has-art' : '')}>
+            <li key={row.role} {...dnd} className={'fit-member card' + (current?.role === row.role ? ' is-focus' : '') + (isPicking ? ' is-picking' : '') + (row.allyPick ?? hover[row.role] ? ' has-art' : '') + dropClass}>
               <MemberArt name={row.allyPick ?? hover[row.role] ?? null} faded={!row.allyPick} />
               <Face side="ally" role={row.role} name={row.allyPick} hover={hover[row.role]} size={52} label={T.focus(row.role)} onOpen={() => setFocus({ role: row.role, wasLocked: !!row.locked })} onRemove={() => dispatch({ type: 'unlock', role: row.role })} />
               <div className="fit-member-body">
@@ -124,8 +178,16 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
         })}
       </ul>
       <div ref={center} className="fit-center">
-        {/* Bans en cours (sauf rôle choisi d'un clic), draft complète, sinon le rôle choisi. */}
-        {showBans ? (
+        {build && (
+          <div role="group" aria-label={B.tabs} className="center-tabs">
+            <button type="button" className={'center-tab' + (!showBuild ? ' is-on' : '')} aria-pressed={!showBuild} onClick={() => setView('draft')}>{B.draftTab}</button>
+            <button type="button" className={'center-tab' + (showBuild ? ' is-on' : '')} aria-pressed={showBuild} onClick={() => setView('build')}>{B.tab(build.proposal.champion)}</button>
+          </div>
+        )}
+        {/* Build de ton pick, bans en cours (sauf rôle choisi d'un clic), draft complète, sinon le rôle choisi. */}
+        {showBuild ? (
+          <BuildPanel build={build.proposal} opponent={build.opponent} />
+        ) : showBans ? (
           <BanPanel result={result} dispatch={dispatch} />
         ) : complete ? (
           <TeamPanel result={result} />
@@ -140,8 +202,9 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
       <ul className="plain-list fit-team-col is-enemy" aria-label={D.waiting}>
         {enemies.map((row) => {
           const isPicking = picking.enemy.includes(row.role);
+          const { dropClass, ...dnd } = drag('enemy', row.role, !!row.enemyPick);
           return (
-            <li key={row.role} className={'fit-member card is-enemy' + (isPicking ? ' is-picking' : '') + (row.enemyPick ? ' has-art' : '')}>
+            <li key={row.role} {...dnd} className={'fit-member card is-enemy' + (isPicking ? ' is-picking' : '') + (row.enemyPick ? ' has-art' : '') + dropClass}>
               <MemberArt name={row.enemyPick} faded={false} />
               <span className="fit-member-info">
                 <span className="role-name">{row.role}</span>
@@ -161,8 +224,8 @@ const Client = ({ result, draft, hover, order, pools, dispatch, picker, modes, o
  * Écran Draft en vue client. Grand écran (1200 px et plus) : la draft entière dans la fenêtre, sans défilement. En dessous :
  * les mêmes blocs empilés (les deux équipes côte à côte, puis le centre), la page défile.
  */
-export const FitScreen = ({ session, dispatch, pools, liveBans = null }: Props) => {
-  const { engine } = useData();
+export const FitScreen = ({ session, dispatch, pools, liveBans = null, me = null }: Props) => {
+  const { engine, buildCatalog } = useData();
   // Side de ton équipe (draft en direct ; bleu par défaut) : le thème inverse les couleurs des deux camps côté rouge.
   const side = session.side ?? 'blue';
   useEffect(() => {
@@ -178,6 +241,15 @@ export const FitScreen = ({ session, dispatch, pools, liveBans = null }: Props) 
   // Phase de bans : lue dans le client, sinon tant qu'aucun pick n'est saisi et que tes bans ne sont pas tous posés.
   const noPick = ROLES.every((r) => !session.draft.ally[r] && !session.draft.enemy[r]);
   const banPhase = liveBans ?? (noPick && !result.bans.allyFull);
+  // Ton rôle : celui du joueur connecté au client en direct, sinon celui du joueur « Moi ». Ton pick : verrouillé, sinon survolé.
+  const myRole = session.localRole ?? ROLES.find((r) => me != null && session.draft.assign[r] === me) ?? null;
+  const myPick = myRole ? session.draft.ally[myRole] ?? session.hover[myRole] ?? null : null;
+  const { ally, enemy } = session.draft;
+  const build = useMemo(() => {
+    if (!myRole || !myPick || !buildCatalog) return null;
+    const proposal = proposeBuild({ champion: myPick, role: myRole, allies: ally, enemies: enemy }, engine, buildCatalog);
+    return proposal ? { proposal, opponent: enemy[myRole] } : null;
+  }, [myRole, myPick, ally, enemy, engine, buildCatalog]);
   return (
     <main className="fit" aria-label={A.draft}>
       <div className="fit-top">
@@ -197,6 +269,7 @@ export const FitScreen = ({ session, dispatch, pools, liveBans = null }: Props) 
         onModeChange={setRole}
         banPhase={banPhase}
         picking={session.picking}
+        build={build}
       />
       {picker.element}
     </main>

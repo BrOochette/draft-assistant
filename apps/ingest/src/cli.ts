@@ -2,6 +2,7 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { ChampionAttributesSchema, ChampionOverridesSchema, type ChampionAttributes } from '@draft/schemas';
 import { politeFetch } from './http';
+import { downloadBuildCatalog } from './build-catalog';
 import { crawlLolalytics, DEFAULT_PAIR_REGION, DEFAULT_REGION, LolalyticsDumpSchema } from './lolalytics';
 import { downloadIllustrations, downloadPortraits, latestDdragonVersion } from './portraits';
 import { buildSampleSnapshot, writeSnapshot } from './sample';
@@ -16,6 +17,7 @@ const OVERRIDES = DATA + 'champions-overrides.json';
 const STATS = DATA + 'stats/';
 const DDRAGON_VERSION = DATA + 'ddragon-version.txt';
 const SNAPSHOT = PUBLIC + 'data/snapshot.json';
+const BUILD_CATALOG = PUBLIC + 'data/build-catalog.json';
 
 const USAGE = `Usage : npm run ingest -- <commande>
 
@@ -26,7 +28,9 @@ const USAGE = `Usage : npm run ingest -- <commande>
   snapshot    Assemble le fichier chargé par l'appli (stats Lolalytics si présentes, sinon données d'exemple)
   sample      Force le snapshot sur les données d'exemple de la maquette
   portraits   Télécharge les portraits Data Dragon manquants dans apps/web/public/champions/
-  illustrations  Télécharge les illustrations centrées manquantes dans apps/web/public/champions/centered/`;
+  illustrations  Télécharge les illustrations centrées manquantes dans apps/web/public/champions/centered/
+  build       Télécharge objets, runes et sorts (Data Dragon, en français) et leurs icônes : apps/web/public/data/build-catalog.json
+              et apps/web/public/build/`;
 
 // La clé Riot ne sert à aucune commande. Si elle sert un jour, elle sera lue ici, jamais dans le code web :
 // const riotKey = process.env.RIOT_API_KEY;
@@ -110,6 +114,13 @@ const main = async (cmd: string | undefined): Promise<number> => {
       const ids = attributes ? attributes.map((c) => c.ddragonId) : Object.values((await readJson(DATA + 'ddragon-ids.json')) as Record<string, string>);
       const r = await downloadIllustrations(ids, PUBLIC + 'champions/centered');
       console.log(`Illustrations : ${r.fetched} téléchargées, ${r.skipped} déjà présentes.` + (r.failed.length ? ` Introuvables : ${r.failed.join(', ')}.` : ''));
+      return 0;
+    }
+    case 'build': {
+      const version = await latestDdragonVersion();
+      const r = await downloadBuildCatalog(version, PUBLIC + 'build');
+      await writeFile(BUILD_CATALOG, JSON.stringify(r.catalog) + '\n', 'utf8');
+      console.log(`Catalogue des builds ${version} : ${Object.keys(r.catalog.items).length} objets, ${r.fetched} icônes téléchargées.` + (r.failed.length ? ` Introuvables : ${r.failed.join(', ')}.` : ''));
       return 0;
     }
     default:

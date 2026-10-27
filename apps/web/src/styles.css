@@ -853,3 +853,56 @@ button:disabled { cursor: not-allowed; }
 /* Ordre de pick : gain à choisir après le vis-à-vis, à côté du rôle ; le plus grand des rôles ouverts mis en avant. */
 .counter-chip { display: inline-block; margin-left: 8px; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); background: rgba(255, 255, 255, .08); vertical-align: 1px; }
 .counter-chip.is-top { color: #14110a; background: var(--warn); }
+
+/* Glisser-déposer d'un pick : la carte déplaçable prend la main au survol, la case visée s'éclaire. */
+.fit-member[draggable="true"] { cursor: grab; }
+.fit-member[draggable="true"]:active { cursor: grabbing; }
+.fit-member.is-drop { outline: 2px dashed rgba(255, 255, 255, .8); outline-offset: -4px; }
+
+/* Faits marquants d'une équipe : libellé à gauche, paire et valeur à droite, une ligne chacun. */
+.highlights { margin: 0; display: grid; gap: 2px; }
+.highlight { display: grid; grid-template-columns: 128px minmax(0, 1fr); align-items: baseline; gap: 8px; }
+.highlight dt, .highlight dd { margin: 0; }
+.highlight dd { display: flex; justify-content: space-between; gap: 8px; min-width: 0; }
+.highlight.is-alert { grid-template-columns: minmax(0, 1fr); }
+
+/* Centre : bascule entre la draft et le build de ton pick. */
+.center-tabs { display: flex; gap: 4px; flex: none; }
+.center-tab { min-height: 32px; padding: 0 14px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, .08); background: rgba(255, 255, 255, .04); color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
+.center-tab.is-on { background: color-mix(in srgb, var(--ally) 18%, rgba(20, 20, 22, .8)); border-color: var(--ally); }
+.center-tab:focus-visible { outline: 2px solid var(--ally); outline-offset: 2px; }
+
+/* Build proposé : titre illustré, puis les blocs (runes, sorts, départ, bottes, objets) en grille. */
+.build-panel { overflow-x: hidden; overflow-y: auto; }
+.build-title { position: relative; overflow: clip; isolation: isolate; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--ally) 13%, rgba(27, 27, 27, .72)); border-left: 3px solid var(--ally); }
+.build-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 10px; align-content: start; min-width: 0; }
+.build-block { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .06); min-width: 0; }
+.build-head { display: flex; flex-direction: column; gap: 2px; }
+.build-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.build-runes { display: flex; flex-direction: column; gap: 6px; }
+.build-items { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; }
+.build-icon { flex: none; display: inline-flex; border-radius: 6px; overflow: hidden; background: rgba(0, 0, 0, .35); }
+.build-icon img { width: 100%; height: 100%; display: block; }
+.build-icon.is-text { padding: 2px 6px; font-size: 12px; border-radius: 6px; }
+.me-toggle.is-on { border-color: var(--pos); }
+.me-chip { padding: 0 6px; min-height: 0; font-size: 11px; }
+
+/* Build : autres options en petit sous chaque choix ; runes et objets sur toute la largeur. */
+.build-block.is-wide { grid-column: 1 / -1; }
+.build-pages { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.build-alts { display: flex; flex-direction: column; gap: 4px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, .06); }
+.build-alt { gap: 6px; }
+.build-core { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 10px; margin: 0; padding: 0; }
+.build-core-item { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+/* Build : sorts, départ et bottes se partagent la largeur ; une option trop longue passe à la ligne. */
+.build-grid { display: flex; flex-direction: column; }
+.build-trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
+.build-alt { flex-wrap: wrap; row-gap: 2px; }
+
+/* Objets principaux : une carte par objet, ses autres options dedans ; situationnels : les autres options sous la raison. */
+.build-core-item { padding: 8px 10px; border-radius: 8px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08); }
+.build-core-item .build-alts { padding-left: 10px; border-top: 0; border-left: 2px solid rgba(255, 255, 255, .12); padding-top: 0; }
+.build-sit { align-items: flex-start; }
+.build-sit-alts { flex-wrap: wrap; gap: 8px; margin-top: 2px; }

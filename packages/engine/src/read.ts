@@ -24,9 +24,11 @@ export const readAlly = (ally: readonly CompMember[], phases: readonly PhaseResu
   });
   if (ally.length) {
     const ap = ally.filter((x) => x.damage === 'AP').length;
-    out.push(ap / ally.length >= 0.75
-      ? { sign: '-', code: 'MAGIC_HEAVY', ap, total: ally.length }
-      : { sign: '+', code: 'MIXED_DAMAGE', ap, total: ally.length });
+    const ad = ally.filter((x) => x.damage === 'AD').length;
+    // Sans AD, « Aucun dégât physique » est déjà dans les traits manquants.
+    if (ap / ally.length >= 0.75) out.push({ sign: '-', code: 'MAGIC_HEAVY', ap, total: ally.length });
+    else if (ap === 0) out.push({ sign: '-', code: 'NO_MAGIC' });
+    else if (ad > 0) out.push({ sign: '+', code: 'MIXED_DAMAGE', ap, total: ally.length });
   }
   // Dès 3 picks alliés : plus assez de rôles ouverts pour compter sur un futur pick.
   const front = enemies.filter((x) => x.provides.includes('Frontline')).map((x) => x.name);

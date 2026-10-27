@@ -1,5 +1,5 @@
 import { useMemo, useState, type Dispatch, type ReactNode } from 'react';
-import { availability, MAX_BANS, type DraftAction, type DraftResult, type Evaluation, type PhaseResult, type Side } from '@draft/engine';
+import { availability, MAX_BANS, type DraftAction, type DraftResult, type Evaluation, type PhaseResult, type Side, type TeamHighlights } from '@draft/engine';
 import {
   BAN_BLOCKED_LABEL,
   BANS_TEXT as B,
@@ -16,6 +16,7 @@ import {
   VIEW_TEXT as T,
   VERDICT_LABEL,
   allyReadText,
+  fmt1,
   fmtScal
 } from '@draft/i18n-fr';
 import type { DraftState, Role } from '@draft/schemas';
@@ -185,6 +186,35 @@ export const ScalingChart = ({ phases, height = 84 }: { phases: readonly PhaseRe
   );
 };
 
+/**
+ * Faits marquants d'une équipe : meilleur et pire matchup, meilleur et pire duo (effet pondéré en points), pick le plus
+ * fort et le plus faible (note sur 20). `alerts` : lignes de lecture à garder en plus (dégâts soutenus).
+ */
+export const Highlights = ({ h, alerts = [] }: { h: TeamHighlights; alerts?: string[] }) => {
+  const tone = (v: number) => (Math.round(v * 10) > 0 ? 'pos-text' : Math.round(v * 10) < 0 ? 'neg-text' : 'muted');
+  const rows: { label: string; what: string; value: string; tone: string; tip?: string }[] = [];
+  const pair = (label: string, p: TeamHighlights['bestMatchup'], text: (a: string, b: string) => string) =>
+    p && rows.push({ label, what: text(p.champion, p.other), value: fmtSigned(p.effect), tone: tone(p.effect), tip: CT.effectTip });
+  pair(CT.bestMatchup, h.bestMatchup, CT.pairVs);
+  pair(CT.worstMatchup, h.worstMatchup, CT.pairVs);
+  pair(CT.bestDuo, h.bestDuo, CT.pairWith);
+  pair(CT.worstDuo, h.worstDuo, CT.pairWith);
+  if (h.strongest) rows.push({ label: CT.strongest, what: h.strongest.champion, value: fmt1(h.strongest.points) + C.outOf20, tone: '' });
+  if (h.weakest) rows.push({ label: CT.weakest, what: h.weakest.champion, value: fmt1(h.weakest.points) + C.outOf20, tone: '' });
+  if (!rows.length && !alerts.length) return <span className="small muted">{CT.noHighlights}</span>;
+  return (
+    <dl className="highlights">
+      {rows.map((r) => (
+        <div key={r.label} className="highlight" title={r.tip}>
+          <dt className="small muted">{r.label}</dt>
+          <dd className="small"><span className="ellipsis">{r.what}</span> <span className={'strong ' + r.tone}>{r.value}</span></dd>
+        </div>
+      ))}
+      {alerts.map((a) => <div key={a} className="highlight is-alert"><dd className="small neg-text">- {a}</dd></div>)}
+    </dl>
+  );
+};
+
 /** Deux barres fines, alliée et ennemie, sur 100. */
 const Pair = ({ a, b }: { a: number; b: number }) => (
   <span className="fit-pair" aria-hidden="true">
@@ -194,6 +224,9 @@ const Pair = ({ a, b }: { a: number; b: number }) => (
 );
 
 /** Analyse de compo resserrée : notes, 5 critères, scaling par phase, lecture de ta compo. */
+/** Lecture à garder hors des faits marquants : pas de dégâts soutenus face à la frontline ennemie. */
+export const sustainedAlerts = (result: DraftResult): string[] => result.allyRead.filter((x) => x.code === 'NO_SUSTAINED').map(allyReadText);
+
 export const CompoCompact = ({ result, horizontal = false }: { result: DraftResult; horizontal?: boolean }) => {
   const { ally, enemy } = result.composition;
   // Sans pick connu d'un côté, la note vaut 0 et le verdict ne dit rien : il n'est pas affiché.
@@ -228,14 +261,7 @@ export const CompoCompact = ({ result, horizontal = false }: { result: DraftResu
         </>,
         CT.scalingSection
       )}
-      {result.allyRead.length > 0 && block(
-        <ul className="plain-list fit-read">
-          {result.allyRead.map((x, i) => (
-            <li key={i} className={'small ' + (x.sign === '+' ? 'pos-text' : 'neg-text')}><span className="bold">{x.sign}</span> {allyReadText(x)}</li>
-          ))}
-        </ul>,
-        CT.reading
-      )}
+      {block(<><span className="small strong">{CT.highlights}</span><Highlights h={result.highlights.ally} alerts={sustainedAlerts(result)} /></>, CT.highlights)}
     </div>
   );
 };

@@ -236,3 +236,41 @@ body[data-theme="teams"] .face:hover, body[data-theme="teams"] .ban-slot:hover {
 body[data-theme="teams"] .face:hover { border-color: var(--ally); }
 body[data-theme="teams"] .face.is-enemy:hover, body[data-theme="teams"] .face.is-waiting:hover { border-color: var(--enemy); }
 body[data-theme="teams"] .ban-slot:hover { border-color: rgba(255, 255, 255, .5); }
+
+/* Écran Joueurs, au design de l'écran Draft (décidé le 27/10/2026) : panneaux en verre teinté de ton équipe, joueurs
+   en cartes illustrées (champion le mieux maîtrisé), lignes du pool comme les cartes champion (portrait très flou,
+   barre de l'équipe), rôles en boutons segmentés. */
+body[data-theme="teams"] .players { padding: 16px 16px 32px; gap: 0; }
+body[data-theme="teams"] .players-grid { gap: 12px; }
+body[data-theme="teams"] .players .card {
+  background: color-mix(in srgb, var(--ally) 7%, rgba(20, 20, 22, .72));
+  border: 1px solid rgba(255, 255, 255, .06);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+body[data-theme="teams"] .players .player-card {
+  position: relative; isolation: isolate; overflow: clip; min-height: 64px; justify-content: flex-end;
+  background: color-mix(in srgb, var(--ally) 13%, rgba(27, 27, 27, .72));
+  border: 1px solid color-mix(in srgb, var(--ally) 22%, transparent); border-left: 3px solid var(--ally); border-radius: 10px;
+}
+body[data-theme="teams"] .players .player-card.is-on { border-color: var(--ally); }
+body[data-theme="teams"] .players .player-card .member-art img { object-position: center 22%; }
+body[data-theme="teams"] .players .player-card .member-art::after {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ally) 22%, rgba(10, 10, 12, .92)) 0%, rgba(10, 10, 12, .55) 55%, rgba(10, 10, 12, .15) 100%);
+}
+body[data-theme="teams"] .players .player-card > span:not(.member-art) { position: relative; z-index: 1; text-shadow: 0 1px 4px rgba(0, 0, 0, .85); }
+body[data-theme="teams"] .players .pool-row {
+  position: relative; overflow: clip; isolation: isolate;
+  background: color-mix(in srgb, var(--ally) 13%, rgba(27, 27, 27, .72));
+  border: 1px solid color-mix(in srgb, var(--ally) 22%, transparent); border-left: 3px solid var(--ally);
+}
+body[data-theme="teams"] .players .role-tab {
+  min-height: 44px; padding: 4px 14px; border-radius: 8px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .06);
+}
+body[data-theme="teams"] .players .role-tab.is-on { background: color-mix(in srgb, var(--ally) 18%, rgba(20, 20, 22, .8)); border-color: var(--ally); }
+body[data-theme="teams"] .players .empty-pool { background: rgba(20, 20, 22, .6); border-color: color-mix(in srgb, var(--warn) 60%, transparent); }
+/* Le verre (backdrop-filter) crée un plan d'empilement par panneau : celui où l'on saisit passe devant les suivants,
+   pour que la liste des champions ne glisse pas dessous. */
+body[data-theme="teams"] .players .card { position: relative; }
+body[data-theme="teams"] .players .card:focus-within { z-index: 5; }

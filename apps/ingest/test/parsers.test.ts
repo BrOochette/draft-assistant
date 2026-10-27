@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseLuaTable } from '../src/lua';
-import { parseBuildPage, parseTeam } from '../src/lolalytics';
+import { itemTags } from '../src/build-catalog';
+import { parseBuild, parseBuildPage, parseTeam } from '../src/lolalytics';
 import { readQwikState } from '../src/qwik';
 import { deriveAttributes, importWikiAttributes } from '../src/wiki';
 
@@ -100,8 +101,46 @@ describe('page build Lolalytics', () => {
       // Clé inconnue (999) et matchup trop rare (Lee Sin, 12 parties) écartés.
       matchups: { Zed: [50.57, 2017] },
       crossMatchups: {},
-      duos: {}
+      duos: {},
+      // Page réduite, sans données de build.
+      build: { runes: [], spells: [], starts: [], boots: [], slots: [[], [], []], items: [] }
     });
+  });
+
+  it('extrait le build général : options assez jouées, bottes à part, objets construits sans doublon', () => {
+    const b = parseBuild({
+      summary: {
+        pick: { runes: { wr: 51.7, n: 65116, set: { pri: [8005, 9111, 9103, 8017], sec: [8321, 8313], mod: [5005, 5008, 5011] } }, items: { core: { set: [6676, 3006, 3031], wr: 52.78, n: 9231 } } },
+        win: { runes: { wr: 53.2, n: 4100, set: { pri: [8008, 9111, 9104, 8017], sec: [8345, 8347], mod: [5005, 5008, 5011] } } }
+      },
+      item1: [[6676, 50.7, 44.5, 37697, 11], [3095, 52.93, 28.84, 24427, 12], [3031, 55.88, 0.52, 442, 13]],
+      spells: [['4_21', 51.55, 63.41, 53718], ['4_7', 45.24, 0.25, 210]],
+      startSet: [['1086_2003_2003', 51.08, 82.66, 70019], ['', 75, 0.01, 8]],
+      boots: [[3006, 50.83, 41.13, 34843, 14], [1001, 34.67, 7.49, 6346, 8], [3111, 49.94, 1.03, 871, 18]],
+      popularItem: [[3031, 55.04, 81.19, 68778, 20], [6676, 50.97, 47.46, 40205, 12], [3179, 42.75, 0.33, 276, 11]],
+      item4: [[3036, 64.57, 8.21, 6951, 28], [3031, 59.43, 2.43, 2058, 28]]
+    });
+    expect(b).toEqual({
+      runes: [
+        { primary: [8005, 9111, 9103, 8017], secondary: [8321, 8313], shards: [5005, 5008, 5011], winRate: 51.7, games: 65116 },
+        { primary: [8008, 9111, 9104, 8017], secondary: [8345, 8347], shards: [5005, 5008, 5011], winRate: 53.2, games: 4100 }
+      ],
+      spells: [[[4, 21], 51.55, 53718]],
+      starts: [[[1086, 2003, 2003], 51.08, 70019]],
+      boots: [[3006, 50.83, 34843]],
+      core: { items: [6676, 3006, 3031], winRate: 52.78, games: 9231 },
+      slots: [[[6676, 50.7, 37697], [3095, 52.93, 24427]], [], []],
+      items: [[3031, 55.04, 68778], [6676, 50.97, 40205], [3036, 64.57, 6951]]
+    });
+  });
+
+  it('étiquette les objets d’après leurs stats et leur description', () => {
+    const item = (description: string, stats: Record<string, number> = {}, tags: string[] = []) => ({ name: 'x', description, stats, tags });
+    expect(itemTags(item('<stats>+20 résistance magique</stats>', { FlatSpellBlockMod: 20 }, ['Boots']))).toEqual(['boots', 'mr']);
+    expect(itemTags(item("leur inflige 40% d'<keyword>Hémorragie</keyword>", { FlatArmorMod: 75 }))).toEqual(['armor', 'antiheal']);
+    expect(itemTags(item('+40%  de pénétration magique'))).toEqual(['antitank']);
+    expect(itemTags(item("un pourcentage des PV actuels de l'ennemi"))).toEqual(['antitank']);
+    expect(itemTags(item('+75 puissance'))).toEqual([]);
   });
 
   it('extrait les duos par rôle de l’allié', () => {

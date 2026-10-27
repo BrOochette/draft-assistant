@@ -4,6 +4,7 @@ import type {
   AllyReadItem,
   BanBlocked,
   Blocked,
+  BuildReason,
   CriterionKey,
   EnemyReadItem,
   GoneReason,
@@ -112,9 +113,24 @@ export const allyReadText = (r: AllyReadItem): string => {
     case 'MISSING_TRAIT': return MISSING[r.trait];
     case 'MAGIC_HEAVY': return 'Dégâts magiques : ' + r.ap + ' picks sur ' + r.total;
     case 'MIXED_DAMAGE': return 'Dégâts mixtes : ' + r.ap + ' magiques sur ' + r.total + ' picks';
+    case 'NO_MAGIC': return 'Aucun dégât magique';
     case 'SCALING_ADVANTAGE': return 'Avantage de scaling ' + PHASE_IN[r.phase];
     case 'SCALING_DISADVANTAGE': return 'Désavantage de scaling ' + PHASE_IN[r.phase];
     case 'NO_SUSTAINED': return 'Pas de dégâts soutenus face à la frontline (' + r.against.join(', ') + ')';
+  }
+};
+
+/** Règle qui a choisi une option du build plutôt que la plus jouée. */
+export const buildReasonText = (r: BuildReason): string => {
+  switch (r.code) {
+    case 'MAGIC_TEAM': return 'Dégâts magiques : ' + r.champions.join(', ');
+    case 'PHYSICAL_TEAM': return 'Dégâts physiques : ' + r.champions.join(', ');
+    case 'MAGIC_LANE': return 'Vis-à-vis magique : ' + r.champion;
+    case 'PHYSICAL_LANE': return 'Vis-à-vis physique : ' + r.champion;
+    case 'RANGED_LANE': return 'Vis-à-vis à distance : ' + r.champion;
+    case 'HEALERS': return 'Soins : ' + r.champions.join(', ');
+    case 'TANKS': return 'Frontline : ' + r.champions.join(', ');
+    case 'SAME_DAMAGE': return (r.damage === 'AP' ? 'Dégâts magiques' : 'Dégâts physiques') + ' dans ton équipe : ' + r.champions.join(', ');
   }
 };
 
@@ -146,6 +162,7 @@ export const actionMessageText = (m: ActionMessage): string => {
     case 'BANNED': return m.champion + ' banni';
     case 'BAN_REMOVED': return 'Ban de ' + m.champion + ' retiré';
     case 'SWAPPED': return 'Picks inversés en ' + m.role;
+    case 'MOVED': return m.champion + ' déplacé en ' + m.role + (m.side === 'enemy' ? ' (ennemi)' : '');
     case 'RESET': return 'Draft réinitialisée';
   }
 };

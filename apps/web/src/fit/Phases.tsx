@@ -1,18 +1,16 @@
 import { useLayoutEffect, useRef, useState, type Dispatch } from 'react';
 import { ARCHETYPE_OF_CLASS, type ArchetypeGroup, type DraftAction, type DraftResult, type Evaluation, type RoleResult } from '@draft/engine';
 import {
-  allyReadText,
   ARCHETYPE_LABEL,
   BANS_TEXT as B,
   COMPO_TEXT as CT,
   DRAFT_TEXT as D,
-  enemyReadText,
   VIEW_TEXT as T
 } from '@draft/i18n-fr';
 import { ROLES } from '@draft/schemas';
 import { Chip, Icon, Portrait, ScalingBars, toneOf, useData, WinRateChips } from '../ui';
 import { ScoreValue } from '../draft/score';
-import { Contribs, ScalingChart } from './parts';
+import { Contribs, Highlights, ScalingChart, sustainedAlerts } from './parts';
 import { BanReason } from '../draft/BanBar';
 import { Splash, TeamBar } from './Cards';
 import { FocusCard } from './Focus';
@@ -108,8 +106,8 @@ const Archetypes = ({ groups }: { groups: ArchetypeGroup[] }) => (
   <>{groups.map((g) => <Chip key={g.archetype} tone="info" title={CT.archetypeTip}>{CT.archetype(ARCHETYPE_LABEL[g.archetype], g.names)}</Chip>)}</>
 );
 
-/** Sous le nom d'un pick ennemi : type de dégâts et archétype (le joueur adverse n'est pas connu). */
-const useEnemySub = () => {
+/** Sous le nom d'un pick : type de dégâts et archétype (pour toi, précédés du joueur ; le joueur adverse n'est pas connu). */
+const usePickSub = () => {
   const { engine } = useData();
   return (name: string) => {
     const champ = engine.catalog.get(name);
@@ -143,10 +141,10 @@ const LaneSide = ({ e, side, sub, avg }: { e: Evaluation | null; side: 'ally' | 
 
 /** Une lane sur une ligne (panneau des deux équipes sur un écran moins haut) : ton pick face au pick ennemi. */
 const LaneRow = ({ row }: { row: RoleResult }) => {
-  const enemySub = useEnemySub();
+  const enemySub = usePickSub();
   return (
     <section aria-label={D.roleRegion(row.role)} className="lane-row">
-      <LaneSide e={row.locked} side="ally" sub={row.player ?? D.noPlayer} avg={row.averageWr} />
+      <LaneSide e={row.locked} side="ally" sub={(row.player ?? D.noPlayer) + (row.allyPick ? ' · ' + enemySub(row.allyPick) : '')} avg={row.averageWr} />
       <LaneSide e={row.enemyEval} side="enemy" sub={row.enemyPick ? enemySub(row.enemyPick) : ''} avg={row.averageWr} />
     </section>
   );
@@ -158,7 +156,7 @@ const LaneRow = ({ row }: { row: RoleResult }) => {
  * effet sur tes picks), puis la lecture des deux compos.
  */
 export const TeamPanel = ({ result }: { result: DraftResult }) => {
-  const enemySub = useEnemySub();
+  const enemySub = usePickSub();
   const allyNames = result.roles.flatMap((r) => r.allyPick ?? []);
   const enemyNames = result.roles.flatMap((r) => r.enemyPick ?? []);
   return (
@@ -168,7 +166,7 @@ export const TeamPanel = ({ result }: { result: DraftResult }) => {
         <TeamBar side="enemy" score={result.composition.enemy} names={enemyNames} result={result} />
       </div>
       <div className="team-row">
-        {result.roles.flatMap((r) => (r.locked ? [<FocusCard key={r.role} e={r.locked} row={r} compact />] : []))}
+        {result.roles.flatMap((r) => (r.locked ? [<FocusCard key={r.role} e={r.locked} row={r} compact sub={(r.player ?? D.noPlayer) + ' · ' + enemySub(r.locked.champion)} />] : []))}
       </div>
       <div className="team-row">
         {result.roles.flatMap((r) => (r.enemyEval ? [<FocusCard key={r.role} e={r.enemyEval} row={r} compact side="enemy" sub={enemySub(r.enemyEval.champion)} />] : []))}
@@ -180,18 +178,13 @@ export const TeamPanel = ({ result }: { result: DraftResult }) => {
       <div className="team-reads">
         <section aria-label={CT.ally} className="col gap-4">
           <span className="eyebrow ally-text">{CT.ally}</span>
-          {/* En chips : la lecture tient en deux ou trois lignes. */}
-          <div className="fcard-chips">
-            {result.allyRead.map((x, i) => <Chip key={i} tone={x.sign === '+' ? 'pos' : 'neg'}>{x.sign} {allyReadText(x)}</Chip>)}
-            <Archetypes groups={result.archetypes.ally} />
-          </div>
+          <Highlights h={result.highlights.ally} alerts={sustainedAlerts(result)} />
+          <div className="fcard-chips"><Archetypes groups={result.archetypes.ally} /></div>
         </section>
         <section aria-label={CT.enemy} className="col gap-4">
           <span className="eyebrow enemy-text">{CT.enemy}</span>
-          <div className="fcard-chips">
-            {result.enemyRead.map((x, i) => <Chip key={i}>{enemyReadText(x)}</Chip>)}
-            <Archetypes groups={result.archetypes.enemy} />
-          </div>
+          <Highlights h={result.highlights.enemy} />
+          <div className="fcard-chips"><Archetypes groups={result.archetypes.enemy} /></div>
         </section>
         <section aria-label={CT.scalingSection} className="col gap-4 team-scaling">
           <span className="eyebrow">{CT.scaling}</span>

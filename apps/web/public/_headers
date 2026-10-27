@@ -7,6 +7,10 @@
 /champions/*
   Cache-Control: public, max-age=604800
 
+# Icônes des builds (objets, runes, sorts) : changent rarement (nouvel objet).
+/build/*
+  Cache-Control: public, max-age=604800
+
 # Stats du patch : revalidées à chaque chargement, pour suivre les mises à jour.
 /data/*
   Cache-Control: public, max-age=0, must-revalidate

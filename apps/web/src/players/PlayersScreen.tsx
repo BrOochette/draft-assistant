@@ -3,6 +3,7 @@ import { masteryLevel, PLAYERS_TEXT as T } from '@draft/i18n-fr';
 import { ROLES, type Champion, type PoolEntry, type Pools, type RiotIds, type Role } from '@draft/schemas';
 import { Bar, Chip, Icon, Portrait, SplitButton, useData } from '../ui';
 import { filterChampions } from '../draft/ChampionPicker';
+import { Splash } from '../fit/Cards';
 import { onePlayer, playersFileName, readPlayersFile, toPlayersFile, type ImportError, type ImportPreview } from './share';
 
 interface Props {
@@ -10,6 +11,9 @@ interface Props {
   onChange: (pools: Pools) => void;
   riotIds: RiotIds;
   onRiotIdsChange: (ids: RiotIds) => void;
+  /** Joueur marqué « Moi », null sans. */
+  me?: string | null;
+  onMeChange?: (me: string | null) => void;
 }
 
 const TRAIT_CHIPS: { label: string; has: (c: Champion) => boolean }[] = [
@@ -30,7 +34,7 @@ const readText = (file: File) =>
     reader.readAsText(file);
   });
 
-export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Props) => {
+export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange, me = null, onMeChange = () => {} }: Props) => {
   const { engine } = useData();
   const names = Object.keys(pools);
   const [sel, setSel] = useState(names[0] ?? '');
@@ -182,7 +186,7 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
 
   return (
     <main className="players">
-      <h1 className="h1">{T.title}</h1>
+      <h1 className="visually-hidden">{T.title}</h1>
       <div className="players-grid">
         <aside className="col gap-16 players-left">
           <section className="card col gap-10">
@@ -190,10 +194,14 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
             <ul className="plain-list gap-8">
               {names.map((p) => {
                 const roles = ROLES.filter((r) => (pools[p]?.[r]?.length ?? 0) > 0);
+                // Illustration du champion le mieux maîtrisé du joueur, comme les cartes joueurs de l'écran Draft.
+                const top = ROLES.flatMap((r) => pools[p]?.[r] ?? []).reduce<PoolEntry | null>((b, e) => (!b || e.mastery > b.mastery ? e : b), null);
+                const art = top ? engine.catalog.get(top.champion)?.ddragonId : undefined;
                 return (
                   <li key={p}>
-                    <button type="button" className={'list-btn' + (p === player ? ' is-on' : '')} aria-pressed={p === player} onClick={() => select(p)}>
-                      <span className="strong">{p}</span>
+                    <button type="button" className={'list-btn player-card' + (p === player ? ' is-on' : '') + (art ? ' has-art' : '')} aria-pressed={p === player} onClick={() => select(p)}>
+                      {art && <span className="member-art" aria-hidden="true"><img src={import.meta.env.BASE_URL + 'champions/centered/' + art + '.jpg'} alt="" loading="lazy" /></span>}
+                      <span className="row-gap"><span className="strong">{p}</span>{p === me && <span className="chip chip-pos me-chip">{T.me}</span>}</span>
                       <span className="small muted">{T.pools(roles)}</span>
                     </button>
                   </li>
@@ -321,6 +329,9 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
               value={riotIds[player] ?? ''}
               onChange={(e) => onRiotIdsChange({ ...riotIds, [player]: e.target.value })}
             />
+            <button type="button" className={'btn btn-sm me-toggle' + (me === player ? ' is-on' : '')} aria-pressed={me === player} title={T.meTip} onClick={() => onMeChange(me === player ? null : player)}>
+              {me === player && <Icon name="check" size={14} />}{T.me}
+            </button>
           </div>
           <div role="group" aria-label={T.role} className="row-gap wrap">
             {ROLES.map((r) => {
@@ -347,6 +358,7 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange }: Pro
               const traits = c ? TRAIT_CHIPS.filter((t) => t.has(c)).map((t) => t.label) : [];
               return (
                 <li key={p.champion} className="card pool-row">
+                  <Splash name={p.champion} />
                   <Portrait name={p.champion} size={52} label={p.champion} />
                   <div className="col gap-6 grow min0 pool-name">
                     <span className="detail-name">{p.champion}</span>

@@ -242,6 +242,17 @@ export const BANS_TEXT = {
 };
 
 export const COMPO_TEXT = {
+  highlights: 'Faits marquants',
+  bestMatchup: 'Meilleur matchup',
+  worstMatchup: 'Pire matchup',
+  bestDuo: 'Meilleur duo',
+  worstDuo: 'Pire duo',
+  strongest: 'Pick le plus fort',
+  weakest: 'Pick le plus faible',
+  noHighlights: 'Aucun pick connu',
+  pairVs: (a: string, b: string) => a + ' vs ' + b,
+  pairWith: (a: string, b: string) => a + ' + ' + b,
+  effectTip: 'Effet pondéré sur le pick, en points sur 20 (1 par point de win rate)',
   unit100: '/100',
   scalingChart: (phase: string, ally: string, enemy: string) => phase + ' · ' + ally + ' contre ' + enemy + ' (sur 10)',
   aside: 'Analyse de la composition',
@@ -304,6 +315,8 @@ export const PLAYERS_TEXT = {
   deletePlayer: 'Supprimer le joueur',
   riotId: 'Riot ID',
   riotIdPlaceholder: 'Nom#TAG',
+  me: 'Moi',
+  meTip: 'Build proposé pour le pick de ce joueur, hors draft en direct (en direct : le joueur connecté au client)',
   riotIdTip: 'Draft en direct : joueur reconnu par son Riot ID, sinon par son pseudo, à quelques fautes près, puis placé sur le rôle attribué par le client',
   role: 'Rôle',
   noPool: 'Aucun pool',
@@ -404,4 +417,28 @@ export const VIEW_TEXT = {
   versusTip: (ally: string, enemy: string) => 'Effet de ' + enemy + ' sur le win rate attendu de ' + ally + ' : écart lissé, pondéré (vis-à-vis ×1, autres lanes moins), en points',
   enemyWr: 'WR',
   enemyWrTip: (role: Role) => 'Win rate du champion en ' + role + ', toutes régions'
+};
+
+export const BUILD_TEXT = {
+  tab: (champion: string) => 'Build · ' + champion,
+  draftTab: 'Draft',
+  tabs: 'Vue du centre',
+  region: (champion: string) => 'Build de ' + champion,
+  title: (champion: string) => 'Build · ' + champion,
+  vs: (opponent: string) => 'vs ' + opponent,
+  runes: 'Runes',
+  spells: 'Sorts',
+  start: 'Départ',
+  boots: 'Bottes',
+  core: 'Objets principaux',
+  situational: 'Situationnels',
+  noSituational: 'Aucun',
+  others: 'Autres options',
+  or: 'Ou',
+  nth: (n: number) => (n === 1 ? '1er objet' : n + 'e objet'),
+  insteadOf: (item: string) => 'À la place de ' + item,
+  mostPlayed: 'Plus jouée',
+  bestWinRate: 'Meilleur win rate',
+  stats: (winRate: number, games: number) => 'WR ' + fmtPct(winRate) + ' · ' + fmtInt(games) + ' parties',
+  statsTip: 'Win rate des parties avec cette option sur ce rôle (Lolalytics)'
 };

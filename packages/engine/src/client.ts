@@ -14,6 +14,8 @@ export interface ClientSync {
   picking: ClientOrder;
   /** Side de ton équipe, null s'il est inconnu. */
   side: ClientDraft['side'];
+  /** Rôle du joueur connecté au client (sa case), null s'il est inconnu. */
+  localRole: Role | null;
 }
 
 export interface ClientOrder {
@@ -136,5 +138,7 @@ export const applyClientDraft = (current: DraftState, client: ClientDraft, data:
     enemy: client.enemy.flatMap((c, i) => (c.picking && order.enemy[i] ? [order.enemy[i]!] : []))
   };
 
-  return { draft: { assign, ally, enemy, allyBans, enemyBans }, hover, order, picking, side: client.side };
+  const local = client.ally.findIndex((c) => c.local);
+  const localRole = local >= 0 ? order.ally[local] ?? null : null;
+  return { draft: { assign, ally, enemy, allyBans, enemyBans }, hover, order, picking, side: client.side, localRole };
 };

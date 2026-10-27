@@ -209,7 +209,7 @@ if (!app.requestSingleInstanceLock()) {
     ipcMain.handle('stats:start', () => stats.start());
     ipcMain.handle('stats:cancel', () => stats.cancel());
     createWindow();
-    if (!SMOKE) startUpdater(() => BrowserWindow.getAllWindows()[0], () => bridge?.inChampSelect() ?? false);
+    if (!SMOKE) startUpdater(() => BrowserWindow.getAllWindows()[0]);
   });
   app.on('window-all-closed', () => {
     bridge?.close();

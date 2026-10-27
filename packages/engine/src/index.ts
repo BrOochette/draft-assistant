@@ -4,6 +4,7 @@ import { compScore, NEUTRAL_MEMBER, verdictOf } from './composition';
 import { allyContext, availability, enemyKnown, entryFor } from './context';
 import { evaluate, pointsOfWr } from './evaluate';
 import { archetypes, readAlly, readEnemy, scalingPhases, teamNotes } from './read';
+import { teamHighlights } from './highlights';
 import { counterPick } from './pickorder';
 import { recommendRole, roleAverage } from './recommend';
 import type { EngineData } from './stats-provider';
@@ -77,6 +78,10 @@ export const computeDraft = (state: DraftState, pools: Pools, data: EngineData, 
     archetypes: {
       ally: allyArchetypes,
       enemy: archetypes(enemies.map((x) => x.name), data.catalog)
+    },
+    highlights: {
+      ally: teamHighlights(roles.flatMap((r) => (r.locked ? [r.locked] : []))),
+      enemy: teamHighlights(roles.flatMap((r) => (r.enemyEval ? [r.enemyEval] : [])))
     }
   };
 };
@@ -87,6 +92,8 @@ export { availability, rolesByPlay, type Availability, type BanBlocked, type Blo
 export { compScore, verdictOf } from './composition';
 export { SUSTAINED_CLASSES } from './context';
 export { counterPick } from './pickorder';
+export { teamHighlights } from './highlights';
+export { ALTERNATIVES_MAX, HEALERS, HEAVY_DAMAGE, proposeBuild, SAME_DAMAGE_MIN, SITUATIONAL_MAX, TANKS_MIN, type BuildChoice, type BuildInput, type BuildOption, type BuildProposal, type BuildReason } from './build';
 export { allyWeight, boundPoints, SUSTAINED_LATE, SUSTAINED_POINTS, DUO_WEIGHT, evaluate, FIT_BONUS, POINTS_PER_WR, pointsOfWr, REDUNDANCY_FREE, REDUNDANCY_POINTS, LOW_SAMPLE_GAMES, MASTERY_POINT, matchupEffect, modeOf, otherEnemyWeight, totalScore } from './evaluate';
 export { ARCHETYPE_OF_CLASS } from './read';
 export { avgScal, clamp, wrScore } from './math';
