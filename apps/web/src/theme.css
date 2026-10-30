@@ -274,3 +274,21 @@ body[data-theme="teams"] .players .empty-pool { background: rgba(20, 20, 22, .6)
    pour que la liste des champions ne glisse pas dessous. */
 body[data-theme="teams"] .players .card { position: relative; }
 body[data-theme="teams"] .players .card:focus-within { z-index: 5; }
+
+/* Hors de l'écran Draft : fond sombre neutre, sans les couleurs des deux équipes (décidé le 30/10/2026). */
+body[data-theme="teams"]:not([data-screen="draft"]) {
+  background: radial-gradient(120% 80% at 50% 0%, #1b1d22 0%, #121316 55%, #0e0f11 100%) fixed;
+}
+body[data-theme="teams"]:not([data-screen="draft"]) .players .card {
+  background: rgba(255, 255, 255, .035);
+  border-color: rgba(255, 255, 255, .07);
+}
+body[data-theme="teams"]:not([data-screen="draft"]) .players .player-card,
+body[data-theme="teams"]:not([data-screen="draft"]) .players .pool-row {
+  background: rgba(255, 255, 255, .04);
+  border-color: rgba(255, 255, 255, .08);
+  border-left-color: var(--ally);
+}
+
+/* Boutons gris : bordure très légère (décidé le 30/10/2026). */
+body[data-theme="teams"] .btn:not(.btn-accent), body[data-theme="teams"] .square-btn { border: 1px solid rgba(255, 255, 255, .1); }

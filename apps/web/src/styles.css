@@ -106,7 +106,9 @@ button:disabled { cursor: not-allowed; }
 .portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* En-tête */
-.app { min-height: 100vh; }
+/* Mentions légales en bas de la fenêtre quand la page est plus courte qu'elle. */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.app > .app-screen { flex: 1 0 auto; }
 .header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 14px 32px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
 .brand-logo { display: block; flex: none; }
 .brand { display: flex; align-items: center; gap: 12px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; letter-spacing: .02em; }
@@ -866,43 +868,133 @@ button:disabled { cursor: not-allowed; }
 .highlight dd { display: flex; justify-content: space-between; gap: 8px; min-width: 0; }
 .highlight.is-alert { grid-template-columns: minmax(0, 1fr); }
 
-/* Centre : bascule entre la draft et le build de ton pick. */
+/* Centre : onglets fixes Bans · Picks · Build · Équipes. */
 .center-tabs { display: flex; gap: 4px; flex: none; }
 .center-tab { min-height: 32px; padding: 0 14px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, .08); background: rgba(255, 255, 255, .04); color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
 .center-tab.is-on { background: color-mix(in srgb, var(--ally) 18%, rgba(20, 20, 22, .8)); border-color: var(--ally); }
 .center-tab:focus-visible { outline: 2px solid var(--ally); outline-offset: 2px; }
+.center-empty { align-items: center; justify-content: center; }
 
-/* Build proposé : titre illustré, puis les blocs (runes, sorts, départ, bottes, objets) en grille. */
-.build-panel { overflow-x: hidden; overflow-y: auto; }
-.build-title { position: relative; overflow: clip; isolation: isolate; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px;
-  background: color-mix(in srgb, var(--ally) 13%, rgba(27, 27, 27, .72)); border-left: 3px solid var(--ally); }
-.build-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 10px; align-content: start; min-width: 0; }
-.build-block { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .06); min-width: 0; }
-.build-head { display: flex; flex-direction: column; gap: 2px; }
-.build-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.build-runes { display: flex; flex-direction: column; gap: 6px; }
-.build-items { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; }
-.build-icon { flex: none; display: inline-flex; border-radius: 6px; overflow: hidden; background: rgba(0, 0, 0, .35); }
-.build-icon img { width: 100%; height: 100%; display: block; }
-.build-icon.is-text { padding: 2px 6px; font-size: 12px; border-radius: 6px; }
+/* Champion en focus : un clic sur une carte ou une ligne le choisit pour l'onglet Build. */
+.fcard.is-selectable, .orow.is-selectable { cursor: pointer; }
+.fcard.is-selected, .orow.is-selected { outline: 2px solid var(--ally); outline-offset: -2px; }
+.fit-member.is-enemy .fit-member-info { background: none; border: 0; color: inherit; font: inherit; text-align: inherit; padding: 0; cursor: pointer; }
+.fit-member.is-enemy .fit-member-info:disabled { cursor: default; }
+
 .me-toggle.is-on { border-color: var(--pos); }
 .me-chip { padding: 0 6px; min-height: 0; font-size: 11px; }
 
-/* Build : autres options en petit sous chaque choix ; runes et objets sur toute la largeur. */
-.build-block.is-wide { grid-column: 1 / -1; }
-.build-pages { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
-.build-alts { display: flex; flex-direction: column; gap: 4px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, .06); }
-.build-alt { gap: 6px; }
-.build-core { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 10px; margin: 0; padding: 0; }
-.build-core-item { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+/* Build sur un seul écran : en-tête (champion, styles, picks), puis trois colonnes : runes, sorts / départ / bottes,
+   chemin d'objets et situationnels. Les autres options sont en petites icônes après « ou ». */
+.build-panel { overflow: hidden; gap: 10px; }
+.build-title { position: relative; overflow: clip; isolation: isolate; display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; padding: 8px 12px; border-radius: 10px; flex: none;
+  background: color-mix(in srgb, var(--ally) 13%, rgba(27, 27, 27, .72)); border-left: 3px solid var(--ally); }
+.build-title > :not(.pcard-bg) { position: relative; z-index: 1; }
+.build-styles { display: flex; flex-wrap: wrap; gap: 6px; }
+.build-style { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 8px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .1); color: inherit; font: inherit; cursor: pointer; }
+.build-style.is-on { background: color-mix(in srgb, var(--ally) 20%, rgba(20, 20, 22, .8)); border-color: var(--ally); }
+.build-style:focus-visible { outline: 2px solid var(--ally); outline-offset: 2px; }
+.build-picks { display: flex; justify-content: space-between; gap: 8px; flex: none; padding: 4px 8px; border-radius: 10px; background: rgba(12, 12, 14, .38); border: 1px solid rgba(255, 255, 255, .08); }
+.build-pick { position: relative; padding: 2px; border-radius: 8px; background: transparent; border: 2px solid transparent; cursor: pointer; opacity: .7; }
+.build-pick.is-ally { border-bottom-color: color-mix(in srgb, var(--ally) 60%, transparent); }
+.build-pick.is-enemy { border-bottom-color: color-mix(in srgb, var(--enemy) 60%, transparent); }
+.build-pick.is-on { opacity: 1; border-color: var(--ally); }
+.build-pick.is-enemy.is-on { border-color: var(--enemy); }
+.build-pick:hover { opacity: 1; }
+.build-pick-me { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); font-size: 9px; font-weight: 700; padding: 0 4px; border-radius: 4px; background: var(--ally); color: #fff; }
 
-/* Build : sorts, départ et bottes se partagent la largeur ; une option trop longue passe à la ligne. */
-.build-grid { display: flex; flex-direction: column; }
-.build-trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
-.build-alt { flex-wrap: wrap; row-gap: 2px; }
+/* Grille : runes sur toute la hauteur à gauche ; à droite, sorts, départ et bottes côte à côte, puis les objets. */
+.build-board { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(250px, 1fr) minmax(0, 3fr); grid-template-rows: auto minmax(0, 1fr); gap: 10px; }
+.build-board > .build-runes { grid-row: 1 / -1; }
+.build-basics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-width: 0; }
+.build-items { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; overflow-y: auto; }
+.build-items > .build-section:last-child { flex: 1; }
+.build-section { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .06); min-width: 0; }
+.build-runes { gap: 8px; }
+.build-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.build-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.build-keystones { display: flex; flex-direction: column; gap: 4px; }
+.build-keystone { display: flex; align-items: center; gap: 8px; width: 100%; padding: 4px 8px 4px 4px; border-radius: 8px; font: inherit; color: inherit; text-align: left; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .1); cursor: pointer; }
+.build-keystone.is-on { border-color: var(--ally); background: color-mix(in srgb, var(--ally) 18%, transparent); }
+.build-keystone:focus-visible { outline: 2px solid var(--ally); outline-offset: 2px; }
+.build-later { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, .06); }
+.build-later-slot { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.build-shards { line-height: 1.35; }
+.build-reason { line-height: 1.3; }
+.build-or { display: inline-flex; align-items: center; gap: 4px; margin-left: 4px; }
+.build-path, .build-path.plain-list { display: flex; flex-direction: row; align-items: flex-start; gap: 4px; margin: 0; padding: 0; }
+.build-step { display: flex; align-items: flex-start; gap: 4px; flex: 1; min-width: 0; }
+.build-step-body { align-items: flex-start; gap: 3px; min-width: 0; }
+.build-step-body .build-or { margin-left: 0; }
+.build-arrow { align-self: center; margin-top: -24px; font-size: 22px; color: var(--muted); padding: 0 2px; }
+.build-sits { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; }
+.build-sit .build-or { margin-left: auto; }
+.build-icon { flex: none; display: inline-flex; border-radius: 6px; overflow: hidden; background: rgba(0, 0, 0, .35); }
+.build-icon img { width: 100%; height: 100%; display: block; }
+.build-icon.is-text { padding: 2px 6px; font-size: 12px; border-radius: 6px; }
 
-/* Objets principaux : une carte par objet, ses autres options dedans ; situationnels : les autres options sous la raison. */
-.build-core-item { padding: 8px 10px; border-radius: 8px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08); }
-.build-core-item .build-alts { padding-left: 10px; border-top: 0; border-left: 2px solid rgba(255, 255, 255, .12); padding-top: 0; }
-.build-sit { align-items: flex-start; }
-.build-sit-alts { flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+/* Écran moins large : le chemin d'objets passe sous les runes et les sorts ; le panneau défile si besoin. */
+@media (max-width: 1399px) {
+  .build-board { grid-template-columns: minmax(230px, 1fr) minmax(0, 2fr); }
+  .build-basics { grid-template-columns: minmax(0, 1fr); }
+  .build-panel { overflow-y: auto; }
+}
+
+/* Équipes : bandeau ennemi en miroir du tien (note à droite), comme les lignes des picks en dessous. */
+.team-bar.is-enemy { grid-template-columns: minmax(0, 1fr) auto; }
+.team-bar.is-enemy .team-bar-score { grid-column: 2; grid-row: 1 / -1; align-items: flex-end; text-align: right; }
+.team-bar.is-enemy .team-bar-score .row-gap { flex-direction: row-reverse; }
+.team-bar.is-enemy .team-bar-top, .team-bar.is-enemy .team-bar-crits { grid-column: 1; }
+.team-bar.is-enemy .team-bar-top { justify-content: flex-end; }
+.team-bar.is-enemy .team-bar-top .dmg { margin-left: auto; }
+.team-bar.is-enemy .team-bar-crits { direction: rtl; }
+.team-bar.is-enemy .team-bar-crit { direction: ltr; align-items: flex-end; text-align: right; }
+
+/* Runes : une ligne par rune principale, puis l'arborescence (arbre principal, secondaire, fragments), runes prises en couleur. */
+.build-runes { overflow-y: auto; min-height: 0; }
+.build-runes > * { flex-shrink: 0; }
+.build-keystone-stats { align-items: flex-end; }
+.rune-tree { display: flex; flex-direction: column; gap: 4px; }
+.rune-bottom { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; margin-top: 12px; }
+.rune-rows .rune-row { gap: 8px; }
+.rune-rows { display: flex; flex-direction: column; align-items: center; align-self: flex-start; gap: 4px; }
+.rune-row { display: flex; gap: 6px; align-items: center; }
+.rune-cell { display: inline-flex; border-radius: 50%; opacity: .28; filter: grayscale(1); }
+.rune-rows .rune-cell .build-icon { background: transparent; }
+/* Le thème arrondit tout à 6 px : les runes restent rondes, cercle compris. */
+body[data-theme="teams"] .rune-cell, body[data-theme="teams"] .rune-cell .build-icon, body[data-theme="teams"] .rune-cell img { border-radius: 50%; }
+.rune-cell.is-picked { opacity: 1; filter: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ally) 55%, transparent); }
+
+/* Sorts, départ, bottes : les autres options passent à la ligne plutôt que de déborder. */
+.build-basics .build-row { flex-wrap: wrap; row-gap: 4px; }
+.build-basics .build-or { margin-left: 0; flex-wrap: wrap; }
+
+/* Colonne des runes : éléments aérés sur toute la hauteur (cartes, arbre principal, secondaire et fragments). */
+.build-board > .build-runes { gap: 14px; }
+.build-runes .build-keystones { gap: 6px; }
+.build-runes .rune-tree { gap: 8px; align-items: center; }
+.build-runes .rune-rows { align-self: center; }
+.build-runes .rune-rows { gap: 8px; }
+.build-runes .rune-rows .rune-row { gap: 4px; justify-content: center; }
+.rune-slot { display: inline-flex; justify-content: center; flex: none; }
+.build-runes .rune-bottom { margin-top: 16px; gap: 12px; flex-wrap: nowrap; justify-content: center; }
+
+
+/* Écran Joueurs (revu le 30/10/2026) : à gauche, la liste avec le partage en en-tête et la création en bas ; au
+   centre, l'en-tête du joueur, les rôles, l'ajout d'un champion et le pool ; à droite, la couverture et l'échelle. */
+@media (min-width: 1100px) {
+  .players-grid { display: grid; grid-template-columns: 320px minmax(0, 1fr) 300px; align-items: start; }
+  .players-left, .players-center, .players-right { min-width: 0; }
+}
+.players-list > .row-between { flex-wrap: wrap; gap: 8px; }
+.players-share { gap: 4px; }
+.players-share .btn { min-height: 30px; padding: 0 10px; }
+.players-create { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, .06); }
+.player-head { padding: 14px 16px; }
+.player-head .h2 { margin: 0; }
+.players-roles-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.players-add { flex: 1 1 240px; display: grid; gap: 6px; }
+.players-add .input { min-height: 52px; }
+.players-add .input, .players-create .input { background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .12); }
+.players-roles-row > [role="group"] { flex: none; }
+.players-add .combo, .players-add .input { width: 100%; }

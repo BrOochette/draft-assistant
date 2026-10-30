@@ -93,7 +93,7 @@ export { compScore, verdictOf } from './composition';
 export { SUSTAINED_CLASSES } from './context';
 export { counterPick } from './pickorder';
 export { teamHighlights } from './highlights';
-export { ALTERNATIVES_MAX, HEALERS, HEAVY_DAMAGE, proposeBuild, SAME_DAMAGE_MIN, SITUATIONAL_MAX, TANKS_MIN, type BuildChoice, type BuildInput, type BuildOption, type BuildProposal, type BuildReason } from './build';
+export { ALTERNATIVES_MAX, HEALERS, HEAVY_DAMAGE, KEYSTONES_MAX, LATE_OPTIONS_MAX, PATH_MIN_GAMES, PATH_MIN_SHARE, PATHS_MAX, proposeBuild, SAME_DAMAGE_MIN, SITUATIONAL_MAX, TANKS_MIN, type BuildChoice, type BuildInput, type BuildOption, type BuildPath, type BuildProposal, type BuildReason } from './build';
 export { allyWeight, boundPoints, SUSTAINED_LATE, SUSTAINED_POINTS, DUO_WEIGHT, evaluate, FIT_BONUS, POINTS_PER_WR, pointsOfWr, REDUNDANCY_FREE, REDUNDANCY_POINTS, LOW_SAMPLE_GAMES, MASTERY_POINT, matchupEffect, modeOf, otherEnemyWeight, totalScore } from './evaluate';
 export { ARCHETYPE_OF_CLASS } from './read';
 export { avgScal, clamp, wrScore } from './math';

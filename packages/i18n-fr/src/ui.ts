@@ -1,6 +1,6 @@
 // Textes des écrans, regroupés par écran. Les phrases paramétrées sont des fonctions.
 import type { Archetype, PoolStatus } from '@draft/engine';
-import type { Role } from '@draft/schemas';
+import type { ItemStyle, Role } from '@draft/schemas';
 import { fmt1, fmtDelta, fmtInt, fmtPct, fmtSigned, fmtScal } from './format';
 
 export const ARCHETYPE_LABEL: Record<Archetype, string> = {
@@ -420,8 +420,20 @@ export const VIEW_TEXT = {
 };
 
 export const BUILD_TEXT = {
-  tab: (champion: string) => 'Build · ' + champion,
-  draftTab: 'Draft',
+  bansTab: 'Bans',
+  picksTab: 'Picks',
+  buildTab: 'Build',
+  teamsTab: 'Équipes',
+  noBuild: 'Aucun build : aucun champion en focus',
+  keystones: 'Runes principales',
+  shards: 'Fragments',
+  noPage: 'Page complète non collectée',
+  nth: (n: number) => n + 'e objet',
+  games: 'parties',
+  explore: (champion: string, role: string) => 'Build de ' + champion + ' en ' + role,
+  picks: 'Builds des picks',
+  me: 'Moi',
+  enemy: 'ennemi',
   tabs: 'Vue du centre',
   region: (champion: string) => 'Build de ' + champion,
   title: (champion: string) => 'Build · ' + champion,
@@ -434,11 +446,13 @@ export const BUILD_TEXT = {
   situational: 'Situationnels',
   noSituational: 'Aucun',
   others: 'Autres options',
-  or: 'Ou',
-  nth: (n: number) => (n === 1 ? '1er objet' : n + 'e objet'),
-  insteadOf: (item: string) => 'À la place de ' + item,
-  mostPlayed: 'Plus jouée',
-  bestWinRate: 'Meilleur win rate',
+  or: 'ou',
+  styles: 'Styles de build',
+  style: { ap: 'AP', crit: 'Crit', onhit: 'On-hit', lethality: 'Létalité', bruiser: 'Bruiser', tank: 'Tank', ad: 'AD', support: 'Enchanteur' } as Record<ItemStyle, string>,
+  general: 'Build général',
+  styleGames: (games: number) => fmtInt(games) + ' parties',
+  wr: (winRate: number) => fmtPct(winRate),
+  styleTip: 'Win rate des parties dont le 1er objet est de ce style, sur ce rôle (Lolalytics)',
   stats: (winRate: number, games: number) => 'WR ' + fmtPct(winRate) + ' · ' + fmtInt(games) + ' parties',
   statsTip: 'Win rate des parties avec cette option sur ce rôle (Lolalytics)'
 };

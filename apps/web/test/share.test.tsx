@@ -49,7 +49,7 @@ describe('partage de la liste des joueurs', () => {
     location.hash = '#/joueurs';
     render(<App initialData={sampleAppData()} />);
     await screen.findByRole('button', { name: /^Lou/ });
-    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    const share = within(screen.getByRole('region', { name: 'Joueurs' }));
     const content = JSON.stringify(toPlayersFile({ Lou: { ADC: [{ champion: 'Jinx', mastery: 9 }] }, Zoé: { Support: [{ champion: 'Janna', mastery: 7 }] } }, { Zoé: 'Zoé#EUW' }));
     await user.upload(share.getByLabelText('Fichier de joueurs à importer'), new File([content], 'joueurs.json', { type: 'application/json' }));
 
@@ -71,7 +71,7 @@ describe('partage de la liste des joueurs', () => {
     location.hash = '#/joueurs';
     render(<App initialData={sampleAppData()} />);
     await screen.findByRole('button', { name: /^Lou/ });
-    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    const share = within(screen.getByRole('region', { name: 'Joueurs' }));
     await user.upload(share.getByLabelText('Fichier de joueurs à importer'), new File(['{"a":1}'], 'autre.json', { type: 'application/json' }));
     expect(await share.findByRole('alert')).toHaveTextContent('n’est pas une liste de joueurs');
   });
@@ -83,7 +83,7 @@ describe('partage de la liste des joueurs', () => {
     await screen.findByRole('button', { name: /^Lou/ });
     const writeText = vi.fn(() => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    const share = within(screen.getByRole('region', { name: 'Joueurs' }));
     await user.click(share.getByRole('button', { name: 'Copier' }));
     expect(share.getByRole('status')).toHaveTextContent('JSON copié');
     const json = JSON.parse((writeText.mock.calls[0] as unknown as [string])[0]);
@@ -96,7 +96,7 @@ describe('partage de la liste des joueurs', () => {
     location.hash = '#/joueurs';
     render(<App initialData={sampleAppData()} />);
     await screen.findByRole('button', { name: /^Lou/ });
-    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    const share = within(screen.getByRole('region', { name: 'Joueurs' }));
     const readText = vi.fn(() => Promise.resolve('pas du json'));
     Object.defineProperty(navigator, 'clipboard', { value: { readText }, configurable: true });
     await user.click(share.getByRole('button', { name: 'Coller' }));
@@ -115,7 +115,7 @@ describe('partage de la liste des joueurs', () => {
     location.hash = '#/joueurs';
     render(<App initialData={sampleAppData()} />);
     await screen.findByRole('button', { name: /^Lou/ });
-    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    const share = within(screen.getByRole('region', { name: 'Joueurs' }));
     Object.defineProperty(navigator, 'clipboard', { value: { readText: () => Promise.reject(new Error('refusé')) }, configurable: true });
     await user.click(share.getByRole('button', { name: 'Coller' }));
     await user.click(share.getByRole('textbox', { name: 'JSON des joueurs' }));
@@ -152,7 +152,7 @@ describe('partage de la liste des joueurs', () => {
     location.hash = '#/joueurs';
     render(<App initialData={sampleAppData()} />);
     await screen.findByRole('button', { name: /^Lou/ });
-    const share = within(screen.getByRole('region', { name: 'Partager la liste' }));
+    const share = within(screen.getByRole('region', { name: 'Joueurs' }));
     const input = share.getByLabelText('Fichier de joueurs à importer') as HTMLInputElement;
     const pick = vi.spyOn(input, 'click').mockImplementation(() => {});
     await user.click(share.getByRole('button', { name: 'Autre façon d’importer' }));

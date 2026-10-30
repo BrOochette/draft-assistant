@@ -189,8 +189,30 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange, me = 
       <h1 className="visually-hidden">{T.title}</h1>
       <div className="players-grid">
         <aside className="col gap-16 players-left">
-          <section className="card col gap-10">
-            <h2 className="h3">{T.players}</h2>
+          <section className="card col gap-10 players-list" aria-label={T.players}>
+            <div className="row-between">
+              <h2 className="h3">{T.players}</h2>
+              {/* Copier / Coller la liste ; la flèche de chaque bouton propose la même chose en fichier. */}
+              <div role="group" aria-label={T.share} className="row-gap players-share">
+                <SplitButton
+                  title={T.copyTip}
+                  disabled={names.length === 0}
+                  onClick={() => void copyPlayers()}
+                  moreLabel={T.exportMore}
+                  more={{ label: <><Icon name="download" />{T.exportFile}</>, title: T.exportTip, onClick: () => exportPlayers() }}
+                >
+                  <Icon name="copy" />{T.copyButton}
+                </SplitButton>
+                <SplitButton
+                  title={T.pasteTip}
+                  onClick={() => void pasteClipboard()}
+                  moreLabel={T.importMore}
+                  more={{ label: <><Icon name="upload" />{T.importFileButton}</>, title: T.importTip, onClick: () => fileInput.current?.click() }}
+                >
+                  <Icon name="paste" />{T.pasteButton}
+                </SplitButton>
+              </div>
+            </div>
             <ul className="plain-list gap-8">
               {names.map((p) => {
                 const roles = ROLES.filter((r) => (pools[p]?.[r]?.length ?? 0) > 0);
@@ -209,34 +231,9 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange, me = 
               })}
             </ul>
             {names.length === 0 && <span className="small muted">{T.noPlayer}</span>}
-          </section>
-          <section className="card col gap-10">
-            <h2 className="h3">{T.create}</h2>
-            <label htmlFor="player-name" className="small muted">{T.nickname}</label>
-            <input id="player-name" className="input" value={newPlayer} onChange={(e) => setNewPlayer(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addPlayer()} />
-            <button type="button" className="btn btn-accent" disabled={!newPlayer.trim() || !!pools[newPlayer.trim()]} onClick={addPlayer}>{T.createButton}</button>
-          </section>
-          <section className="card col gap-10" aria-label={T.share}>
-            <h2 className="h3">{T.share}</h2>
-            {/* Copier / Coller en premier ; la flèche de chaque bouton propose la même chose en fichier. */}
-            <div className="row-gap wrap">
-              <SplitButton
-                title={T.copyTip}
-                disabled={names.length === 0}
-                onClick={() => void copyPlayers()}
-                moreLabel={T.exportMore}
-                more={{ label: <><Icon name="download" />{T.exportFile}</>, title: T.exportTip, onClick: () => exportPlayers() }}
-              >
-                <Icon name="copy" />{T.copyButton}
-              </SplitButton>
-              <SplitButton
-                title={T.pasteTip}
-                onClick={() => void pasteClipboard()}
-                moreLabel={T.importMore}
-                more={{ label: <><Icon name="upload" />{T.importFileButton}</>, title: T.importTip, onClick: () => fileInput.current?.click() }}
-              >
-                <Icon name="paste" />{T.pasteButton}
-              </SplitButton>
+            <div className="players-create">
+              <input id="player-name" className="input" aria-label={T.nickname} placeholder={T.nickname} value={newPlayer} onChange={(e) => setNewPlayer(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addPlayer()} />
+              <button type="button" className="btn btn-accent" disabled={!newPlayer.trim() || !!pools[newPlayer.trim()]} onClick={addPlayer}>{T.createButton}</button>
             </div>
             {pasting && (
               <div className="col gap-8">
@@ -292,47 +289,51 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange, me = 
 
         {player && (
         <section className="col gap-16 players-center">
-          <div className="row-between wrap">
-            <h2 className="h2">{T.poolsOf(player)}</h2>
-            {confirmDelete ? (
-              <div role="group" aria-label={T.confirmDelete(player)} className="row-gap wrap">
-                <span className="small warn-text strong">{T.deleteAsk(player)}</span>
-                <button type="button" className="btn btn-danger" onClick={deletePlayer}>{T.deleteYes}</button>
-                <button type="button" className="btn" onClick={() => setConfirmDelete(false)}>{T.cancel}</button>
-              </div>
-            ) : (
-              <div className="row-gap wrap player-actions">
-                {copiedOne != null && <span role="status" className={'small ' + (copiedOne ? 'pos-text' : 'neg-text')}>{copiedOne ? T.copied : T.copyFailed}</span>}
-                <SplitButton
-                  title={T.copyOneTip(player)}
-                  onClick={() => void copyOne()}
-                  moreLabel={T.exportMore}
-                  more={{ label: <><Icon name="download" />{T.exportFile}</>, title: T.exportOneTip(player), onClick: () => exportPlayers(player) }}
-                >
-                  <Icon name="copy" />{T.copyOne}
-                </SplitButton>
-                <button type="button" className="btn neg-text" onClick={() => setConfirmDelete(true)}>
-                  <Icon name="close" size={14} />{T.deletePlayer}
-                </button>
-              </div>
-            )}
+          <div className="card col gap-10 player-head">
+            <div className="row-between wrap">
+              <h2 className="h2">{T.poolsOf(player)}</h2>
+              {confirmDelete ? (
+                <div role="group" aria-label={T.confirmDelete(player)} className="row-gap wrap">
+                  <span className="small warn-text strong">{T.deleteAsk(player)}</span>
+                  <button type="button" className="btn btn-danger" onClick={deletePlayer}>{T.deleteYes}</button>
+                  <button type="button" className="btn" onClick={() => setConfirmDelete(false)}>{T.cancel}</button>
+                </div>
+              ) : (
+                <div className="row-gap wrap player-actions">
+                  {copiedOne != null && <span role="status" className={'small ' + (copiedOne ? 'pos-text' : 'neg-text')}>{copiedOne ? T.copied : T.copyFailed}</span>}
+                  <SplitButton
+                    title={T.copyOneTip(player)}
+                    onClick={() => void copyOne()}
+                    moreLabel={T.exportMore}
+                    more={{ label: <><Icon name="download" />{T.exportFile}</>, title: T.exportOneTip(player), onClick: () => exportPlayers(player) }}
+                  >
+                    <Icon name="copy" />{T.copyOne}
+                  </SplitButton>
+                  <button type="button" className="btn neg-text" onClick={() => setConfirmDelete(true)}>
+                    <Icon name="close" size={14} />{T.deletePlayer}
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="row-gap wrap">
+              <label htmlFor="riot-id" className="small muted" title={T.riotIdTip}>{T.riotId}</label>
+              <input
+                id="riot-id"
+                className="input riot-id"
+                placeholder={T.riotIdPlaceholder}
+                autoComplete="off"
+                spellCheck={false}
+                title={T.riotIdTip}
+                value={riotIds[player] ?? ''}
+                onChange={(e) => onRiotIdsChange({ ...riotIds, [player]: e.target.value })}
+              />
+              <button type="button" className={'btn btn-sm me-toggle' + (me === player ? ' is-on' : '')} aria-pressed={me === player} title={T.meTip} onClick={() => onMeChange(me === player ? null : player)}>
+                {me === player && <Icon name="check" size={14} />}{T.me}
+              </button>
+            </div>
           </div>
-          <div className="row-gap wrap">
-            <label htmlFor="riot-id" className="small muted" title={T.riotIdTip}>{T.riotId}</label>
-            <input
-              id="riot-id"
-              className="input riot-id"
-              placeholder={T.riotIdPlaceholder}
-              autoComplete="off"
-              spellCheck={false}
-              title={T.riotIdTip}
-              value={riotIds[player] ?? ''}
-              onChange={(e) => onRiotIdsChange({ ...riotIds, [player]: e.target.value })}
-            />
-            <button type="button" className={'btn btn-sm me-toggle' + (me === player ? ' is-on' : '')} aria-pressed={me === player} title={T.meTip} onClick={() => onMeChange(me === player ? null : player)}>
-              {me === player && <Icon name="check" size={14} />}{T.me}
-            </button>
-          </div>
+          {/* Rôles, puis l'ajout d'un champion sur la même ligne. */}
+          <div className="players-roles-row">
           <div role="group" aria-label={T.role} className="row-gap wrap">
             {ROLES.map((r) => {
               const empty = !(pools[player]?.[r]?.length);
@@ -343,6 +344,70 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange, me = 
                 </button>
               );
             })}
+          </div>
+          <div className="players-add">
+              <label htmlFor="champ-name" className="visually-hidden">{T.addFor(player, role)}</label>
+              <div className="combo">
+                <input
+                  id="champ-name"
+                  className="input"
+                  role="combobox"
+                  autoComplete="off"
+                  aria-expanded={listOpen}
+                  aria-controls="champ-options"
+                  aria-activedescendant={listOpen && current >= 0 ? 'champ-option-' + current : undefined}
+                  placeholder={T.search}
+                  title={T.addFor(player, role)}
+                  value={newChamp}
+                  onChange={(e) => {
+                    setNewChamp(e.target.value);
+                    setActive(0);
+                    setListOpen(true);
+                  }}
+                  onFocus={() => setListOpen(true)}
+                  onBlur={() => setListOpen(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setListOpen(true);
+                      setActive(Math.max(0, Math.min(current + 1, options.length - 1)));
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setActive(Math.max(current - 1, 0));
+                    } else if (e.key === 'Enter' && listOpen && current >= 0) {
+                      addChampion(options[current]!);
+                    } else if (e.key === 'Escape') {
+                      setListOpen(false);
+                    }
+                  }}
+                />
+                {listOpen && (
+                  <ul id="champ-options" role="listbox" aria-label={T.champions(role)} className="combo-list">
+                    {options.length === 0 && <li className="combo-empty muted">{T.notFound}</li>}
+                    {options.map((n, i) => (
+                      <li
+                        key={n}
+                        id={'champ-option-' + i}
+                        role="option"
+                        aria-label={n}
+                        aria-selected={i === current}
+                        className={'combo-option' + (i === current ? ' is-active' : '')}
+                        // mousedown : avant le blur du champ, qui fermerait la liste.
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          addChampion(n);
+                        }}
+                        onMouseEnter={() => setActive(i)}
+                      >
+                        <Portrait name={n} size={28} />
+                        <span className="grow">{n}</span>
+                        <span className="small muted">{engine.catalog.get(n)?.roles.join(', ')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+          </div>
           </div>
 
           {pool.length === 0 && (
@@ -387,70 +452,6 @@ export const PlayersScreen = ({ pools, onChange, riotIds, onRiotIdsChange, me = 
 
         {player && (
         <aside className="col gap-16 players-right">
-          <section className="card col gap-10">
-            <h2 className="h3">{T.add}</h2>
-            <label htmlFor="champ-name" className="small muted">{T.addFor(player, role)}</label>
-            <div className="combo">
-              <input
-                id="champ-name"
-                className="input"
-                role="combobox"
-                autoComplete="off"
-                aria-expanded={listOpen}
-                aria-controls="champ-options"
-                aria-activedescendant={listOpen && current >= 0 ? 'champ-option-' + current : undefined}
-                placeholder={T.search}
-                value={newChamp}
-                onChange={(e) => {
-                  setNewChamp(e.target.value);
-                  setActive(0);
-                  setListOpen(true);
-                }}
-                onFocus={() => setListOpen(true)}
-                onBlur={() => setListOpen(false)}
-                onKeyDown={(e) => {
-                  if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    setListOpen(true);
-                    setActive(Math.max(0, Math.min(current + 1, options.length - 1)));
-                  } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    setActive(Math.max(current - 1, 0));
-                  } else if (e.key === 'Enter' && listOpen && current >= 0) {
-                    addChampion(options[current]!);
-                  } else if (e.key === 'Escape') {
-                    setListOpen(false);
-                  }
-                }}
-              />
-              {listOpen && (
-                <ul id="champ-options" role="listbox" aria-label={T.champions(role)} className="combo-list">
-                  {options.length === 0 && <li className="combo-empty muted">{T.notFound}</li>}
-                  {options.map((n, i) => (
-                    <li
-                      key={n}
-                      id={'champ-option-' + i}
-                      role="option"
-                      aria-label={n}
-                      aria-selected={i === current}
-                      className={'combo-option' + (i === current ? ' is-active' : '')}
-                      // mousedown : avant le blur du champ, qui fermerait la liste.
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        addChampion(n);
-                      }}
-                      onMouseEnter={() => setActive(i)}
-                    >
-                      <Portrait name={n} size={28} />
-                      <span className="grow">{n}</span>
-                      <span className="small muted">{engine.catalog.get(n)?.roles.join(', ')}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
-
           <section className="card col gap-10">
             <h2 className="h3">{T.coverage(role)}</h2>
             {coverage.map((v) => (

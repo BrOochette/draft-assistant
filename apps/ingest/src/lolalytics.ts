@@ -63,6 +63,16 @@ const ITEM_MIN_PR = 1;
 /** Options d'un slot d'objet gardées à partir de ce pick rate (en %), au plus SLOT_MAX. */
 const SLOT_MIN_PR = 5;
 const SLOT_MAX = 4;
+/** 1er objet : options gardées à partir de ce pick rate, au plus FIRST_SLOT_MAX (styles de build peu joués compris). */
+const FIRST_SLOT_MIN_PR = 1;
+const FIRST_SLOT_MAX = 12;
+/** 4e, 5e et 6e objets : options gardées à partir de ce pick rate, au plus SLOT_MAX. */
+const LATE_SLOT_MIN_PR = 1;
+/** Runes gardées à partir de ce pick rate dans l'arbre principal (en %). */
+const RUNE_MIN_PR = 3;
+/** Trios d'objets gardés à partir de ce nombre de parties, au plus SETS_MAX. */
+const SET_MIN_GAMES = 100;
+const SETS_MAX = 40;
 /** Page de runes au meilleur win rate gardée à partir de ce nombre de parties. */
 const RUNE_PAGE_MIN_GAMES = 500;
 /** Bottes de base, « sans bottes » et bottes de la rune Chaussures magiques : pas des choix de bottes. */
@@ -78,7 +88,7 @@ const int = (v: unknown) => Math.round(Number(v) || 0);
 export const parseBuild = (data: Record<string, unknown>): Build => {
   type Summary = {
     runes?: { wr?: number; n?: number; set?: { pri?: number[]; sec?: number[]; mod?: number[] } };
-    items?: { core?: { set?: number[]; wr?: number; n?: number } };
+    items?: { core?: { set?: number[]; wr?: number; n?: number }; item6?: { id: number; n: number; wr: number }[] };
   };
   const summary = (data.summary ?? {}) as { pick?: Summary; win?: Summary };
   const pick = summary.pick ?? {};
@@ -106,7 +116,22 @@ export const parseBuild = (data: Record<string, unknown>): Build => {
     starts: sets(data.startSet, START_MIN_PR, 3),
     boots,
     ...(core?.set?.length && { core: { items: core.set, winRate: Number(core.wr ?? 0), games: int(core.n) } }),
-    slots: [data.item1, data.item2, data.item3].map((list) => singles(list, SLOT_MIN_PR).slice(0, SLOT_MAX)),
+    slots: [
+      singles(data.item1, FIRST_SLOT_MIN_PR).slice(0, FIRST_SLOT_MAX),
+      ...[data.item2, data.item3].map((list) => singles(list, SLOT_MIN_PR).slice(0, SLOT_MAX)),
+      ...[data.item4, data.item5].map((list) => singles(list, LATE_SLOT_MIN_PR).slice(0, SLOT_MAX)),
+      // 6e objet : absent des listes par slot, seulement dans le résumé (les plus joués).
+      (pick.items?.item6 ?? []).slice(0, SLOT_MAX).map((x): [number, number, number] => [x.id, Number(x.wr), int(x.n)])
+    ],
+    sets: sets(data.builtBootSet3, 0, 1000).filter(([, , n]) => n >= SET_MIN_GAMES).slice(0, SETS_MAX),
+    runeStats: Object.entries(((data.runes as { stats?: Record<string, number[][]> } | undefined)?.stats) ?? {})
+      .flatMap(([id, uses]): [number, number, number][] => {
+        // 1re ligne : la rune dans l'arbre principal [pick rate, win rate, parties].
+        const u = uses[0];
+        // Clés non numériques (arbres, totaux) : ignorées.
+        return u && /^\d+$/.test(id) && Number(u[0]) >= RUNE_MIN_PR && Number.isFinite(Number(u[1])) ? [[Number(id), Number(u[1]), int(u[2])]] : [];
+      })
+      .sort((a, b) => b[2] - a[2]),
     items: items.slice(0, 30)
   };
 };

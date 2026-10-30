@@ -84,8 +84,15 @@ export const BuildSchema = z.object({
   boots: z.array(idSample),
   /** Trois premiers objets les plus joués ensemble, bottes comprises. */
   core: z.object({ items: z.array(itemId), winRate: z.number(), games: z.number().int() }).optional(),
-  /** Options du 1er, du 2e et du 3e objet, bottes comprises, du plus joué au moins joué. */
+  /**
+   * Options du 1er au 6e objet, bottes comprises, du plus joué au moins joué (les collectes antérieures s'arrêtent au
+   * 3e). Le 1er objet garde aussi les options peu jouées : il fixe le style du build (AP, tank…).
+   */
   slots: z.array(z.array(idSample)),
+  /** Trios d'objets les plus joués (trois premiers objets dans l'ordre, bottes comprises). Absents des collectes antérieures. */
+  sets: z.array(setSample).default([]),
+  /** Runes prises dans l'arbre principal, avec leur win rate et leurs parties (keystones comprises). Absentes des collectes antérieures. */
+  runeStats: z.array(idSample).default([]),
   /** Objets construits sur ce rôle, hors bottes, du plus joué au moins joué. */
   items: z.array(idSample)
 });
@@ -96,13 +103,23 @@ export const ITEM_TAGS = ['boots', 'mr', 'armor', 'antiheal', 'antitank'] as con
 export const ItemTagSchema = z.enum(ITEM_TAGS);
 export type ItemTag = z.infer<typeof ItemTagSchema>;
 
+/** Style de build auquel appartient un objet (AP, critique, tank…). */
+export const ITEM_STYLES = ['ap', 'crit', 'onhit', 'lethality', 'bruiser', 'tank', 'ad', 'support'] as const;
+export const ItemStyleSchema = z.enum(ITEM_STYLES);
+export type ItemStyle = z.infer<typeof ItemStyleSchema>;
+
 /** Objets, runes et sorts d'invocateur (Data Dragon, en français), fournis avec l'appli. */
 export const BuildCatalogSchema = z.object({
   version: z.string(),
-  items: z.record(z.string(), z.object({ name: z.string(), tags: z.array(ItemTagSchema) })),
+  /** `style` : absent pour les bottes, les objets de départ et les composants sans style marqué. */
+  items: z.record(z.string(), z.object({ name: z.string(), tags: z.array(ItemTagSchema), style: ItemStyleSchema.optional() })),
   /** Runes et fragments ; `tree` : arbre de la rune (absent pour les fragments). */
-  runes: z.record(z.string(), z.object({ name: z.string(), tree: z.number().int().optional() })),
-  trees: z.record(z.string(), z.object({ name: z.string() })),
+  /** `keystone` : rune principale d'un arbre (1re ligne). */
+  runes: z.record(z.string(), z.object({ name: z.string(), tree: z.number().int().optional(), keystone: z.boolean().optional() })),
+  /** Arbres de runes : lignes de runes, la 1re étant celle des runes principales (keystones). Absentes des catalogues antérieurs. */
+  trees: z.record(z.string(), z.object({ name: z.string(), slots: z.array(z.array(z.number().int())).default([]) })),
+  /** Lignes de fragments (attaque, polyvalence, défense). Absentes des catalogues antérieurs. */
+  shardRows: z.array(z.array(z.number().int())).default([]),
   spells: z.record(z.string(), z.object({ name: z.string() })),
   /** Identifiants Data Dragon des champions à distance (portée d'attaque d'au moins 300). */
   ranged: z.array(z.string())

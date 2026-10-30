@@ -110,6 +110,11 @@ export const App = ({ initialData, initialPools }: Props) => {
     dispatch({ type: 'syncClient', ...applyClientDraft(draftRef.current, client.draft, data.engine, players, fresh) });
   }, [client.draft, data, pools, players]);
 
+  // Écran affiché, pour le thème : le fond aux couleurs des deux équipes n'est que sur l'écran Draft.
+  useEffect(() => {
+    document.body.dataset.screen = screen;
+  }, [screen]);
+
   useEffect(() => {
     const onHash = () => setScreen(screenFromHash());
     window.addEventListener('hashchange', onHash);

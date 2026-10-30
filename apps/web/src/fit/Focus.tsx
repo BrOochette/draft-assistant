@@ -7,6 +7,7 @@ import { RoleModes } from '../draft/modes';
 import { ScoreStats, ScoreSub, ScoreValue } from '../draft/score';
 import { Splash } from './Cards';
 import { Contribs } from './parts';
+import { useChampionFocus } from './Build';
 
 // Centre de la vue client : le rôle choisi, avec ses champions du pool en cartes détaillées
 // et, à côté, la liste des autres (hors pool, ou sans pool le reste du rôle et les rôles secondaires).
@@ -26,8 +27,11 @@ export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = f
   side?: 'ally' | 'enemy';
   /** Sous le nom, à la place du joueur. */
   sub?: string;
-}) => (
-  <article className={'fcard' + (rank === 1 || highlight ? ' is-first' : '') + (compact ? ' is-compact' : '') + (side === 'enemy' ? ' is-enemy' : '')} aria-label={C.group(e.champion, e.points.value, false)}>
+}) => {
+  // Un clic sur la carte met le champion en focus (onglet Build).
+  const focus = useChampionFocus({ champion: e.champion, role: row.role, side });
+  return (
+  <article className={'fcard' + (rank === 1 || highlight ? ' is-first' : '') + (compact ? ' is-compact' : '') + (side === 'enemy' ? ' is-enemy' : '') + (focus.onSelect ? ' is-selectable' : '') + (focus.selected ? ' is-selected' : '')} aria-label={C.group(e.champion, e.points.value, false)} onClick={focus.onSelect}>
     <Splash name={e.champion} />
     <div className="fcard-top">
       <span className="rec-face">
@@ -58,13 +62,16 @@ export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = f
         : side === 'ally' && <span className="state state-locked"><Icon name="lock" />{D.locked}</span>}
     </div>
   </article>
-);
+  );
+};
 
 type Kind = 'pool' | 'out' | 'secondary';
 
 /** Ligne compacte de la liste : portrait, nom, score, contributions ; le cadenas verrouille. */
-const OtherRow = ({ e, row, kind, onLock }: { e: Evaluation; row: RoleResult; kind: Kind; onLock: () => void }) => (
-  <li className="orow">
+const OtherRow = ({ e, row, kind, onLock }: { e: Evaluation; row: RoleResult; kind: Kind; onLock: () => void }) => {
+  const focus = useChampionFocus({ champion: e.champion, role: row.role, side: 'ally' });
+  return (
+  <li className={'orow' + (focus.onSelect ? ' is-selectable' : '') + (focus.selected ? ' is-selected' : '')} onClick={focus.onSelect}>
     <Splash name={e.champion} />
     <Portrait name={e.champion} size={36} />
     <span className="col min0 grow">
@@ -80,7 +87,8 @@ const OtherRow = ({ e, row, kind, onLock }: { e: Evaluation; row: RoleResult; ki
       <Icon name="lock" size={14} />
     </button>
   </li>
-);
+  );
+};
 
 /** Rôle choisi déjà verrouillé : les picks verrouillés de ton équipe en cartes détaillées, celui choisi en avant. */
 export const LockedPanel = ({ rows, current }: { rows: RoleResult[]; current: RoleResult }) => (
