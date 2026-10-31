@@ -167,9 +167,9 @@ describe('builds par style', () => {
     expect(b.paths.map((p) => p.core.map((c) => c.item))).toEqual([[3071, 3053, 6333], [3115, 4645, 3165], [3068, 3075, 3071]]);
   });
 
-  it('4e au 6e objets : options du style, hors objets principaux', () => {
-    expect(b.paths[0]!.later.map((l) => l.map((o) => o.value))).toEqual([[3075], [3075], []]);
-    expect(b.paths[1]!.later.map((l) => l.map((o) => o.value))).toEqual([[], [], []]);
+  it('4e et 5e objets : options du style, hors objets principaux ; pas de 6e', () => {
+    expect(b.paths[0]!.later.map((l) => l.map((o) => o.value))).toEqual([[3075], [3075]]);
+    expect(b.paths[1]!.later.map((l) => l.map((o) => o.value))).toEqual([[], []]);
   });
 
   it('situationnels du style : anti-soins bruiser pour le bruiser, AP pour l’AP ; le tank l’a déjà (Cotte épineuse)', () => {

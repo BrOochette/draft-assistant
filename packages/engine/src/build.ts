@@ -93,7 +93,7 @@ export interface BuildPath {
    * plus construits du style. Pour chacun, ses stats et les autres options de son slot (1er, 2e ou 3e objet).
    */
   core: { item: number; stats: BuildOption<number> | null; alternatives: BuildOption<number>[] }[];
-  /** Options du 4e, du 5e et du 6e objet dans ce style, hors bottes et objets principaux, les plus jouées d'abord. */
+  /** Options du 4e et du 5e objet dans ce style, hors bottes et objets principaux, les plus jouées d'abord. */
   later: BuildOption<number>[][];
   /** Objets situationnels : le plus construit de chaque règle, puis les autres (sans win rate : biaisé par la durée). */
   situational: { items: number[]; reason: BuildReason }[];
@@ -213,7 +213,8 @@ export const proposeBuild = (input: BuildInput, data: EngineData, catalog: Build
           alternatives: slot ? slot.list.filter(([id]) => !core.includes(id) && fits(id)).slice(0, ALTERNATIVES_MAX).map(option) : []
         };
       }),
-      later: slots.slice(3, 6).map((list) => list.filter(([id]) => !core.includes(id) && fits(id)).slice(0, LATE_OPTIONS_MAX).map(option)),
+      // 4e et 5e seulement : le 6e des collectes d'avant le 31/10/2026 copie le 5e.
+      later: slots.slice(3, 5).map((list) => list.filter(([id]) => !core.includes(id) && fits(id)).slice(0, LATE_OPTIONS_MAX).map(option)),
       situational
     };
   };

@@ -202,11 +202,15 @@ export const App = ({ initialData, initialPools }: Props) => {
         {!error && (!data || !pools) && <p className="loading">{T.loading}</p>}
         {data && pools && (
           <DataContext.Provider value={data}>
-            {screen === 'draft'
-              ? <FitScreen session={session} dispatch={dispatch} pools={pools} liveBans={liveBans} me={me} />
-              : screen === 'champions'
+            {/* Draft gardée montée (cachée) sur l'écran Champions : le retour retrouve le rôle et l'onglet affichés. */}
+            {(screen === 'draft' || screen === 'champions') && (
+              <div hidden={screen !== 'draft'} style={screen === 'draft' ? { display: 'contents' } : undefined}>
+                <FitScreen session={session} dispatch={dispatch} pools={pools} liveBans={liveBans} me={me} />
+              </div>
+            )}
+            {screen === 'champions'
               ? <ChampionsScreen route={parseChampionHash(hash)} draft={draftStarted(session.draft) || client.draft ? session.draft : null} canLoad={!!desktopBuilds()} />
-              : <PlayersScreen pools={pools} onChange={changePools} riotIds={riotIds} onRiotIdsChange={changeRiotIds} me={me} onMeChange={changeMe} />}
+              : screen === 'players' && <PlayersScreen pools={pools} onChange={changePools} riotIds={riotIds} onRiotIdsChange={changeRiotIds} me={me} onMeChange={changeMe} />}
           </DataContext.Provider>
         )}
       </div>

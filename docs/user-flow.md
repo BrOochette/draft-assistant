@@ -84,5 +84,5 @@ flowchart TD
 - **Choisir un rôle** (carte alliée) ouvre Picks sur ce rôle ; son pick verrouillé devient le champion en focus.
 - **Après un verrouillage** depuis le centre, le rôle ouvert suivant s'affiche dans Picks.
 - **Build d'un ennemi** : calculé de son point de vue (son équipe, ton équipe en face).
-- **Build sur un seul écran** : barre des picks des deux équipes au-dessus, en-tête (champion, styles), puis runes principales en cartes, sorts / départ / bottes, chemin d'objets avec les 4e à 6e objets, et situationnels ; les autres options en petites icônes après « ou ».
+- **Build sur un seul écran** : barre des picks des deux équipes au-dessus, en-tête (champion, styles), puis runes principales en cartes, sorts / départ / bottes, chemin d’objets avec les 4e et 5e objets, et situationnels ; les autres options en petites icônes après « ou ».
 - **Écran Joueurs** : les changements sont enregistrés tout de suite sur l'appareil ; la draft en cours est gardée en changeant d'écran.

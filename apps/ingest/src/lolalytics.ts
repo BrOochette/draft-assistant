@@ -66,8 +66,11 @@ const SLOT_MAX = 4;
 /** 1er objet : options gardées à partir de ce pick rate, au plus FIRST_SLOT_MAX (styles de build peu joués compris). */
 const FIRST_SLOT_MIN_PR = 1;
 const FIRST_SLOT_MAX = 12;
-/** 4e, 5e et 6e objets : options gardées à partir de ce pick rate, au plus SLOT_MAX. */
-const LATE_SLOT_MIN_PR = 1;
+/**
+ * 4e et 5e objets : options gardées à partir de ces pick rates, au plus SLOT_MAX. Peu de parties vont jusqu'au 5e
+ * objet : à 1 %, il serait vide pour 52 builds sur 338 (patch 16.21) ; à 0,2 %, pour aucun (décidé le 31/10/2026).
+ */
+const LATE_SLOT_MIN_PR = [1, 0.2];
 /** Runes gardées à partir de ce pick rate dans l'arbre principal (en %). */
 const RUNE_MIN_PR = 3;
 /** Trios d'objets gardés à partir de ce nombre de parties, au plus SETS_MAX. */
@@ -91,7 +94,7 @@ const int = (v: unknown) => Math.round(Number(v) || 0);
 export const parseBuild = (data: Record<string, unknown>, { lateMinGames }: { lateMinGames?: number } = {}): Build => {
   type Summary = {
     runes?: { wr?: number; n?: number; set?: { pri?: number[]; sec?: number[]; mod?: number[] } };
-    items?: { core?: { set?: number[]; wr?: number; n?: number }; item6?: { id: number; n: number; wr: number }[] };
+    items?: { core?: { set?: number[]; wr?: number; n?: number } };
   };
   const summary = (data.summary ?? {}) as { pick?: Summary; win?: Summary };
   const pick = summary.pick ?? {};
@@ -130,11 +133,10 @@ export const parseBuild = (data: Record<string, unknown>, { lateMinGames }: { la
       singles(data.item1, FIRST_SLOT_MIN_PR).slice(0, FIRST_SLOT_MAX),
       ...[data.item2, data.item3].map((list) => singles(list, SLOT_MIN_PR).slice(0, SLOT_MAX)),
       // Seuil en parties (build contre un adversaire) : peu de parties y atteignent 5 objets, le pick rate viderait le 5e.
-      ...[data.item4, data.item5].map((list) =>
-        (lateMinGames != null ? rows(list).filter((r) => int(r[3]) >= lateMinGames).map((r): [number, number, number] => [r[0], Number(r[1]), int(r[3])]) : singles(list, LATE_SLOT_MIN_PR)).slice(0, SLOT_MAX)
-      ),
-      // 6e objet : absent des listes par slot, seulement dans le résumé (les plus joués).
-      (pick.items?.item6 ?? []).slice(0, SLOT_MAX).map((x): [number, number, number] => [x.id, Number(x.wr), int(x.n)])
+      ...[data.item4, data.item5].map((list, i) =>
+        (lateMinGames != null ? rows(list).filter((r) => int(r[3]) >= lateMinGames).map((r): [number, number, number] => [r[0], Number(r[1]), int(r[3])]) : singles(list, LATE_SLOT_MIN_PR[i]!)).slice(0, SLOT_MAX)
+      )
+      // Pas de 6e objet : le résumé compte les bottes (son « item6 » est le 5e objet hors bottes).
     ],
     sets: sets(data.builtBootSet3, 0, 1000).filter(([, , n]) => n >= SET_MIN_GAMES).slice(0, SETS_MAX),
     runeStats: Object.entries(((data.runes as { stats?: Record<string, number[][]> } | undefined)?.stats) ?? {})
@@ -163,7 +165,8 @@ export const lolalyticsSlug = (name: string) => SLUG_EXCEPTIONS[name] ?? name.to
  */
 export const onDemandBuildUrl = (champion: string, role: Role, by: { opponent: string } | { keystone: number }) =>
   'opponent' in by
-    ? `https://lolalytics.com/lol/${lolalyticsSlug(champion)}/vs/${lolalyticsSlug(by.opponent)}/build/?lane=${LANE[role]}&vslane=${LANE[role]}&tier=${TIER}&region=${DEFAULT_REGION}`
+    ? // Page contre : `region` y donne une 404 (toutes régions par défaut).
+      `https://lolalytics.com/lol/${lolalyticsSlug(champion)}/vs/${lolalyticsSlug(by.opponent)}/build/?lane=${LANE[role]}&vslane=${LANE[role]}&tier=${TIER}`
     : `https://lolalytics.com/lol/${lolalyticsSlug(champion)}/build/?lane=${LANE[role]}&tier=${TIER}&region=${DEFAULT_REGION}&keystone=${by.keystone}`;
 
 /** Page non reconnue (format changé) : à distinguer d'une erreur réseau. */

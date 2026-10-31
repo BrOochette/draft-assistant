@@ -26,7 +26,7 @@ describe('builds chargés à la demande (appli desktop)', () => {
   it('build contre un adversaire : page vs avec vslane, puis lu dans le cache', async () => {
     const { urls, loader } = await setup(async () => new Response(page(49.78, 5472)));
     expect(await loader.load(vs)).toMatchObject({ ok: true, games: 5472, winRate: 49.78 });
-    expect(urls).toEqual(['https://lolalytics.com/lol/aatrox/vs/darius/build/?lane=top&vslane=top&tier=emerald_plus&region=all']);
+    expect(urls).toEqual(['https://lolalytics.com/lol/aatrox/vs/darius/build/?lane=top&vslane=top&tier=emerald_plus']);
     expect(await loader.load(vs)).toMatchObject({ ok: true, games: 5472 });
     expect(urls).toHaveLength(1);
   });

@@ -87,8 +87,9 @@ export const BuildSchema = z.object({
   /** Trois premiers objets les plus joués ensemble, bottes comprises. */
   core: z.object({ items: z.array(itemId), winRate: z.number(), games: z.number().int() }).optional(),
   /**
-   * Options du 1er au 6e objet, bottes comprises, du plus joué au moins joué (les collectes antérieures s'arrêtent au
-   * 3e). Le 1er objet garde aussi les options peu jouées : il fixe le style du build (AP, tank…).
+   * Options du 1er au 5e objet hors bottes, du plus joué au moins joué (les collectes antérieures s'arrêtent au 3e ;
+   * celles d'avant le 31/10/2026 ont un 6e, copie du 5e). Le 1er objet garde aussi les options peu jouées : il fixe le
+   * style du build (AP, tank…).
    */
   slots: z.array(z.array(idSample)),
   /** Trios d'objets les plus joués (trois premiers objets dans l'ordre, bottes comprises). Absents des collectes antérieures. */

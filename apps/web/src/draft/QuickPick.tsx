@@ -35,6 +35,8 @@ export const QuickPick = ({ draft, dispatch }: { draft: DraftState; dispatch: Di
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
       if ((e.target as HTMLElement).closest('input, textarea, select, [role="dialog"]')) return;
+      // Écran Draft caché (fiche d'un champion ouverte) : touche laissée à la page.
+      if (!input.current || input.current.closest('[hidden]')) return;
       e.preventDefault();
       input.current?.focus();
     };

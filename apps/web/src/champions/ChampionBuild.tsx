@@ -103,7 +103,7 @@ const Fail = ({ title, error, onRetry }: { title: string; error: keyof typeof T.
   </div>
 );
 
-/** Build affiché : styles, runes, sorts, départ, bottes, compétences, objets principaux et plus construits, 4e à 6e objet. */
+/** Build affiché : styles, runes, sorts, départ, bottes, compétences, objets principaux et plus construits, 4e et 5e objets. */
 const BuildBoard = ({ build, popular, skills, ddragonId, runes }: {
   build: BuildProposal;
   popular: Build['items'];

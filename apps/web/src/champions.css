@@ -160,12 +160,12 @@
 .champions .champ-popular { border-left: 1px solid rgba(255, 255, 255, .08); padding-left: 24px; }
 .champions .champ-pop-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px 12px; }
 .champions .champ-pop-items .champ-opt + .champ-opt { margin-top: 0; }
-.champions .champ-path { display: flex; align-items: flex-start; gap: 10px; }
+.champions .champ-path { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
 .champions .champ-step { display: flex; gap: 10px; }
 .champions .champ-step-body { display: grid; gap: 6px; justify-items: center; text-align: center; width: 84px; line-height: 1.2; }
 .champions .champ-alts { display: flex; gap: 4px; justify-content: center; opacity: .8; }
 .champions .champ-arrow { color: var(--muted); padding-top: 30px; font-size: 18px; }
-.champions .champ-later { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.champions .champ-later { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .champions .champ-later .champ-opt + .champ-opt { margin-top: 6px; }
 .champions .champ-sits { display: grid; gap: 8px; }
 .champions .champ-sits .champ-opt + .champ-opt { margin-top: 0; }
