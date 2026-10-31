@@ -21,6 +21,9 @@ export interface BuildRequest {
   role: Role;
   opponent?: string;
   keystone?: number;
+  /** Identifiants d'URL Lolalytics du snapshot. */
+  slug?: string;
+  opponentSlug?: string;
 }
 export type BuildResult = { ok: true; build: Build; games: number; winRate: number; fetchedAt: string } | { ok: false; error: BuildLoadError };
 interface DesktopApi {

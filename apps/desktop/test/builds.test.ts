@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readdir, readFile, utimes, writeFile } from 'node:fs/pr
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { createBuildLoader, RETENTION_MS, type BuildRequest } from '../src/builds';
+import { BuildRequestSchema, createBuildLoader, RETENTION_MS, type BuildRequest } from '../src/builds';
 
 // Page Lolalytics réduite à l'état Qwik lu par l'analyse : objets référencés par leur index en base 36.
 const page = (wr: number, n: number) =>
@@ -35,6 +35,23 @@ describe('builds chargés à la demande (appli desktop)', () => {
     const { urls, loader } = await setup(async () => new Response(page(51, 9000)));
     await loader.load({ patch: '16.21', champion: 'Nunu & Willump', role: 'Jungle', keystone: 8010 });
     expect(urls[0]).toBe('https://lolalytics.com/lol/nunu/build/?lane=jungle&tier=emerald_plus&region=all&keystone=8010');
+  });
+
+  it('identifiants d’URL du snapshot pris tels quels, validés', async () => {
+    const { urls, loader } = await setup(async () => new Response(page(50, 100)));
+    await loader.load({ ...vs, champion: 'Wukong', slug: 'monkeyking', opponentSlug: 'drmundo', opponent: 'Dr. Mundo' });
+    expect(urls[0]).toBe('https://lolalytics.com/lol/monkeyking/vs/drmundo/build/?lane=top&vslane=top&tier=emerald_plus');
+    expect(BuildRequestSchema.safeParse({ ...vs, slug: '../x' }).success).toBe(false);
+  });
+
+  it('build gardé d’un autre format de lecture : rechargé', async () => {
+    const { dir, urls, loader } = await setup(async () => new Response(page(50, 100)));
+    await loader.load(vs);
+    const [file] = await readdir(join(dir, '16.21'));
+    const path = join(dir, '16.21', file!);
+    await writeFile(path, JSON.stringify({ ...JSON.parse(await readFile(path, 'utf8')), format: 1 }));
+    await loader.load(vs);
+    expect(urls).toHaveLength(2);
   });
 
   it('hors ligne : échec immédiat, sans requête', async () => {

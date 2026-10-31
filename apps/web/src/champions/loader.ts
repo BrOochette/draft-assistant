@@ -13,6 +13,9 @@ export interface LoadKey {
   role: Role;
   opponent?: string;
   keystone?: number;
+  /** Identifiants d'URL Lolalytics du snapshot. */
+  slug?: string;
+  opponentSlug?: string;
 }
 
 const states = new Map<string, LoadState>();

@@ -3,7 +3,7 @@ import { mkdir, readdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/p
 import { join } from 'node:path';
 import { BuildSchema, ROLES, type Build } from '@draft/schemas';
 import { USER_AGENT } from '@draft/ingest/http';
-import { onDemandBuildUrl, PageFormatError, parseOnDemandBuild } from '@draft/ingest/lolalytics';
+import { lolalyticsSlug, ON_DEMAND_FORMAT, onDemandBuildUrl, PageFormatError, parseOnDemandBuild } from '@draft/ingest/lolalytics';
 import { z } from 'zod';
 
 // Écran Champions de l'appli desktop : build d'un champion contre un adversaire, ou page de runes d'une rune principale,
@@ -19,13 +19,21 @@ export const RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 
 export type BuildLoadError = 'OFFLINE' | 'DOWN' | 'FORMAT';
 
-/** Demande de la page : validée ici, elle vient d'un autre processus. */
+/** Identifiant d'URL Lolalytics : lettres minuscules et chiffres seulement (il entre dans l'adresse). */
+const slug = z.string().regex(/^[a-z0-9]{1,40}$/);
+
+/**
+ * Demande de la page : validée ici, elle vient d'un autre processus. Identifiants d'URL du snapshot, déduits des noms
+ * s'ils manquent (snapshot antérieur).
+ */
 export const BuildRequestSchema = z.object({
   patch: z.string().regex(/^[\d.]{1,12}$/),
   champion: z.string().min(1).max(40),
   role: z.enum(ROLES),
   opponent: z.string().min(1).max(40).optional(),
-  keystone: z.number().int().positive().optional()
+  keystone: z.number().int().positive().optional(),
+  slug: slug.optional(),
+  opponentSlug: slug.optional()
 }).refine((r) => (r.opponent == null) !== (r.keystone == null), 'Un adversaire ou une rune principale');
 export type BuildRequest = z.infer<typeof BuildRequestSchema>;
 
@@ -33,7 +41,15 @@ export type BuildResult =
   | { ok: true; build: Build; games: number; winRate: number; fetchedAt: string }
   | { ok: false; error: BuildLoadError };
 
-const CachedSchema = z.object({ champion: z.string(), build: BuildSchema, games: z.number(), winRate: z.number(), fetchedAt: z.string() });
+/** Build gardé, avec la version du format de lecture : une autre version (lecture changée) est rechargée. */
+const CachedSchema = z.object({
+  format: z.literal(ON_DEMAND_FORMAT),
+  champion: z.string(),
+  build: BuildSchema,
+  games: z.number(),
+  winRate: z.number(),
+  fetchedAt: z.string()
+});
 
 export type FetchPage = (url: string) => Promise<Response>;
 const defaultFetch: FetchPage = (url) => fetch(url, { headers: { 'User-Agent': USER_AGENT }, signal: AbortSignal.timeout(TIMEOUT_MS) });
@@ -63,7 +79,9 @@ export const createBuildLoader = (
     last = now();
     let html: string;
     try {
-      const res = await fetchPage(onDemandBuildUrl(r.champion, r.role, r.opponent != null ? { opponent: r.opponent } : { keystone: r.keystone! }));
+      const slug = r.slug ?? lolalyticsSlug(r.champion);
+      const by = r.opponent != null ? { opponentSlug: r.opponentSlug ?? lolalyticsSlug(r.opponent) } : { keystone: r.keystone! };
+      const res = await fetchPage(onDemandBuildUrl(slug, r.role, by));
       // 404 : adresse de page inconnue du site, comme un format changé.
       if (res.status === 404) return { ok: false, error: 'FORMAT' };
       if (!res.ok) return { ok: false, error: 'DOWN' };
@@ -77,7 +95,8 @@ export const createBuildLoader = (
       const result = { ok: true as const, ...page, fetchedAt: new Date(now()).toISOString() };
       const file = fileOf(r);
       await mkdir(join(file, '..'), { recursive: true });
-      await writeFile(file, JSON.stringify({ champion: r.champion, build: page.build, games: page.games, winRate: page.winRate, fetchedAt: result.fetchedAt }), 'utf8');
+      const cached: z.infer<typeof CachedSchema> = { format: ON_DEMAND_FORMAT, champion: r.champion, build: page.build, games: page.games, winRate: page.winRate, fetchedAt: result.fetchedAt };
+      await writeFile(file, JSON.stringify(cached), 'utf8');
       return result;
     } catch (e) {
       if (e instanceof PageFormatError) return { ok: false, error: 'FORMAT' };

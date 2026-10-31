@@ -48,7 +48,9 @@ export const LolalyticsDumpSchema = z.object({
   /** Région des matchups et des duos. Absente des collectes antérieures : la même que `region`. */
   pairRegion: z.string().optional(),
   fetchedAt: z.string(),
-  champions: z.record(z.string(), z.record(z.string(), LaneStatsSchema))
+  champions: z.record(z.string(), z.record(z.string(), LaneStatsSchema)),
+  /** Identifiant d'URL Lolalytics de chaque champion, lu sur le site. Absent des collectes antérieures. */
+  slugs: z.record(z.string(), z.string()).default({})
 });
 export type LolalyticsDump = z.infer<typeof LolalyticsDumpSchema>;
 
@@ -103,8 +105,9 @@ export const parseBuild = (data: Record<string, unknown>, { lateMinGames }: { la
       .filter((r): r is [string, number, number, number] => Array.isArray(r) && String(r[0]) !== '' && Number(r[2]) >= minPr)
       .slice(0, max)
       .map((r): [number[], number, number] => [ids(r[0]), Number(r[1]), int(r[3])]);
-  const singles = (list: unknown, minPr: number) =>
-    rows(list).filter((r) => Number(r[2]) >= minPr).map((r): [number, number, number] => [r[0], Number(r[1]), int(r[3])]);
+  /** Options gardées à partir de ce pick rate (en %), ou selon le critère donné. */
+  const singles = (list: unknown, keep: number | ((r: Row) => boolean)) =>
+    rows(list).filter(typeof keep === 'number' ? (r) => Number(r[2]) >= keep : keep).map((r): [number, number, number] => [r[0], Number(r[1]), int(r[3])]);
   const boots = singles(data.boots, BOOTS_MIN_PR).filter(([id]) => !NOT_BOOTS.has(id)).slice(0, 6);
   const bootIds = new Set([...rows(data.boots).map((r) => r[0])]);
   const items: [number, number, number][] = [];
@@ -134,7 +137,7 @@ export const parseBuild = (data: Record<string, unknown>, { lateMinGames }: { la
       ...[data.item2, data.item3].map((list) => singles(list, SLOT_MIN_PR).slice(0, SLOT_MAX)),
       // Seuil en parties (build contre un adversaire) : peu de parties y atteignent 5 objets, le pick rate viderait le 5e.
       ...[data.item4, data.item5].map((list, i) =>
-        (lateMinGames != null ? rows(list).filter((r) => int(r[3]) >= lateMinGames).map((r): [number, number, number] => [r[0], Number(r[1]), int(r[3])]) : singles(list, LATE_SLOT_MIN_PR[i]!)).slice(0, SLOT_MAX)
+        singles(list, lateMinGames != null ? (r) => int(r[3]) >= lateMinGames : LATE_SLOT_MIN_PR[i]!).slice(0, SLOT_MAX)
       )
       // Pas de 6e objet : le résumé compte les bottes (son « item6 » est le 5e objet hors bottes).
     ],
@@ -155,19 +158,28 @@ export const parseBuild = (data: Record<string, unknown>, { lateMinGames }: { la
 /** 4e et 5e objets d'un build contre un adversaire : options gardées à partir de ce nombre de parties (provisoire). */
 export const MATCHUP_LATE_MIN_GAMES = 10;
 
-/** Identifiant d'URL Lolalytics d'un champion : son nom en minuscules sans espaces ni ponctuation, sauf exceptions. */
+/**
+ * Identifiant d'URL Lolalytics déduit du nom (minuscules sans espaces ni ponctuation, sauf exceptions) : secours pour
+ * un snapshot sans la table lue sur le site (`slugs` de la collecte).
+ */
 const SLUG_EXCEPTIONS: Record<string, string> = { 'Nunu & Willump': 'nunu', 'Renata Glasc': 'renata' };
 export const lolalyticsSlug = (name: string) => SLUG_EXCEPTIONS[name] ?? name.toLowerCase().replace(/[^a-z]/g, '');
 
 /**
- * Page build chargée à la demande : contre un adversaire de la même lane (`vslane` obligatoire, sinon l'adversaire est
- * compté sur tous les rôles), ou filtrée par rune principale (page de runes complète).
+ * Page build chargée à la demande, d'après les identifiants d'URL : contre un adversaire de la même lane (`vslane`
+ * obligatoire, sinon l'adversaire est compté sur tous les rôles), ou filtrée par rune principale (page de runes complète).
  */
-export const onDemandBuildUrl = (champion: string, role: Role, by: { opponent: string } | { keystone: number }) =>
-  'opponent' in by
+export const onDemandBuildUrl = (slug: string, role: Role, by: { opponentSlug: string } | { keystone: number }) =>
+  'opponentSlug' in by
     ? // Page contre : `region` y donne une 404 (toutes régions par défaut).
-      `https://lolalytics.com/lol/${lolalyticsSlug(champion)}/vs/${lolalyticsSlug(by.opponent)}/build/?lane=${LANE[role]}&vslane=${LANE[role]}&tier=${TIER}`
-    : `https://lolalytics.com/lol/${lolalyticsSlug(champion)}/build/?lane=${LANE[role]}&tier=${TIER}&region=${DEFAULT_REGION}&keystone=${by.keystone}`;
+      `https://lolalytics.com/lol/${slug}/vs/${by.opponentSlug}/build/?lane=${LANE[role]}&vslane=${LANE[role]}&tier=${TIER}`
+    : `https://lolalytics.com/lol/${slug}/build/?lane=${LANE[role]}&tier=${TIER}&region=${DEFAULT_REGION}&keystone=${by.keystone}`;
+
+/**
+ * Version de la lecture des pages chargées à la demande (`parseBuild` et `parseOnDemandBuild`) : à incrémenter à chaque
+ * changement de ce qu'elles renvoient, pour que l'appli desktop recharge les builds gardés.
+ */
+export const ON_DEMAND_FORMAT = 2;
 
 /** Page non reconnue (format changé) : à distinguer d'une erreur réseau. */
 export class PageFormatError extends Error {}
@@ -326,5 +338,6 @@ export const crawlLolalytics = async (
       missing.push(c.name);
     }
   }
-  return { dump: { source: 'lolalytics', patch, tier: TIER, region, pairRegion, fetchedAt: new Date().toISOString(), champions: out }, missing };
+  const slugs = Object.fromEntries(champions.flatMap((c) => (slugOf.has(c.key) ? [[c.name, slugOf.get(c.key)!]] : [])));
+  return { dump: { source: 'lolalytics', patch, tier: TIER, region, pairRegion, fetchedAt: new Date().toISOString(), champions: out, slugs }, missing };
 };

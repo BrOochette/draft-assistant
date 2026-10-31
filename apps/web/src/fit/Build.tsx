@@ -1,14 +1,11 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { BuildChoice, BuildOption, BuildProposal } from '@draft/engine';
-import { BUILD_TEXT as B, CHAMPIONS_TEXT as CH, buildReasonText, fmtInt, fmtPct } from '@draft/i18n-fr';
+import type { BuildProposal } from '@draft/engine';
+import { BUILD_TEXT as B, fmtInt, fmtPct } from '@draft/i18n-fr';
 import type { Role } from '@draft/schemas';
-import { ChampionLink, Portrait, useData } from '../ui';
-import { championHash } from '../champions/route';
-import { desktopBuilds } from '../desktop';
-import { Splash } from './Cards';
+import { Portrait, useData } from '../ui';
 
-// Build d'un champion : styles joués, runes, sorts, départ, bottes, chemin d'objets et objets situationnels, sur un
-// seul écran, avec les icônes fournies avec l'appli (aucun appel réseau).
+// Briques du build d'un champion : champion regardé, icônes (fournies avec l'appli, aucun appel réseau), runes, choix
+// du pick dont on regarde le build.
 
 /** Champion dont on regarde le build : son rôle et son équipe (le build tient compte des deux compos de son point de vue). */
 export interface BuildTarget {
@@ -59,34 +56,12 @@ export const BuildIcon = ({ kind, id, size = 32, tip }: { kind: Kind; id: number
   );
 };
 
-export const Stats = ({ o }: { o: { winRate: number; games: number } }) => (
-  <span className="small muted nowrap" title={B.statsTip}>{B.stats(o.winRate, o.games)}</span>
-);
-
-/** Infobulle d'une option : nom (ou noms), win rate et parties. */
-const tipOf = (names: string, o: BuildOption<unknown>) => names + ' · ' + B.stats(o.winRate, o.games);
-
-export const Section = ({ title, stats, children, className = '' }: { title: string; stats?: BuildOption<unknown> | null; children: ReactNode; className?: string }) => (
+export const Section = ({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) => (
   <section className={'build-section ' + className} aria-label={title}>
-    <span className="build-head">
-      <span className="eyebrow">{title}</span>
-      {stats && <Stats o={stats} />}
-    </span>
+    <span className="build-head"><span className="eyebrow">{title}</span></span>
     {children}
   </section>
 );
-
-const Reason = ({ choice }: { choice: { reason: BuildChoice<unknown>['reason'] } | null }) =>
-  choice?.reason ? <span className="small accent-text build-reason">{buildReasonText(choice.reason)}</span> : null;
-
-/** Autres options, en petites icônes après « ou » ; win rate et parties dans l'infobulle. */
-export const Or = <T,>({ list, icons }: { list: BuildOption<T>[]; icons: (v: T, tip: (names: string) => string) => ReactNode }) =>
-  list.length ? (
-    <span className="build-or" aria-label={B.others}>
-      <span className="small muted">{B.or}</span>
-      {list.map((o, i) => <span key={i} className="build-row">{icons(o.value, (names) => tipOf(names, o))}</span>)}
-    </span>
-  ) : null;
 
 /** Lignes d'un arbre de runes ou des fragments : runes prises en couleur, les autres estompées. */
 const RuneRows = ({ rows, picked, size, first }: { rows: number[][]; picked: (row: number, id: number) => boolean; size: number; first?: number }) => (
@@ -194,136 +169,5 @@ export const BuildPicks = ({ picks, current, mine, onSelect }: { picks: BuildTar
       <span className="build-row">{allies.map(button)}</span>
       <span className="build-row">{enemies.map(button)}</span>
     </div>
-  );
-};
-
-export const BuildPanel = ({ build, opponent, side }: { build: BuildProposal; opponent: string | null; side: BuildTarget['side'] }) => {
-  const name = useName();
-  const items = (ids: number[], size = 22, tip?: (names: string) => string) =>
-    ids.map((id, i) => <BuildIcon key={i} kind="item" id={id} size={size} tip={tip?.(name('item', id))} />);
-  // Style choisi (Bruiser, AP…) : le plus joué par défaut ; il fixe le chemin d'objets et les situationnels.
-  const [chosen, setChosen] = useState(0);
-  const path = build.paths[chosen] ?? build.paths[0]!;
-  return (
-    <section aria-label={B.region(build.champion)} className="card fit-focus build-panel">
-      <div className="build-title">
-        <Splash name={build.champion} />
-        <ChampionLink name={build.champion} role={build.role}><Portrait name={build.champion} size={40} /></ChampionLink>
-        <span className="col min0">
-          <span className="h3">{B.title(build.champion)}</span>
-          <span className="small muted">{build.role}{side === 'enemy' ? ' · ' + B.enemy : ''}{opponent ? ' · ' + B.vs(opponent) : ''}</span>
-        </span>
-        {/* Matchup direct : build contre le vis-à-vis, chargé à la demande (appli desktop). */}
-        {opponent && desktopBuilds() && (
-          <a className="btn btn-sm direct" href={championHash(build.champion, build.role, 'build', opponent)} title={CH.directTip}>
-            <Portrait name={opponent} size={22} />
-            <span><span className="muted small">{CH.direct}</span> <span className="strong">{opponent}</span></span>
-          </a>
-        )}
-        {build.paths.length > 1 && (
-          <div role="group" aria-label={B.styles} className="build-styles">
-            {build.paths.map((p, i) => (
-              <button key={p.style ?? i} type="button" className={'build-style' + (p === path ? ' is-on' : '')} aria-pressed={p === path} title={p.games != null ? B.styleGames(p.games) : undefined} onClick={() => setChosen(i)}>
-                <span className="strong">{p.style ? B.style[p.style] : B.general}</span>
-                <span className="build-row">{items(p.core.map((c) => c.item), 20)}</span>
-                {p.winRate != null && <span className="small strong nowrap" title={B.styleTip}>{B.wr(p.winRate)}</span>}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="build-board">
-        <Runes key={build.champion + build.role} pages={build.runes} keystones={build.keystones} />
-
-        <div className="build-basics">
-          {build.spells && (
-            <Section title={B.spells} stats={build.spells}>
-              <span className="build-row">
-                {build.spells.value.map((id) => <BuildIcon key={id} kind="spell" id={id} size={40} />)}
-                <Or list={build.spells.alternatives} icons={(ids, tip) => ids.map((id) => <BuildIcon key={id} kind="spell" id={id} size={26} tip={tip(ids.map((x) => name('spell', x)).join(' + '))} />)} />
-              </span>
-            </Section>
-          )}
-          {build.start && (
-            <Section title={B.start} stats={build.start}>
-              <span className="build-row">
-                {items(build.start.value, 40)}
-                <Or list={build.start.alternatives} icons={(ids, tip) => items(ids, 26, () => tip(ids.map((x) => name('item', x)).join(' + ')))} />
-              </span>
-              <Reason choice={build.start} />
-            </Section>
-          )}
-          {build.boots && (
-            <Section title={B.boots} stats={build.boots}>
-              <span className="build-row">
-                {items([build.boots.value], 40)}
-                <Or list={build.boots.alternatives} icons={(id, tip) => items([id], 26, tip)} />
-              </span>
-              <Reason choice={build.boots} />
-            </Section>
-          )}
-        </div>
-
-        <div className="build-items">
-          {path.core.length > 0 && (
-            <Section title={B.core}>
-              <ol className="plain-list build-path">
-                {path.core.map((c, i) => (
-                  <li key={c.item} className="build-step">
-                    {i > 0 && <span className="build-arrow" aria-hidden="true">›</span>}
-                    <span className="col build-step-body">
-                      {items([c.item], 46)}
-                      <span className="small ellipsis">{name('item', c.item)}</span>
-                      {c.stats && <span className="small muted nowrap" title={B.statsTip}>{B.wr(c.stats.winRate)}</span>}
-                      <Or list={c.alternatives} icons={(id, tip) => items([id], 28, tip)} />
-                    </span>
-                  </li>
-                ))}
-              </ol>
-              {path.later.some((l) => l.length > 0) && (
-                <div className="build-later">
-                  {path.later.map((list, i) => (
-                    <div key={i} className="build-later-slot">
-                      <span className="small muted">{B.nth(i + 4)}</span>
-                      {list.length === 0 && <span className="small muted">—</span>}
-                      {list.map((o) => (
-                        <span key={o.value} className="build-row">
-                          {items([o.value], 32)}
-                          <span className="col min0">
-                            <span className="small ellipsis">{name('item', o.value)}</span>
-                            <span className="small muted nowrap" title={B.statsTip}>{B.wr(o.winRate)}</span>
-                          </span>
-                        </span>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Section>
-          )}
-          <Section title={B.situational}>
-            {path.situational.length === 0 && <span className="small muted">{B.noSituational}</span>}
-            <ul className="plain-list build-sits">
-              {path.situational.map((s) => (
-                <li key={s.items[0]} className="build-row build-sit">
-                  {items([s.items[0]!], 42)}
-                  <span className="col min0 grow">
-                    <span className="small ellipsis">{name('item', s.items[0]!)}</span>
-                    <span className="small accent-text ellipsis" title={buildReasonText(s.reason)}>{buildReasonText(s.reason)}</span>
-                  </span>
-                  {s.items.length > 1 && (
-                    <span className="build-or">
-                      <span className="small muted">{B.or}</span>
-                      {items(s.items.slice(1), 30)}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </Section>
-        </div>
-      </div>
-    </section>
   );
 };

@@ -103,6 +103,24 @@ describe('écran Draft', () => {
     await user.click(screen.getByRole('option', { name: 'Orianna en Mid' }));
     expect(screen.getByRole('button', { name: 'Retirer Orianna et rouvrir les suggestions en Mid' })).toBeInTheDocument();
   });
+
+  it('garde la draft sous l’écran Champions, sans y prendre « / »', async () => {
+    const user = userEvent.setup();
+    render(<App initialData={sampleAppData()} initialPools={seedPools()} />);
+    await user.keyboard('/');
+    await user.type(screen.getByRole('combobox', { name: 'Saisie rapide : pick ennemi' }), 'amumu');
+    await user.keyboard('{Enter}');
+    // Un navigateur retire le focus d'un élément masqué, pas jsdom.
+    (document.activeElement as HTMLElement).blur();
+
+    location.hash = '#/champions';
+    await waitFor(() => expect(screen.queryByRole('combobox', { name: 'Saisie rapide : pick ennemi' })).not.toBeInTheDocument());
+    await user.keyboard('/');
+    expect(document.activeElement?.getAttribute('aria-label')).not.toBe('Saisie rapide : pick ennemi');
+
+    location.hash = '';
+    expect(await screen.findByRole('button', { name: 'Retirer le pick ennemi Amumu en Jungle' })).toBeInTheDocument();
+  });
 });
 
 describe('écran Draft sur grand écran', () => {

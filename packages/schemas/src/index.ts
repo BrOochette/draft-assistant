@@ -250,7 +250,9 @@ export const StatsSnapshotSchema = z.object({
   /** Parties fictives à 50 % ajoutées au win rate de chaque candidat pour le counter (0 ou absent : pas de lissage). */
   winRatePriorGames: z.number().int().nonnegative().optional(),
   /** Moyennes par paire de classes principales, vers lesquelles un matchup ou un duo peu joué est lissé. */
-  classPriors: ClassPriorsSchema.optional()
+  classPriors: ClassPriorsSchema.optional(),
+  /** Identifiant d'URL Lolalytics de chaque champion (chargements à la demande de l'appli desktop). Absent : déduit du nom. */
+  lolalyticsSlugs: z.record(z.string(), z.string()).optional()
 });
 export type StatsSnapshot = z.infer<typeof StatsSnapshotSchema>;
 

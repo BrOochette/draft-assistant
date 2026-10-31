@@ -1,234 +1,231 @@
 /* Écran Champions (maquette maquettes/5-champions.html, validée le 31/10/2026) : design de l'écran Joueurs hors Draft,
    panneaux en verre gris neutre, lignes à portrait très flou et barre bleue, onglets actifs bordés de bleu, boutons
-   gris, titres en Inter. Règles préfixées par .champions : elles passent devant l'arrondi par défaut du thème. */
+   gris, titres en Inter. Règles préfixées par .champions (ou .champ-view, le build dans la draft) : elles passent devant l'arrondi par
+   défaut du thème. */
 
-.champions { max-width: 1480px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 0; }
-.champions .h1 { font: 700 30px/1.1 'Inter', system-ui, sans-serif; letter-spacing: -.01em; }
-.champions .h2 { font: 600 22px/1.3 'Inter', system-ui, sans-serif; letter-spacing: -.01em; }
-.champions .card {
+.champions { max-width: 1480px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 0; container-type: inline-size; }
+/* Build d'un champion dans l'onglet Build de la draft : même affichage que la fiche, mis en page selon sa largeur. */
+.champ-view { container-type: inline-size; }
+:is(.champions, .champ-view) .h1 { font: 700 30px/1.1 'Inter', system-ui, sans-serif; letter-spacing: -.01em; }
+:is(.champions, .champ-view) .h2 { font: 600 22px/1.3 'Inter', system-ui, sans-serif; letter-spacing: -.01em; }
+:is(.champions, .champ-view) .card {
   position: relative; padding: 14px 16px; border-radius: 12px;
   background: rgba(255, 255, 255, .035); border: 1px solid rgba(255, 255, 255, .07);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
-.champions .card:focus-within { z-index: 5; }
-.champions .btn { text-decoration: none; }
-.champions .btn.is-on, .champions .champ-seg .btn.is-on {
+:is(.champions, .champ-view) .card:focus-within { z-index: 5; }
+:is(.champions, .champ-view) .btn { text-decoration: none; }
+:is(.champions, .champ-view) .btn.is-on, :is(.champions, .champ-view) .champ-seg .btn.is-on {
   background: color-mix(in srgb, var(--ally) 18%, rgba(20, 20, 22, .8)); border-color: var(--ally); color: var(--text);
 }
-.champions .input { background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .12); }
-.champions .num { font-variant-numeric: tabular-nums; }
-.champions .champ-sec { margin: 0 0 8px; font-size: 12px; font-weight: 500; color: var(--muted); }
-.champions .plain-list { list-style: none; margin: 0; padding: 0; }
-.champions .th-btn { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; white-space: nowrap; }
-.champions .th-btn.is-sort, .champions th.is-sort .th-btn { color: var(--text); }
+:is(.champions, .champ-view) .input { background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .12); }
+:is(.champions, .champ-view) .num { font-variant-numeric: tabular-nums; }
+:is(.champions, .champ-view) .champ-sec { margin: 0 0 8px; font-size: 12px; font-weight: 500; color: var(--muted); }
+:is(.champions, .champ-view) .plain-list { list-style: none; margin: 0; padding: 0; }
+:is(.champions, .champ-view) .th-btn { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; white-space: nowrap; }
+:is(.champions, .champ-view) .th-btn.is-sort, :is(.champions, .champ-view) th.is-sort .th-btn { color: var(--text); }
 
 /* Portrait très flou en fond (tuiles, bandeau du matchup). */
-.champions .champ-blur {
+:is(.champions, .champ-view) .champ-blur {
   position: absolute; inset: -20%; width: 140%; height: 140%; object-fit: cover; filter: blur(22px) saturate(1.2);
   opacity: .16; z-index: -1; pointer-events: none; border-radius: 0;
 }
 
 /* ---------- Liste ---------- */
-.champions .champ-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-.champions .champ-search { min-width: 240px; min-height: 36px; }
-.champions .champ-sort { min-height: 36px; }
-.champions .champ-seg { display: inline-flex; gap: 6px; flex-wrap: wrap; }
-.champions .champ-seg .btn { background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .06); border-radius: 8px; }
-.champions .champ-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
-.champions .champ-tile {
+:is(.champions, .champ-view) .champ-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+:is(.champions, .champ-view) .champ-search { min-width: 240px; min-height: 36px; }
+:is(.champions, .champ-view) .champ-seg { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+:is(.champions, .champ-view) .champ-seg .btn { background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .06); border-radius: 8px; }
+:is(.champions, .champ-view) .champ-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; grid-auto-rows: 1fr; }
+:is(.champions, .champ-view) .champ-tile {
   position: relative; isolation: isolate; overflow: clip; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px;
-  align-items: center; padding: 10px; color: var(--text); text-decoration: none;
+  align-items: center; height: 100%; padding: 10px; color: var(--text); text-decoration: none;
   background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08); border-left: 3px solid var(--ally); border-radius: 10px;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
-.champions .champ-tile:hover { background: rgba(255, 255, 255, .07); border-color: rgba(255, 255, 255, .16); border-left-color: var(--ally); }
-.champions .champ-rchips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
-.champions .champ-rchip { font-size: 11px; padding: 1px 6px; background: #232323; color: var(--soft); white-space: nowrap; font-weight: 600; }
-.champions .champ-rchip b { color: var(--text); }
-.champions .champ-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
-.champions .champ-table th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 4px 12px; }
-.champions .champ-table .r { text-align: right; }
-.champions .champ-table td {
+:is(.champions, .champ-view) .champ-tile:hover { background: rgba(255, 255, 255, .07); border-color: rgba(255, 255, 255, .16); border-left-color: var(--ally); }
+:is(.champions, .champ-view) .champ-rchips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+:is(.champions, .champ-view) .champ-rchip { font-size: 11px; padding: 1px 6px; background: #232323; color: var(--soft); white-space: nowrap; font-weight: 600; }
+:is(.champions, .champ-view) .champ-rchip b { color: var(--text); }
+:is(.champions, .champ-view) .champ-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
+:is(.champions, .champ-view) .champ-table th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 4px 12px; }
+:is(.champions, .champ-view) .champ-table .r { text-align: right; }
+:is(.champions, .champ-view) .champ-table td {
   padding: 6px 12px; background: rgba(255, 255, 255, .035); border: 1px solid rgba(255, 255, 255, .07); border-width: 1px 0; border-radius: 0;
 }
-.champions .champ-table tr td:first-child { border-left: 3px solid var(--ally); border-radius: 6px 0 0 6px; }
-.champions .champ-table tr td:last-child { border-right-width: 1px; border-radius: 0 6px 6px 0; }
-.champions .champ-table tbody tr { cursor: pointer; }
-.champions .champ-table tbody tr:hover td { background: rgba(255, 255, 255, .07); }
-.champions .champ-who { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; }
+:is(.champions, .champ-view) .champ-table tr td:first-child { border-left: 3px solid var(--ally); border-radius: 6px 0 0 6px; }
+:is(.champions, .champ-view) .champ-table tr td:last-child { border-right-width: 1px; border-radius: 0 6px 6px 0; }
+:is(.champions, .champ-view) .champ-table tbody tr { cursor: pointer; }
+:is(.champions, .champ-view) .champ-table tbody tr:hover td { background: rgba(255, 255, 255, .07); }
+:is(.champions, .champ-view) .champ-who { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; }
 
 /* ---------- Bandeau de la draft en cours ---------- */
-.champions .champ-draftbar { display: grid; grid-template-columns: auto 1fr 1fr; gap: 12px; align-items: center; margin-bottom: 16px; padding: 10px 14px; }
-.champions .champ-draftbar > .btn { white-space: nowrap; min-height: 40px; }
-.champions .champ-team { display: flex; gap: 6px; align-items: center; padding: 6px 8px; border-radius: 10px; }
-.champions .champ-team.is-ally { background: color-mix(in srgb, var(--ally) 14%, rgba(20, 20, 22, .5)); border-left: 3px solid var(--ally); }
-.champions .champ-team.is-enemy { background: color-mix(in srgb, var(--enemy) 14%, rgba(20, 20, 22, .5)); border-right: 3px solid var(--enemy); justify-content: flex-end; }
-.champions .dface { display: grid; justify-items: center; gap: 2px; padding: 3px; border: 1px solid transparent; border-radius: 8px; color: inherit; text-decoration: none; }
-.champions a.dface:hover { border-color: rgba(255, 255, 255, .4); }
-.champions .dface .small { font-size: 10px; }
-.champions .dface-empty { width: 40px; height: 40px; border-radius: 6px; background: rgba(255, 255, 255, .05); border: 1px dashed rgba(255, 255, 255, .12); }
+:is(.champions, .champ-view) .champ-draftbar { display: grid; grid-template-columns: auto 1fr 1fr; gap: 12px; align-items: center; margin-bottom: 16px; padding: 10px 14px; }
+:is(.champions, .champ-view) .champ-draftbar > .btn { white-space: nowrap; min-height: 40px; }
+:is(.champions, .champ-view) .champ-draftbar.no-back { grid-template-columns: 1fr 1fr; }
+:is(.champions, .champ-view) .champ-team { display: flex; gap: 6px; align-items: center; padding: 6px 8px; border-radius: 10px; }
+:is(.champions, .champ-view) .champ-team.is-ally { background: color-mix(in srgb, var(--ally) 14%, rgba(20, 20, 22, .5)); border-left: 3px solid var(--ally); }
+:is(.champions, .champ-view) .champ-team.is-enemy { background: color-mix(in srgb, var(--enemy) 14%, rgba(20, 20, 22, .5)); border-right: 3px solid var(--enemy); justify-content: flex-end; }
+:is(.champions, .champ-view) .dface { display: grid; justify-items: center; gap: 2px; padding: 3px; border: 1px solid transparent; border-radius: 8px; color: inherit; text-decoration: none; }
+:is(.champions, .champ-view) a.dface:hover { border-color: rgba(255, 255, 255, .4); }
+:is(.champions, .champ-view) .dface .small { font-size: 10px; }
+:is(.champions, .champ-view) .dface-empty { width: 40px; height: 40px; border-radius: 6px; background: rgba(255, 255, 255, .05); border: 1px dashed rgba(255, 255, 255, .12); }
 
 /* ---------- Fiche ---------- */
-.champions .champ-back { align-self: flex-start; margin-bottom: 14px; }
-.champions .champ-hero {
+:is(.champions, .champ-view) .champ-back { align-self: flex-start; margin-bottom: 14px; }
+:is(.champions, .champ-view) .champ-hero {
   overflow: hidden; isolation: isolate; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 20px; align-items: center;
   padding: 20px 22px; border-left: 3px solid var(--ally);
 }
-.champions .champ-art { position: absolute; inset: 0; z-index: -1; border-radius: 0; }
-.champions .champ-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; opacity: .5; border-radius: 0; display: block; }
-.champions .champ-art::after {
+:is(.champions, .champ-view) .champ-art { position: absolute; inset: 0; z-index: -1; border-radius: 0; }
+:is(.champions, .champ-view) .champ-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; opacity: .5; border-radius: 0; display: block; }
+:is(.champions, .champ-view) .champ-art::after {
   content: ''; position: absolute; inset: 0; border-radius: 0;
   background: linear-gradient(90deg, color-mix(in srgb, var(--ally) 22%, rgba(10, 10, 12, .92)) 0%, rgba(10, 10, 12, .55) 55%, rgba(10, 10, 12, .15) 100%);
 }
-.champions .champ-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.champions .champ-tag { font-size: 12px; padding: 2px 8px; background: #232323; color: var(--soft); font-weight: 600; }
-.champions .champ-roletabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.champions .champ-roletab {
+:is(.champions, .champ-view) .champ-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+:is(.champions, .champ-view) .champ-tag { font-size: 12px; padding: 2px 8px; background: #232323; color: var(--soft); font-weight: 600; }
+:is(.champions, .champ-view) .champ-roletabs { display: flex; gap: 8px; flex-wrap: wrap; }
+:is(.champions, .champ-view) .champ-roletab {
   display: grid; gap: 2px; padding: 10px 14px; min-width: 150px; color: var(--text); text-decoration: none; border-radius: 10px;
   background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
-.champions .champ-roletab:hover { border-color: rgba(255, 255, 255, .2); }
-.champions .champ-roletab.is-on { border-color: var(--ally); background: color-mix(in srgb, var(--ally) 18%, rgba(20, 20, 22, .8)); }
-.champions .champ-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 2fr); gap: 10px; margin: 12px 0; }
-.champions .champ-stat { display: flex; flex-direction: column; gap: 4px; }
-.champions .champ-v { font: 700 26px/1 'Inter', system-ui, sans-serif; letter-spacing: -.01em; }
-.champions .champ-scaling { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px; }
-.champions .champ-bar { display: block; height: 6px; background: var(--track); margin-top: 6px; overflow: hidden; }
-.champions .champ-bar > i { display: block; height: 100%; background: var(--ally); border-radius: 0; }
-.champions .champ-tabs { display: flex; gap: 2px; border-bottom: 1px solid rgba(255, 255, 255, .08); margin: 18px 0 14px; }
-.champions .champ-tab {
+:is(.champions, .champ-view) .champ-roletab:hover { border-color: rgba(255, 255, 255, .2); }
+:is(.champions, .champ-view) .champ-roletab.is-on { border-color: var(--ally); background: color-mix(in srgb, var(--ally) 18%, rgba(20, 20, 22, .8)); }
+:is(.champions, .champ-view) .champ-v { font: 700 26px/1 'Inter', system-ui, sans-serif; letter-spacing: -.01em; }
+:is(.champions, .champ-view) .champ-tabs { display: flex; gap: 2px; border-bottom: 1px solid rgba(255, 255, 255, .08); margin: 18px 0 14px; }
+:is(.champions, .champ-view) .champ-tab {
   padding: 9px 18px; border-bottom: 2px solid transparent; border-radius: 0; color: var(--muted); font-weight: 500; text-decoration: none;
 }
-.champions .champ-tab:hover { color: var(--soft); }
-.champions .champ-tab.is-on { color: var(--text); border-bottom-color: var(--ally); }
+:is(.champions, .champ-view) .champ-tab:hover { color: var(--soft); }
+:is(.champions, .champ-view) .champ-tab.is-on { color: var(--text); border-bottom-color: var(--ally); }
 
 /* ---------- Build ---------- */
-.champions .champ-ctx { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-.champions .champ-picker { position: relative; }
-.champions .champ-pick-btn { min-width: 220px; justify-content: flex-start; padding-left: 5px; }
-.champions .champ-pick-btn > :last-child { margin-left: auto; }
-.champions .champ-pop {
+:is(.champions, .champ-view) .champ-ctx { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+:is(.champions, .champ-view) .champ-picker { position: relative; }
+:is(.champions, .champ-view) .champ-pick-btn { min-width: 220px; justify-content: flex-start; padding-left: 5px; }
+:is(.champions, .champ-view) .champ-pick-btn > :last-child { margin-left: auto; }
+:is(.champions, .champ-view) .champ-pop {
   position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; width: 440px; max-width: calc(100vw - 32px); padding: 10px; border-radius: 12px;
   background: rgba(24, 25, 28, .96); border: 1px solid rgba(255, 255, 255, .1); box-shadow: 0 14px 36px rgba(0, 0, 0, .55);
 }
-.champions .champ-pop > .input { width: 100%; }
-.champions .champ-pop-list { max-height: 380px; overflow: auto; display: grid; gap: 1px; }
-.champions .champ-pop-row {
+:is(.champions, .champ-view) .champ-pop > .input { width: 100%; }
+:is(.champions, .champ-view) .champ-pop-list { max-height: 380px; overflow: auto; display: grid; gap: 1px; }
+:is(.champions, .champ-view) .champ-pop-row {
   display: grid; grid-template-columns: 28px minmax(0, 1fr) 72px 64px; gap: 10px; align-items: center; padding: 4px 6px; color: var(--text); text-decoration: none;
 }
-.champions .champ-pop-row > :nth-child(n + 3) { text-align: right; }
-.champions .champ-pop-row.is-all { min-height: 36px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
-.champions a.champ-pop-row:hover, .champions .champ-pop-row.is-on { background: rgba(255, 255, 255, .07); }
-.champions .champ-pop-row.is-head { margin-top: 8px; }
-.champions .direct {
+:is(.champions, .champ-view) .champ-pop-row > :nth-child(n + 3) { text-align: right; }
+:is(.champions, .champ-view) .champ-pop-row.is-all { min-height: 36px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+:is(.champions, .champ-view) a.champ-pop-row:hover, :is(.champions, .champ-view) .champ-pop-row.is-on { background: rgba(255, 255, 255, .07); }
+:is(.champions, .champ-view) .champ-pop-row.is-head { margin-top: 8px; }
+:is(.champions, .champ-view) .direct {
   padding: 0 12px 0 5px; background: color-mix(in srgb, var(--enemy) 16%, rgba(20, 20, 22, .7));
   border: 1px solid color-mix(in srgb, var(--enemy) 40%, transparent); border-right: 3px solid var(--enemy);
 }
-.champions .direct:hover { background: color-mix(in srgb, var(--enemy) 26%, rgba(20, 20, 22, .7)); }
-.champions .direct.is-on { border-color: var(--enemy); background: color-mix(in srgb, var(--enemy) 30%, rgba(20, 20, 22, .7)); font-weight: 400; }
-.champions .champ-vs {
+:is(.champions, .champ-view) .direct:hover { background: color-mix(in srgb, var(--enemy) 26%, rgba(20, 20, 22, .7)); }
+:is(.champions, .champ-view) .direct.is-on { border-color: var(--enemy); background: color-mix(in srgb, var(--enemy) 30%, rgba(20, 20, 22, .7)); font-weight: 400; }
+:is(.champions, .champ-view) .champ-vs {
   overflow: clip; isolation: isolate; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; margin-bottom: 12px; padding: 12px 16px;
   border-left: 3px solid var(--ally); border-right: 3px solid var(--enemy);
 }
-.champions .champ-vs-who { display: flex; align-items: center; gap: 10px; }
-.champions .champ-vs-stat { display: grid; gap: 2px; }
-.champions .champ-vs-stat .champ-v { font-size: 20px; }
-.champions .champ-vs-src { margin-left: auto; }
-.champions .champ-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 48px; color: var(--soft); }
-.champions .champ-spinner {
+:is(.champions, .champ-view) .champ-vs-who { display: flex; align-items: center; gap: 10px; }
+:is(.champions, .champ-view) .champ-vs-stat { display: grid; gap: 2px; }
+:is(.champions, .champ-view) .champ-vs-stat .champ-v { font-size: 20px; }
+:is(.champions, .champ-view) .champ-vs-src { margin-left: auto; }
+:is(.champions, .champ-view) .champ-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 48px; color: var(--soft); }
+:is(.champions, .champ-view) .champ-spinner {
   display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, .2); border-top-color: var(--ally); animation: champ-spin .8s linear infinite;
 }
 @keyframes champ-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .champions .champ-spinner { animation-duration: 2.4s; } }
-.champions .champ-fail { display: grid; justify-items: center; gap: 6px; padding: 36px 16px; text-align: center; }
-.champions .champ-why { color: var(--neg); font-weight: 600; }
-.champions .champ-fail-inline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+@media (prefers-reduced-motion: reduce) { :is(.champions, .champ-view) .champ-spinner { animation-duration: 2.4s; } }
+:is(.champions, .champ-view) .champ-fail { display: grid; justify-items: center; gap: 6px; padding: 36px 16px; text-align: center; }
+:is(.champions, .champ-view) .champ-why { color: var(--neg); font-weight: 600; }
+:is(.champions, .champ-view) .champ-fail-inline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.champions .champ-styles { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-.champions .champ-style { gap: 10px; }
-.champions .champ-board { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 2.6fr); gap: 12px; align-items: start; }
-.champions .champ-right { display: grid; gap: 12px; align-content: start; min-width: 0; }
-.champions .champ-basics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.champions .champ-opt { display: flex; align-items: center; gap: 8px; }
-.champions .champ-opt + .champ-opt { margin-top: 8px; }
-.champions .champ-opt.is-alt { opacity: .75; }
-.champions .champ-icons { display: flex; gap: 3px; }
-.champions .champ-wrg { display: grid; line-height: 1.2; }
-.champions .champ-runes .build-section { gap: 10px; }
-.champions .champ-core { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; }
-.champions .champ-popular { border-left: 1px solid rgba(255, 255, 255, .08); padding-left: 24px; }
-.champions .champ-pop-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px 12px; }
-.champions .champ-pop-items .champ-opt + .champ-opt { margin-top: 0; }
-.champions .champ-path { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
-.champions .champ-step { display: flex; gap: 10px; }
-.champions .champ-step-body { display: grid; gap: 6px; justify-items: center; text-align: center; width: 84px; line-height: 1.2; }
-.champions .champ-alts { display: flex; gap: 4px; justify-content: center; opacity: .8; }
-.champions .champ-arrow { color: var(--muted); padding-top: 30px; font-size: 18px; }
-.champions .champ-later { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.champions .champ-later .champ-opt + .champ-opt { margin-top: 6px; }
-.champions .champ-sits { display: grid; gap: 8px; }
-.champions .champ-sits .champ-opt + .champ-opt { margin-top: 0; }
+:is(.champions, .champ-view) .champ-styles { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+:is(.champions, .champ-view) .champ-style { gap: 10px; }
+:is(.champions, .champ-view) .champ-board { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 2.6fr); gap: 12px; align-items: start; }
+:is(.champions, .champ-view) .champ-right { display: grid; gap: 12px; align-content: start; min-width: 0; }
+:is(.champions, .champ-view) .champ-basics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+:is(.champions, .champ-view) .champ-opt { display: flex; align-items: center; gap: 8px; }
+:is(.champions, .champ-view) .champ-opt + .champ-opt { margin-top: 8px; }
+:is(.champions, .champ-view) .champ-opt.is-alt { opacity: .75; }
+:is(.champions, .champ-view) .champ-icons { display: flex; gap: 3px; }
+:is(.champions, .champ-view) .champ-wrg { display: grid; line-height: 1.2; }
+:is(.champions, .champ-view) .champ-runes .build-section { gap: 10px; }
+:is(.champions, .champ-view) .champ-core { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; }
+:is(.champions, .champ-view) .champ-popular { border-left: 1px solid rgba(255, 255, 255, .08); padding-left: 24px; }
+:is(.champions, .champ-view) .champ-pop-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px 12px; }
+:is(.champions, .champ-view) .champ-pop-items .champ-opt + .champ-opt { margin-top: 0; }
+:is(.champions, .champ-view) .champ-path { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
+:is(.champions, .champ-view) .champ-step { display: flex; gap: 10px; }
+:is(.champions, .champ-view) .champ-step-body { display: grid; gap: 6px; justify-items: center; text-align: center; width: 84px; line-height: 1.2; }
+:is(.champions, .champ-view) .champ-alts { display: flex; gap: 4px; justify-content: center; opacity: .8; }
+:is(.champions, .champ-view) .champ-arrow { color: var(--muted); padding-top: 30px; font-size: 18px; }
+:is(.champions, .champ-view) .champ-later { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+:is(.champions, .champ-view) .champ-later .champ-opt + .champ-opt { margin-top: 6px; }
+:is(.champions, .champ-view) .champ-sits { display: grid; gap: 8px; }
+:is(.champions, .champ-view) .champ-sits .champ-opt + .champ-opt { margin-top: 0; }
 
 /* Compétences : priorité de montée, puis ordre des 15 premiers niveaux. */
-.champions .champ-skills { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: start; }
-.champions .champ-prio { display: flex; align-items: center; gap: 6px; }
-.champions .champ-prio-step { display: flex; align-items: center; gap: 6px; }
-.champions .champ-ab { position: relative; flex: none; display: inline-block; }
-.champions .champ-ab img, .champions .champ-ab-empty { display: block; border-radius: 6px; background: #000; }
-.champions .champ-ab b {
+:is(.champions, .champ-view) .champ-skills { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: start; }
+:is(.champions, .champ-view) .champ-prio { display: flex; align-items: center; gap: 6px; }
+:is(.champions, .champ-view) .champ-prio-step { display: flex; align-items: center; gap: 6px; }
+:is(.champions, .champ-view) .champ-ab { position: relative; flex: none; display: inline-block; }
+:is(.champions, .champ-view) .champ-ab img, :is(.champions, .champ-view) .champ-ab-empty { display: block; border-radius: 6px; background: #000; }
+:is(.champions, .champ-view) .champ-ab b {
   position: absolute; right: -3px; bottom: -3px; font-size: 10px; line-height: 1; padding: 2px 3px;
   background: #0d0d0f; border: 1px solid rgba(255, 255, 255, .18); border-radius: 4px;
 }
-.champions .champ-skills .champ-opt.is-alt { margin-top: 10px; }
-.champions .champ-levels { display: grid; grid-template-columns: 34px repeat(15, minmax(18px, 1fr)); gap: 3px; align-items: center; }
-.champions .champ-levels-row { display: contents; }
-.champions .champ-lv { font-size: 10px; color: var(--muted); text-align: center; }
-.champions .champ-cell {
+:is(.champions, .champ-view) .champ-skills .champ-opt.is-alt { margin-top: 10px; }
+:is(.champions, .champ-view) .champ-levels { display: grid; grid-template-columns: 34px repeat(15, minmax(18px, 1fr)); gap: 3px; align-items: center; }
+:is(.champions, .champ-view) .champ-levels-row { display: contents; }
+:is(.champions, .champ-view) .champ-lv { font-size: 10px; color: var(--muted); text-align: center; }
+:is(.champions, .champ-view) .champ-cell {
   height: 22px; border-radius: 4px; background: rgba(255, 255, 255, .04); font-size: 11px; font-weight: 700;
   display: grid; place-items: center; color: transparent;
 }
-.champions .champ-cell.is-on {
+:is(.champions, .champ-view) .champ-cell.is-on {
   background: color-mix(in srgb, var(--ally) 30%, rgba(20, 20, 22, .8)); border: 1px solid color-mix(in srgb, var(--ally) 60%, transparent); color: var(--text);
 }
-.champions .champ-cell.is-on.is-r { background: color-mix(in srgb, var(--warn) 26%, rgba(20, 20, 22, .8)); border-color: color-mix(in srgb, var(--warn) 60%, transparent); }
-.champions .champ-lv-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
+:is(.champions, .champ-view) .champ-cell.is-on.is-r { background: color-mix(in srgb, var(--warn) 26%, rgba(20, 20, 22, .8)); border-color: color-mix(in srgb, var(--warn) 60%, transparent); }
+:is(.champions, .champ-view) .champ-lv-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
 
 /* ---------- Matchups et duos ---------- */
-.champions .champ-mtool { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-.champions .champ-mtool .champ-sec { margin: 0; }
-.champions .champ-mtool .input { min-height: 32px; }
-.champions .champ-note { margin-left: auto; }
-.champions .champ-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-.champions .champ-mrow { display: grid; grid-template-columns: 28px minmax(0, 1fr) 70px 64px 64px; gap: 10px; align-items: center; padding: 5px 0; }
-.champions .champ-mrow.has-build { grid-template-columns: 28px minmax(0, 1fr) 70px 64px 64px 64px; }
-.champions .champ-mrow + .champ-mrow { border-top: 1px solid rgba(255, 255, 255, .04); }
-.champions .champ-mrow > :nth-child(3), .champions .champ-mrow > :nth-child(5) { text-align: right; }
-.champions .champ-mrow > :nth-child(4) { text-align: center; }
-.champions .champ-mrow.is-head > * { text-align: inherit; }
-.champions .champ-mrow.is-head > :nth-child(3), .champions .champ-mrow.is-head > :nth-child(5) { text-align: right; }
-.champions .champ-mrow.is-head > :nth-child(4) { text-align: center; }
-.champions .champ-mname { color: var(--text); text-decoration: none; }
-.champions .champ-mname:hover { text-decoration: underline; }
-.champions .champ-delta { font-size: 12px; padding: 1px 6px; text-align: center; font-variant-numeric: tabular-nums; }
-.champions .champ-delta.is-pos { background: var(--pos-bg); color: var(--pos); }
-.champions .champ-delta.is-neg { background: var(--neg-bg); color: var(--neg); }
-.champions .champ-bld { min-height: 26px; padding: 0 8px; font-size: 11px; justify-self: end; }
+:is(.champions, .champ-view) .champ-mtool { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+:is(.champions, .champ-view) .champ-mtool .champ-sec { margin: 0; }
+:is(.champions, .champ-view) .champ-mtool .input { min-height: 32px; }
+:is(.champions, .champ-view) .champ-note { margin-left: auto; }
+:is(.champions, .champ-view) .champ-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+:is(.champions, .champ-view) .champ-mrow { display: grid; grid-template-columns: 28px minmax(0, 1fr) 70px 64px 64px; gap: 10px; align-items: center; padding: 5px 0; }
+:is(.champions, .champ-view) .champ-mrow.has-build { grid-template-columns: 28px minmax(0, 1fr) 70px 64px 64px 64px; }
+:is(.champions, .champ-view) .champ-mrow + .champ-mrow { border-top: 1px solid rgba(255, 255, 255, .04); }
+:is(.champions, .champ-view) .champ-mrow > :nth-child(3), :is(.champions, .champ-view) .champ-mrow > :nth-child(5) { text-align: right; }
+:is(.champions, .champ-view) .champ-mrow > :nth-child(4) { text-align: center; }
+:is(.champions, .champ-view) .champ-mrow.is-head > * { text-align: inherit; }
+:is(.champions, .champ-view) .champ-mrow.is-head > :nth-child(3), :is(.champions, .champ-view) .champ-mrow.is-head > :nth-child(5) { text-align: right; }
+:is(.champions, .champ-view) .champ-mrow.is-head > :nth-child(4) { text-align: center; }
+:is(.champions, .champ-view) .champ-mname { color: var(--text); text-decoration: none; }
+:is(.champions, .champ-view) .champ-mname:hover { text-decoration: underline; }
+:is(.champions, .champ-view) .champ-delta { font-size: 12px; padding: 1px 6px; text-align: center; font-variant-numeric: tabular-nums; }
+:is(.champions, .champ-view) .champ-delta.is-pos { background: var(--pos-bg); color: var(--pos); }
+:is(.champions, .champ-view) .champ-delta.is-neg { background: var(--neg-bg); color: var(--neg); }
+:is(.champions, .champ-view) .champ-bld { min-height: 26px; padding: 0 8px; font-size: 11px; justify-self: end; }
 
-@media (max-width: 1100px) {
-  .champions .champ-board, .champions .champ-core, .champions .champ-two { grid-template-columns: 1fr; }
-  .champions .champ-popular { border-left: 0; padding-left: 0; }
-  .champions .champ-stats { grid-template-columns: repeat(2, 1fr); }
-  .champions .champ-hero { grid-template-columns: auto 1fr; }
-  .champions .champ-roletabs { grid-column: 1 / -1; }
-  .champions .champ-draftbar { grid-template-columns: 1fr; }
-  .champions .champ-team.is-enemy { justify-content: flex-start; }
+@container (max-width: 1068px) {
+  :is(.champions, .champ-view) .champ-board, :is(.champions, .champ-view) .champ-core, :is(.champions, .champ-view) .champ-two { grid-template-columns: 1fr; }
+  :is(.champions, .champ-view) .champ-popular { border-left: 0; padding-left: 0; }
+  :is(.champions, .champ-view) .champ-hero { grid-template-columns: auto 1fr; }
+  :is(.champions, .champ-view) .champ-roletabs { grid-column: 1 / -1; }
+  :is(.champions, .champ-view) .champ-draftbar, :is(.champions, .champ-view) .champ-draftbar.no-back { grid-template-columns: 1fr; }
+  :is(.champions, .champ-view) .champ-team.is-enemy { justify-content: flex-start; }
 }
-@media (max-width: 640px) {
-  .champions .champ-basics, .champions .champ-later { grid-template-columns: 1fr; }
-  .champions .champ-skills { grid-template-columns: 1fr; }
-  .champions .champ-search { min-width: 0; flex: 1 1 180px; }
-  .champions .champ-levels { grid-template-columns: 28px repeat(15, minmax(12px, 1fr)); }
+@container (max-width: 608px) {
+  :is(.champions, .champ-view) .champ-basics, :is(.champions, .champ-view) .champ-later { grid-template-columns: 1fr; }
+  :is(.champions, .champ-view) .champ-skills { grid-template-columns: 1fr; }
+  :is(.champions, .champ-view) .champ-search { min-width: 0; flex: 1 1 180px; }
+  :is(.champions, .champ-view) .champ-levels { grid-template-columns: 28px repeat(15, minmax(12px, 1fr)); }
 }
 
 /* Lien vers la fiche d'un champion autour d'un portrait (draft) ; raccourci « Matchup direct » de l'onglet Build. */

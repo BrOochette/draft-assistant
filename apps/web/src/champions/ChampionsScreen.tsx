@@ -3,7 +3,7 @@ import { CHAMPIONS_TEXT as T, fmtInt, fmtPct, fmtSigned, TRAIT_LABEL } from '@dr
 import { ROLES, type Candidate, type DraftState, type Role } from '@draft/schemas';
 import { Portrait, useData } from '../ui';
 import { ChampionBuild } from './ChampionBuild';
-import { CHAMPION_TABS, championHash, LIST_HASH, type ChampionRoute } from './route';
+import { CHAMPION_TABS, championHash, goBack, LIST_HASH, originOf, parseChampionHash, type ChampionRoute } from './route';
 
 // Écran Champions (maquette maquettes/5-champions.html, validée le 31/10/2026) : liste de tous les champions, puis la
 // fiche d'un champion sur un rôle avec son build, ses matchups et ses duos. Design de l'écran Joueurs.
@@ -11,6 +11,9 @@ import { CHAMPION_TABS, championHash, LIST_HASH, type ChampionRoute } from './ro
 /** Matchups et duos des listes « plus favorables » et « plus difficiles » à partir de ce nombre de parties. */
 export const RELIABLE_GAMES = 200;
 const BEST_MAX = 8;
+/** Vue Tous : au plus SHOWN_MAX rôles, montrés à partir de cette part des parties du champion (%), le rôle principal toujours. */
+const SHOWN_SHARE = 10;
+const SHOWN_MAX = 2;
 
 type SortKey = 'name' | 'wr' | 'games' | 'share';
 type RoleFilter = Role | 'all';
@@ -23,6 +26,7 @@ interface ChampionRow {
 }
 
 const share = (c: Candidate) => c.laneShare ?? 100;
+const shownRoles = (r: ChampionRow) => r.roles.filter(([, c], i) => i === 0 || share(c) >= SHOWN_SHARE).slice(0, SHOWN_MAX);
 const totalGames = (r: ChampionRow) => r.roles.reduce((s, [, c]) => s + c.games, 0);
 
 /** Champions qui ont des stats sur au moins un rôle, rôles du plus joué au moins joué. */
@@ -53,8 +57,11 @@ export const directOpponent = (d: DraftState, champion: string, role: Role): str
 const Art = ({ id, className }: { id: string; className: string }) =>
   id ? <img className={className} src={import.meta.env.BASE_URL + 'champions/' + id + '.png'} alt="" aria-hidden="true" /> : null;
 
-/** Bandeau de la draft en cours : retour à la draft (état gardé) et portraits des deux équipes, vers leur fiche. */
-const DraftBar = ({ draft }: { draft: DraftState }) => {
+/**
+ * Bandeau de la draft en cours : portraits des deux équipes, vers leur fiche, et sur la liste le retour à la draft (état
+ * gardé). Une fiche a son propre bouton retour.
+ */
+const DraftBar = ({ draft, back }: { draft: DraftState; back: boolean }) => {
   const face = (name: string | null, role: Role) =>
     name ? (
       <a key={role} className="dface" href={championHash(name, role)} title={T.openIn(name, role)}>
@@ -65,8 +72,8 @@ const DraftBar = ({ draft }: { draft: DraftState }) => {
       <span key={role} className="dface is-empty"><span className="dface-empty" /><span className="small muted">{role}</span></span>
     );
   return (
-    <section className="card champ-draftbar" aria-label={T.draft}>
-      <a className="btn" href="#/">{T.toDraft}</a>
+    <section className={'card champ-draftbar' + (back ? '' : ' no-back')} aria-label={T.draft}>
+      {back && <a className="btn" href="#/">{T.toDraft}</a>}
       <div className="champ-team is-ally">{ROLES.map((r) => face(draft.ally[r], r))}</div>
       <div className="champ-team is-enemy">{ROLES.map((r) => face(draft.enemy[r], r))}</div>
     </section>
@@ -98,15 +105,17 @@ const ChampionList = () => {
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const list = champions.filter((c) => (!needle || c.name.toLowerCase().includes(needle)) && (role === 'all' || c.roles.some(([r]) => r === role)));
+    // Grille : ordre alphabétique ; tableau : tri par un clic sur un en-tête.
+    const by = view === 'grid' ? { key: 'name' as SortKey, dir: 1 } : sort;
     const value = (c: ChampionRow): number | string => {
       const s = role === 'all' ? c.roles[0]![1] : c.roles.find(([r]) => r === role)![1];
-      return sort.key === 'name' ? c.name : sort.key === 'wr' ? s.gameWinRate : sort.key === 'games' ? (role === 'all' ? totalGames(c) : s.games) : share(s);
+      return by.key === 'name' ? c.name : by.key === 'wr' ? s.gameWinRate : by.key === 'games' ? (role === 'all' ? totalGames(c) : s.games) : share(s);
     };
     return [...list].sort((a, b) => {
       const [x, y] = [value(a), value(b)];
-      return (typeof x === 'string' ? x.localeCompare(y as string, 'fr') : x - (y as number)) * sort.dir;
+      return (typeof x === 'string' ? x.localeCompare(y as string, 'fr') : x - (y as number)) * by.dir;
     });
-  }, [champions, q, role, sort]);
+  }, [champions, q, role, sort, view]);
 
   const th = (key: SortKey, label: string, right = false) => (
     <th className={(right ? 'r ' : '') + (sort.key === key ? 'is-sort' : '')} aria-sort={sort.key === key ? (sort.dir > 0 ? 'ascending' : 'descending') : undefined}>
@@ -127,14 +136,6 @@ const ChampionList = () => {
           ))}
         </div>
         <span className="grow" />
-        {view === 'grid' && (
-          <select className="input champ-sort" aria-label={T.sortLabel} value={sort.key} onChange={(e) => {
-            const key = e.target.value as SortKey;
-            setSort({ key, dir: key === 'name' ? 1 : -1 });
-          }}>
-            {(Object.keys(T.sort) as SortKey[]).map((k) => <option key={k} value={k}>{T.sort[k]}</option>)}
-          </select>
-        )}
         <div role="group" aria-label={T.viewGroup} className="champ-seg">
           <button type="button" className={'btn btn-sm' + (view === 'grid' ? ' is-on' : '')} aria-pressed={view === 'grid'} onClick={() => setView('grid')}>{T.grid}</button>
           <button type="button" className={'btn btn-sm' + (view === 'table' ? ' is-on' : '')} aria-pressed={view === 'table'} onClick={() => setView('table')}>{T.table}</button>
@@ -144,7 +145,7 @@ const ChampionList = () => {
       {view === 'grid' ? (
         <ul className="plain-list champ-grid">
           {rows.map((c) => {
-            const roles = role === 'all' ? c.roles : c.roles.filter(([r]) => r === role);
+            const roles = role === 'all' ? shownRoles(c) : c.roles.filter(([r]) => r === role);
             return (
               <li key={c.name}>
                 <a className="champ-tile" href={championHash(c.name, role === 'all' ? null : role)}>
@@ -184,7 +185,7 @@ const ChampionList = () => {
                   </td>
                   <td>
                     <span className="champ-rchip"><b>{mainRole}</b></span>{' '}
-                    {role === 'all' && c.roles.slice(1).map(([r]) => <span key={r} className="champ-rchip">{r}</span>)}
+                    {role === 'all' && shownRoles(c).slice(1).map(([r]) => <span key={r} className="champ-rchip">{r}</span>)}
                   </td>
                   <td className="r num strong">{T.pct2(s.gameWinRate)}</td>
                   <td className="r num">{fmtInt(role === 'all' ? totalGames(c) : s.games)}</td>
@@ -216,10 +217,10 @@ const toneOf = (v: number) => (v >= 0.05 ? ' is-pos' : v <= -0.05 ? ' is-neg' : 
 
 /**
  * Matchups ou duos : les plus favorables et les plus difficiles (au moins RELIABLE_GAMES parties), puis la liste
- * complète, triée par un clic sur un en-tête de colonne (win rate croissant par défaut).
+ * complète, triée par un clic sur un en-tête de colonne (par défaut : pire matchup ou meilleur duo en tête).
  */
 const PairView = ({ pairs, kind, labels, buildOf }: { pairs: Pair[]; kind: 'matchup' | 'duo'; labels: [string, string]; buildOf?: (name: string) => string }) => {
-  const [sort, setSort] = useState<{ key: PairKey; dir: number }>({ key: 'value', dir: 1 });
+  const [sort, setSort] = useState<{ key: PairKey; dir: number }>({ key: 'value', dir: kind === 'duo' ? -1 : 1 });
   const [q, setQ] = useState('');
   const reliable = pairs.filter((p) => p.games >= RELIABLE_GAMES);
   const best = sortPairs(reliable, 'delta', -1).slice(0, BEST_MAX);
@@ -233,7 +234,7 @@ const PairView = ({ pairs, kind, labels, buildOf }: { pairs: Pair[]; kind: 'matc
       <span />
       {cols.map(([k, l]) =>
         !l ? <span key={k} /> : sortable ? (
-          <button key={k} type="button" className={'th-btn' + (sort.key === k ? ' is-sort' : '')} onClick={() => setSort((s) => ({ key: k, dir: s.key === k ? -s.dir : k === 'name' || k === 'value' ? 1 : -1 }))}>
+          <button key={k} type="button" className={'th-btn' + (sort.key === k ? ' is-sort' : '')} onClick={() => setSort((s) => ({ key: k, dir: s.key === k ? -s.dir : k === 'name' || (k === 'value' && kind === 'matchup') ? 1 : -1 }))}>
             {l}{sort.key === k ? (sort.dir > 0 ? ' ↑' : ' ↓') : ''}
           </button>
         ) : <span key={k}>{l}</span>
@@ -318,9 +319,11 @@ const ChampionDetail = ({ row, route, draft, canLoad }: { row: ChampionRow; rout
   const info = engine.catalog.get(row.name);
   const [role, stats] = row.roles.find(([r]) => r === route.role) ?? row.roles[0]!;
   const direct = draft ? directOpponent(draft, row.name, role) : null;
+  const from = originOf(row.name);
+  const fromLabel = parseChampionHash(from)?.champion ?? (from === LIST_HASH ? T.nav : from === '#/joueurs' ? T.pages.players : T.pages.draft);
   return (
     <>
-      <a className="btn btn-sm champ-back" href={LIST_HASH}>{T.back}</a>
+      <a className="btn btn-sm champ-back" href={from} onClick={(e) => { e.preventDefault(); goBack(row.name); }}>{T.backTo(fromLabel)}</a>
       <section className="card champ-hero">
         <span className="champ-art" aria-hidden="true">{row.ddragonId && <img src={import.meta.env.BASE_URL + 'champions/centered/' + row.ddragonId + '.jpg'} alt="" />}</span>
         <Portrait name={row.name} size={84} />
@@ -342,22 +345,6 @@ const ChampionDetail = ({ row, route, draft, canLoad }: { row: ChampionRow; rout
           ))}
         </div>
       </section>
-      <div className="champ-stats">
-        <div className="card champ-stat"><span className="small muted">{T.winRate}</span><span className="champ-v num">{T.pct2(stats.gameWinRate)}</span></div>
-        <div className="card champ-stat"><span className="small muted">{T.games}</span><span className="champ-v num">{fmtInt(stats.games)}</span></div>
-        <div className="card champ-stat"><span className="small muted">{T.share}</span><span className="champ-v num">{fmtPct(share(stats))}</span></div>
-        <div className="card champ-stat">
-          <span className="small muted">{T.scaling}</span>
-          <div className="champ-scaling">
-            {stats.scaling.map((v, i) => (
-              <div key={i}>
-                <span className="small soft">{T.phases[i]} <span className="muted num">{String(v).replace('.', ',')}</span></span>
-                <span className="champ-bar"><i style={{ width: (v / 4) * 100 + '%' }} /></span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
       <nav className="champ-tabs" aria-label={T.tabsLabel}>
         {CHAMPION_TABS.map((t) => (
           <a key={t} className={'champ-tab' + (route.tab === t ? ' is-on' : '')} aria-current={route.tab === t ? 'page' : undefined} href={championHash(row.name, role, t)}>{T.tabs[t]}</a>
@@ -387,7 +374,7 @@ export const ChampionsScreen = ({ route, draft, canLoad }: { route: ChampionRout
   }, [row?.name]);
   return (
     <main className="champions">
-      {draft && <DraftBar draft={draft} />}
+      {draft && <DraftBar draft={draft} back={!row} />}
       {row && route ? <ChampionDetail key={row.name} row={row} route={route} draft={draft} canLoad={canLoad} /> : <ChampionList />}
     </main>
   );

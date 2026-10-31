@@ -55,6 +55,7 @@ describe('assemblage du snapshot Lolalytics', () => {
     region: 'euw',
     pairRegion: 'all',
     fetchedAt: '2026-10-23T00:00:00Z',
+    slugs: { "Kai'Sa": 'kaisa' },
     champions: {
       Ahri: { Mid: lane(52.7, [50, 52, 53], { matchups: { Zed: [50.6, 2017] }, duos: { Jungle: { Sejuani: [2.1, 900] } } }) },
       "Kai'Sa": {
@@ -82,6 +83,7 @@ describe('assemblage du snapshot Lolalytics', () => {
     expect(snap.pairRegion).toBe('all');
     expect(ahri.matchups).toEqual({ Zed: [50.6, 2017] });
     expect(ahri.duos).toEqual({ Jungle: { Sejuani: [2.1, 900] } });
+    expect(snap.lolalyticsSlugs).toEqual({ "Kai'Sa": 'kaisa' });
   });
 
   it('mesure le type de dégâts, sauf pour un tank', () => {

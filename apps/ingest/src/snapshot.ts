@@ -186,6 +186,7 @@ export const assembleLolalyticsSnapshot = (
     matchupNotes: { matchups: {}, fixedInfo: {} },
     banSuggestions: bans,
     winRatePriorGames: WIN_RATE_PRIOR_GAMES,
-    classPriors: classPriors(candidates, new Map(attributes.filter((a) => a.classes.length).map((a) => [a.name, a.classes[0]!])))
+    classPriors: classPriors(candidates, new Map(attributes.filter((a) => a.classes.length).map((a) => [a.name, a.classes[0]!]))),
+    ...(Object.keys(dump.slugs).length > 0 && { lolalyticsSlugs: dump.slugs })
   });
 };

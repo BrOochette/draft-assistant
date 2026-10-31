@@ -1,18 +1,21 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { applyClientDraft, createSession, draftReducer } from '@draft/engine';
 import { emptySlots, ROLES, type Pools, type RiotIds } from '@draft/schemas';
 import { useClientBridge } from './client';
 import { initialDraft, loadAppData, type AppData } from './data';
 import { PlayersScreen } from './players/PlayersScreen';
-import { FitScreen } from './fit/FitScreen';
+import { FitScreen as FitScreenView } from './fit/FitScreen';
 import { loadMe, loadPools, loadRiotIds, saveMe, savePools, saveRiotIds } from './store';
 import { APP_TEXT as T, CHAMPIONS_TEXT, CLIENT_TEXT } from '@draft/i18n-fr';
 import { DataContext, TooltipLayer } from './ui';
 import { desktopBuilds, StatsUpdate } from './desktop';
 import { ChampionsScreen, draftStarted } from './champions/ChampionsScreen';
-import { isChampionsHash, LIST_HASH, parseChampionHash } from './champions/route';
+import { isChampionsHash, LIST_HASH, noteNavigation, parseChampionHash } from './champions/route';
 
 type Screen = 'draft' | 'players' | 'champions';
+
+/** Écran de draft gardé monté sous l'écran Champions : pas de rendu tant que ses propriétés ne changent pas. */
+const FitScreen = memo(FitScreenView);
 
 /** Draft de départ : l'état de la maquette avec les données d'exemple, une draft vide avec de vraies stats. */
 const startDraft = (data: AppData | undefined) =>
@@ -119,7 +122,8 @@ export const App = ({ initialData, initialPools }: Props) => {
   }, [screen]);
 
   useEffect(() => {
-    const onHash = () => {
+    const onHash = (e: HashChangeEvent) => {
+      noteNavigation(new URL(e.oldURL).hash, location.hash);
       setScreen(screenFromHash());
       setHash(location.hash);
     };
@@ -128,14 +132,17 @@ export const App = ({ initialData, initialPools }: Props) => {
   }, []);
 
   // Builds chargés à la demande (appli desktop) : les champions des pools restent, les autres partent 14 jours après leur
-  // dernière ouverture, tout part au changement de patch.
+  // dernière ouverture, tout part au changement de patch. Relancé seulement si la liste des champions des pools change.
   const patch = data?.snapshot.patch;
+  const keep = useMemo(
+    () => (pools ? [...new Set(Object.values(pools).flatMap((byRole) => Object.values(byRole).flatMap((list) => (list ?? []).map((e) => e.champion))))].sort().join('\n') : null),
+    [pools]
+  );
   useEffect(() => {
     const api = desktopBuilds();
-    if (!api || !patch || !pools) return;
-    const keep = [...new Set(Object.values(pools).flatMap((byRole) => Object.values(byRole).flatMap((list) => (list ?? []).map((e) => e.champion))))];
-    void api.prune(patch, keep).catch(() => {});
-  }, [patch, pools]);
+    if (!api || !patch || keep == null) return;
+    void api.prune(patch, keep ? keep.split('\n') : []).catch(() => {});
+  }, [patch, keep]);
 
   const changeRiotIds = useCallback((next: RiotIds) => {
     setRiotIds(next);
