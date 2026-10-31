@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 
-// Ce que la page de l'appli desktop peut demander au processus principal : la mise à jour des stats, rien d'autre.
+// Ce que la page de l'appli desktop peut demander au processus principal : la mise à jour des stats et les builds de
+// l'écran Champions chargés à la demande, rien d'autre.
 // La page le trouve dans `window.draftDesktop` ; sur le site web, il est absent.
 
 contextBridge.exposeInMainWorld('draftDesktop', {
@@ -15,5 +16,9 @@ contextBridge.exposeInMainWorld('draftDesktop', {
         ipcRenderer.removeListener('stats:status', handler);
       };
     }
+  },
+  builds: {
+    load: (req: unknown) => ipcRenderer.invoke('builds:load', req),
+    prune: (patch: string, keep: string[]) => ipcRenderer.invoke('builds:prune', patch, keep)
   }
 });

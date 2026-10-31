@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette · Champions</title>
+<!-- Maquette autonome de l'écran Champions (31/10/2026) : liste de tous les champions, puis détail d'un champion
+     (builds, matchups, duos). Données réelles du snapshot (5-champions.data.js, généré depuis
+     apps/web/public/data/snapshot.json et le moteur), images de apps/web/public. S'ouvre directement dans un navigateur. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #121212; --card: rgba(255,255,255,.035); --card-line: rgba(255,255,255,.07); --raise: rgba(255,255,255,.06);
+    --raise-2: rgba(255,255,255,.1); --text: #ededed; --soft: #c6c6c6; --muted: #949494; --track: #2b2b2b;
+    --accent: #4da3ff; --accent-soft: #9cc9ff; --pos: #9fdcb8; --pos-bg: #1e2c24; --neg: #ffa657; --neg-bg: #33240f;
+  }
+  * { box-sizing: border-box; border-radius: 6px; }
+  html { color-scheme: dark; }
+  body { margin: 0; color: var(--text); font: 14px/1.45 Inter, system-ui, sans-serif;
+    background: radial-gradient(120% 80% at 50% 0%, #1b1d22 0%, #121316 55%, #0e0f11 100%) fixed; min-height: 100vh; }
+  button, input, select { font: inherit; color: inherit; }
+  img { display: block; }
+  .muted { color: var(--muted); } .soft { color: var(--soft); } .small { font-size: 12px; } .strong { font-weight: 600; }
+  .nowrap { white-space: nowrap; } .num { font-variant-numeric: tabular-nums; }
+  .h1 { margin: 0; font: 700 40px/1 'Barlow Condensed', sans-serif; }
+  .h2 { margin: 0; font: 600 26px/1.1 'Barlow Condensed', sans-serif; }
+  .h3 { margin: 0; font: 600 15px/1.2 Inter, sans-serif; color: var(--soft); }
+  .card { background: var(--card); border: 1px solid var(--card-line); padding: 14px 16px; }
+  .pos { color: var(--pos); } .neg { color: var(--neg); }
+
+  /* En-tête de l'appli, avec le nouveau lien Champions. */
+  .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 28px; padding: 10px 24px;
+    background: rgba(14,15,17,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-line); }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .nav { display: flex; gap: 4px; }
+  .nav a { padding: 6px 12px; color: var(--muted); text-decoration: none; font-weight: 500; }
+  .nav a.is-on { color: var(--text); background: var(--raise); }
+  .nav .new { font-size: 10px; padding: 1px 5px; margin-left: 6px; background: var(--accent); color: #0b0f16; font-weight: 700; vertical-align: 1px; }
+  .topbar .meta { margin-left: auto; }
+
+  main { max-width: 1480px; margin: 0 auto; padding: 20px 24px 40px; }
+  .btn { border: 1px solid rgba(255,255,255,.1); background: var(--raise); padding: 6px 12px; cursor: pointer; }
+  .btn:hover { background: var(--raise-2); }
+  .btn.is-on { background: var(--accent); border-color: var(--accent); color: #0b0f16; font-weight: 600; }
+  .seg { display: inline-flex; gap: 2px; padding: 2px; background: rgba(255,255,255,.04); }
+  .seg .btn { border-color: transparent; background: transparent; }
+  .seg .btn.is-on { background: var(--raise-2); color: var(--text); border-color: rgba(255,255,255,.1); }
+  .input { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); padding: 7px 12px; min-width: 240px; }
+  .input:focus { outline: 1px solid var(--accent); }
+
+  /* ---------- Liste ---------- */
+  .toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .toolbar .h2 { margin-right: 8px; }
+  .toolbar .right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+  .tile { position: relative; overflow: hidden; display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center;
+    padding: 10px; background: var(--card); border: 1px solid var(--card-line); cursor: pointer; text-align: left; }
+  .tile:hover { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.06); }
+  .tile img.portrait { width: 52px; height: 52px; }
+  .tile .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .roles { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+  .rchip { font-size: 11px; padding: 1px 6px; background: rgba(255,255,255,.06); color: var(--soft); white-space: nowrap; }
+  .rchip b { font-weight: 600; color: var(--text); }
+  .table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
+  .table th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 4px 12px; cursor: pointer; white-space: nowrap; user-select: none; }
+  .table th.is-sort { color: var(--text); }
+  .table th.r, .table td.r { text-align: right; }
+  .table td { padding: 6px 12px; background: var(--card); }
+  .table tr td:first-child { border-radius: 6px 0 0 6px; } .table tr td:last-child { border-radius: 0 6px 6px 0; }
+  .table tbody tr { cursor: pointer; } .table tbody tr:hover td { background: rgba(255,255,255,.07); }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .who img { width: 32px; height: 32px; }
+
+  /* ---------- Détail ---------- */
+  .back { margin-bottom: 14px; display: inline-flex; gap: 6px; align-items: center; }
+  .hero { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; padding: 20px 22px; }
+  .hero .art { position: absolute; inset: 0; z-index: 0; }
+  .hero .art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; opacity: .32; border-radius: 0; }
+  .hero .art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(14,15,17,.92) 25%, rgba(14,15,17,.55) 65%, rgba(14,15,17,.85)); }
+  .hero > *:not(.art) { position: relative; z-index: 1; }
+  .hero .portrait { width: 84px; height: 84px; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tag { font-size: 12px; padding: 2px 8px; background: rgba(255,255,255,.08); color: var(--soft); }
+  .roletabs { display: flex; gap: 8px; }
+  .roletab { display: grid; gap: 2px; padding: 10px 14px; min-width: 150px; text-align: left; cursor: pointer;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); }
+  .roletab.is-on { border-color: var(--accent); background: rgba(77,163,255,.12); }
+  .roletab .rname { font-weight: 600; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 2fr); gap: 10px; margin: 12px 0; }
+  .stat .v { font: 700 30px/1 'Barlow Condensed', sans-serif; margin-top: 4px; }
+  .scaling { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+  .bar { height: 6px; background: var(--track); margin-top: 6px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 0; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--card-line); margin: 18px 0 14px; }
+  .tabs .tab { padding: 9px 18px; background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: var(--muted); cursor: pointer; font-weight: 500; }
+  .tabs .tab.is-on { color: var(--text); border-bottom-color: var(--accent); }
+
+  /* Build : même disposition que l'onglet Build de la draft. */
+  .styles { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .stylebtn { display: inline-flex; gap: 10px; align-items: center; padding: 5px 12px 5px 10px; }
+  .style-items { display: flex; gap: 2px; }
+  .stylebtn.is-on .style-items img { outline: 1px solid rgba(11,15,22,.5); }
+  .detail-bar { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .detail-bar .btn { display: inline-flex; gap: 8px; align-items: center; }
+  .ctx { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .picker { position: relative; }
+  .pick-btn { display: inline-flex; align-items: center; gap: 8px; min-width: 220px; padding: 4px 10px 4px 5px; min-height: 34px; }
+  .pick-btn img { width: 22px; height: 22px; }
+  .pick-btn > :last-child { margin-left: auto; }
+  .pop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; width: 440px; padding: 10px; background: #1a1b1f;
+    border: 1px solid rgba(255,255,255,.12); box-shadow: 0 14px 36px rgba(0,0,0,.55); }
+  .pop-list { max-height: 380px; overflow: auto; display: grid; gap: 1px; }
+  .pop-row { display: grid; grid-template-columns: 28px 1fr 72px 64px; gap: 10px; align-items: center; padding: 4px 6px; width: 100%;
+    background: none; border: 0; text-align: left; cursor: pointer; }
+  .pop-row img { width: 28px; height: 28px; }
+  .pop-all { min-height: 36px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .pop-row:hover, .pop-row.is-on { background: rgba(255,255,255,.07); }
+  .pop-head { cursor: default; margin-top: 8px; } .pop-head:hover { background: none; }
+  .vs-banner { display: flex; align-items: center; gap: 28px; margin-bottom: 12px; padding: 12px 16px; }
+  .vs-who { display: flex; align-items: center; gap: 10px; }
+  .vs-who img { width: 44px; height: 44px; }
+  .vs-x { font-size: 12px; }
+  .vs-stat { display: grid; gap: 2px; }
+  .vs-stat .v { font: 700 24px/1 'Barlow Condensed', sans-serif; }
+  .vs-src { margin-left: auto; }
+  .loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 48px; color: var(--soft); }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.2); border-top-color: var(--accent);
+    border-radius: 50% !important; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .vsbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .vsbtn { display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px 4px 4px; }
+  .vsbtn img { width: 24px; height: 24px; }
+  .mrow.has-build { grid-template-columns: 28px 1fr 70px 64px 64px 64px; }
+  .mrow .bld { font-size: 11px; padding: 2px 6px; justify-self: end; }
+  .sorth { cursor: pointer; user-select: none; } .sorth.is-sort { color: var(--text); }
+  .board { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 2.6fr); gap: 12px; }
+  .board .right { display: grid; gap: 12px; align-content: start; }
+  .basics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .sec-title { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 8px; text-transform: none; }
+  .ico { background: #000; object-fit: cover; flex: none; }
+  .opt { display: flex; align-items: center; gap: 8px; }
+  .opt + .opt { margin-top: 8px; }
+  .opt .icons { display: flex; gap: 3px; }
+  .opt.is-alt { opacity: .75; }
+  .wrg { display: grid; line-height: 1.2; }
+  .keys { display: grid; gap: 6px; margin-bottom: 14px; }
+  .key { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 6px 10px; cursor: pointer; text-align: left;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
+  .key.is-on { border-color: var(--accent); background: rgba(77,163,255,.1); }
+  .tree { display: grid; justify-items: center; gap: 8px; padding: 10px 0; }
+  .tree-name { display: flex; gap: 6px; align-items: center; justify-self: start; }
+  .rrow { display: flex; gap: 10px; justify-content: center; }
+  .rcell { padding: 3px; border-radius: 50%; border: 1.5px solid transparent; }
+  .rcell img { border-radius: 50%; opacity: .28; filter: grayscale(1); }
+  .rcell.is-picked { border-color: rgba(77,163,255,.7); }
+  .rcell.is-picked img { opacity: 1; filter: none; }
+  .rbottom { display: grid; grid-template-columns: 1fr auto; gap: 12px; border-top: 1px solid var(--card-line); margin-top: 6px; }
+  .core-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; }
+  .popular { border-left: 1px solid rgba(255,255,255,.08); padding-left: 24px; }
+  .pop-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px 12px; }
+  @media (max-width: 1100px) { .core-card { grid-template-columns: 1fr; } .popular { border-left: 0; padding-left: 0; } }
+  .path { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .step { display: grid; gap: 6px; justify-items: center; text-align: center; width: 84px; }
+  .step .alts { display: flex; gap: 4px; justify-content: center; }
+  .step .alts img { opacity: .8; }
+  .arrow { color: var(--muted); padding-top: 14px; font-size: 18px; }
+  .later { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .later .opt + .opt { margin-top: 6px; }
+
+  /* Matchups et duos */
+  .mtool { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .mrow { display: grid; grid-template-columns: 28px 1fr 70px 64px 64px; gap: 10px; align-items: center; padding: 5px 0; cursor: pointer; }
+  .mrow + .mrow { border-top: 1px solid rgba(255,255,255,.04); }
+  .mrow img { width: 28px; height: 28px; }
+  .mrow:hover .mname { text-decoration: underline; }
+  .delta { font-size: 12px; padding: 1px 6px; text-align: center; font-variant-numeric: tabular-nums; }
+  .delta.pos { background: var(--pos-bg); } .delta.neg { background: var(--neg-bg); }
+  .mbar { height: 4px; background: var(--track); position: relative; }
+  .mbar i { position: absolute; top: 0; bottom: 0; border-radius: 0; }
+  .note { margin-top: 24px; padding: 12px 14px; border: 1px dashed rgba(255,255,255,.18); color: var(--muted); font-size: 12px; }
+  .note b { color: var(--soft); }
+  @media (max-width: 1100px) { .board { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2, 1fr); } .hero { grid-template-columns: auto 1fr; } .hero .roletabs { grid-column: 1 / -1; } .two { grid-template-columns: 1fr; } }
+
+  /* ---------- Design de l'écran Joueurs (theme.css, hors Draft) ---------- */
+  :root { --ally: #4da3ff; --enemy: #ff4d5e; --enemy-soft: #ff8f9a; }
+  .h1 { font: 700 30px/1.1 Inter, sans-serif; letter-spacing: -.01em; }
+  .h2 { font: 600 22px/1.3 Inter, sans-serif; letter-spacing: -.01em; }
+  .stat .v, .vs-stat .v { font-family: Inter, sans-serif; font-weight: 700; letter-spacing: -.01em; }
+  .stat .v { font-size: 26px; } .vs-stat .v { font-size: 20px; }
+  .topbar { background: rgba(10,10,12,.45); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 0; padding: 14px 32px; }
+  .nav a { border: 1px solid transparent; }
+  .nav a.is-on { background: #232323; border-color: var(--ally); font-weight: 600; }
+  .card, .pop, .table td { background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.07);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .card { border-radius: 12px; }
+  .btn { background: #232323; border: 1px solid rgba(255,255,255,.1); font-weight: 600; font-size: 13px; }
+  .btn:hover { background: #2b2b2b; }
+  .btn.is-on, .seg .btn.is-on { background: color-mix(in srgb, var(--ally) 18%, rgba(20,20,22,.8)); border-color: var(--ally); color: var(--text); }
+  .seg { background: transparent; gap: 6px; padding: 0; }
+  .seg .btn { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.06); border-radius: 8px; }
+  .input { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.12); }
+  .tag { background: #232323; font-weight: 600; } .rchip { background: #232323; }
+  .table td { border-width: 1px 0; } .table tr td:first-child { border-left: 3px solid var(--ally); } .table tr td:last-child { border-right-width: 1px; }
+  .tile, .roletab, .key { position: relative; isolation: isolate; overflow: clip; background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08); border-left: 3px solid var(--ally); border-radius: 10px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .tile .tile-bg, .vs-banner .tile-bg { position: absolute; inset: -20%; width: 140%; height: 140%; object-fit: cover; filter: blur(22px) saturate(1.2);
+    opacity: .16; z-index: -1; pointer-events: none; }
+  .tile:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.16); border-left-color: var(--ally); }
+  .roletab { border-left-width: 1px; } .roletab.is-on, .key.is-on { border-color: var(--ally); background: color-mix(in srgb, var(--ally) 18%, rgba(20,20,22,.8)); }
+  .key { border-left-width: 1px; border-radius: 8px; }
+  .hero { border-left: 3px solid var(--ally); }
+  .hero .art img { opacity: .5; }
+  .hero .art::after { background: linear-gradient(90deg, color-mix(in srgb, var(--ally) 22%, rgba(10,10,12,.92)) 0%, rgba(10,10,12,.55) 55%, rgba(10,10,12,.15) 100%); }
+  .vs-banner { position: relative; isolation: isolate; overflow: clip; border-left: 3px solid var(--ally); border-right: 3px solid var(--enemy); }
+  .pop { background: rgba(24,25,28,.96); border-color: rgba(255,255,255,.1); }
+  .tabs { border-bottom-color: rgba(255,255,255,.08); }
+
+  /* Draft en cours : bandeau des deux équipes, portraits cliquables (accès au détail d'un champion depuis la draft). */
+  .todraft { white-space: nowrap; min-height: 40px; }
+  .draftbar { display: grid; grid-template-columns: auto 1fr 1fr; gap: 12px; align-items: center; margin-bottom: 16px; padding: 10px 14px; }
+  .team { display: flex; gap: 6px; align-items: center; padding: 6px 8px; border-radius: 10px; }
+  .team.is-ally { background: color-mix(in srgb, var(--ally) 14%, rgba(20,20,22,.5)); border-left: 3px solid var(--ally); }
+  .team.is-enemy { background: color-mix(in srgb, var(--enemy) 14%, rgba(20,20,22,.5)); border-right: 3px solid var(--enemy); justify-content: flex-end; }
+  .dface { display: grid; justify-items: center; gap: 2px; padding: 3px; background: none; border: 1px solid transparent; border-radius: 8px; cursor: pointer; }
+  .dface img { width: 40px; height: 40px; border-radius: 6px; }
+  .dface:hover { border-color: rgba(255,255,255,.4); }
+  .dface .small { font-size: 10px; color: var(--muted); }
+  .direct { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 5px; min-height: 34px;
+    background: color-mix(in srgb, var(--enemy) 16%, rgba(20,20,22,.7)); border: 1px solid color-mix(in srgb, var(--enemy) 40%, transparent); border-right: 3px solid var(--enemy); }
+  .direct:hover { background: color-mix(in srgb, var(--enemy) 26%, rgba(20,20,22,.7)); }
+  .direct.is-on { border-color: var(--enemy); background: color-mix(in srgb, var(--enemy) 30%, rgba(20,20,22,.7)); color: var(--text); font-weight: 400; }
+  .direct img { width: 22px; height: 22px; }
+  .simbtn { font-size: 12px; padding: 4px 10px; }
+  .simbtn.is-on { background: color-mix(in srgb, var(--ally) 22%, rgba(20,20,22,.7)); border-color: var(--ally); color: var(--text); font-weight: 500; }
+
+  /* Contrôles de simulation de la maquette (hors appli). */
+  .sim { display: flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border: 1px dashed rgba(255,255,255,.18); border-radius: 8px; }
+  .sim select { background: #232323; border: 1px solid rgba(255,255,255,.1); padding: 4px 8px; font-size: 12px; font-weight: 600; }
+
+  /* Compétences : priorité de montée, puis ordre des 15 premiers niveaux. */
+  .skills { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: start; }
+  .prio { display: flex; align-items: center; gap: 6px; }
+  .prio .gt { color: var(--muted); font-size: 12px; }
+  .ab { position: relative; flex: none; }
+  .ab img { border-radius: 6px; }
+  .ab b { position: absolute; right: -3px; bottom: -3px; font-size: 10px; line-height: 1; padding: 2px 3px; background: #0d0d0f; border: 1px solid rgba(255,255,255,.18); border-radius: 4px; }
+  .prio-alt { margin-top: 10px; display: grid; gap: 6px; }
+  .prio-alt .row { display: flex; align-items: center; gap: 10px; opacity: .75; }
+  .levels { display: grid; grid-template-columns: 34px repeat(15, minmax(18px, 1fr)); gap: 3px; align-items: center; }
+  .levels .lv { font-size: 10px; color: var(--muted); text-align: center; }
+  .levels .cell { height: 22px; border-radius: 4px; background: rgba(255,255,255,.04); font-size: 11px; font-weight: 700; display: grid; place-items: center; color: transparent; }
+  .levels .cell.on { background: color-mix(in srgb, var(--ally) 30%, rgba(20,20,22,.8)); border: 1px solid color-mix(in srgb, var(--ally) 60%, transparent); color: var(--text); }
+  .levels .cell.on.r { background: color-mix(in srgb, #e8cf8a 26%, rgba(20,20,22,.8)); border-color: color-mix(in srgb, #e8cf8a 60%, transparent); }
+  .lv-foot { display: flex; justify-content: space-between; margin-top: 8px; }
+
+  /* Échec d'un chargement : raison factuelle et nouvel essai. */
+  .fail { display: grid; justify-items: center; gap: 6px; padding: 36px 16px; text-align: center; }
+  .fail .why { color: var(--neg); font-weight: 600; }
+  .fail-inline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .fail-inline .why { color: var(--neg); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><img src="../apps/web/public/favicon.svg" width="28" height="28" alt=""></div>
+  <nav class="nav">
+    <a href="#">Joueurs</a>
+    <a href="#">Draft</a>
+    <a href="#/" class="is-on">Champions<span class="new">MAQUETTE</span></a>
+  </nav>
+  <div class="sim"><span class="small muted">Simulation</span>
+    <button class="btn simbtn" id="sim" title="Contrôle de maquette">Draft en cours</button>
+    <button class="btn simbtn" id="simweb" title="Contrôle de maquette : sans chargement à la demande">Version web</button>
+    <select id="simfail" title="Contrôle de maquette : résultat des prochains chargements"><option value="">Chargements réussis</option><option value="offline">Échec : hors connexion</option><option value="down">Échec : Lolalytics ne répond pas</option><option value="format">Échec : page non reconnue</option></select></div>
+  <span class="meta small muted" id="meta"></span>
+</header>
+<main id="app"></main>
+
+<script src="5-champions.data.js"></script>
+<script src="5-champions.detail.js"></script>
+<script>
+const M = window.MAQUETTE, C = M.catalog;
+const ROLES = ['Top', 'Jungle', 'Mid', 'ADC', 'Support'];
+const STYLE = { ap: 'AP', crit: 'Crit', onhit: 'On-hit', lethality: 'Létalité', bruiser: 'Bruiser', tank: 'Tank', ad: 'AD', support: 'Enchanteur' };
+const DAMAGE = { AD: 'Dégâts physiques', AP: 'Dégâts magiques', Mixed: 'Dégâts mixtes', True: 'Dégâts bruts' };
+const IMG = '../apps/web/public/';
+const byName = new Map(M.champions.map((c) => [c.name, c]));
+const pct = (v, d = 1) => v == null ? '–' : v.toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }) + ' %';
+const int = (v) => Math.round(v).toLocaleString('fr-FR');
+const pts = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const portrait = (name, size, cls = 'portrait') => { const c = byName.get(name); return `<img class="${cls}" src="${IMG}champions/${c ? c.id : ''}.png" width="${size}" height="${size}" alt="">`; };
+const icon = (kind, id, size, title) => `<img class="ico" src="${IMG}build/${kind}/${id}.png" width="${size}" height="${size}" alt="" title="${esc(title ?? '')}" loading="lazy">`;
+const itemName = (id) => C.items[id] ?? id, runeName = (id) => C.runes[id]?.name ?? id, spellName = (id) => C.spells[id]?.name ?? id;
+const mainRole = (c) => Object.entries(c.roles).sort((a, b) => b[1].share - a[1].share)[0];
+const totalGames = (c) => Object.values(c.roles).reduce((s, r) => s + r.games, 0);
+const deltaCls = (v) => v >= 0.05 ? 'pos' : v <= -0.05 ? 'neg' : '';
+const stat = (v, tip) => !v ? '<span class="small muted">–</span>' : `<span class="wrg num" title="${esc(tip ?? '')}"><span class="small strong">${pct(v.winRate)}</span><span class="small muted">${int(v.games)}</span></span>`;
+
+document.getElementById('meta').textContent = `Patch ${M.patch} · ${M.rank} · ${M.champions.length} champions`;
+
+/* État de la vue, gardé dans l'URL : #/ (liste) ou #/c/<champion>/<rôle>/<onglet>. */
+const list = { q: '', role: 'all', sort: 'name', dir: 1, view: 'grid' };
+const detail = { style: 0, keystone: null, mrole: null, sort: { key: 'v', dir: 1 }, mq: '', mode: 'general', vs: null, picker: false, pq: '' };
+/* Données détaillées téléchargées à la demande (maquette : 5-champions.detail.js, collecté pour Aatrox Top). */
+const DETAIL = window.MAQUETTE_DETAIL ?? {};
+const fetched = new Map(); // « champion|rôle|adversaire » ou « champion|rôle|#rune » -> 'loading' | 'ok' | 'missing'
+const LOAD_MS = 1000;
+const dateFr = (d) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+const DRAFT = { on: false, allies: { Top: 'Aatrox', Jungle: 'Sejuani', Mid: 'Ahri', ADC: 'Nilah', Support: 'Brand' },
+  enemies: { Top: 'Darius', Jungle: 'Viego', Mid: 'Syndra', ADC: 'Jinx', Support: 'Leona' } };
+/* Version web : pas de chargement à la demande (le navigateur ne peut pas joindre Lolalytics), options cachées. */
+const SIM = { web: false, fail: '' };
+document.getElementById('simweb').onclick = (e) => { SIM.web = !SIM.web; e.currentTarget.classList.toggle('is-on', SIM.web); Object.assign(detail, { mode: 'general', vs: null, picker: false }); render(); };
+document.getElementById('simfail').onchange = (e) => { SIM.fail = e.currentTarget.value; };
+const FAIL = {
+  offline: ['Pas de connexion internet', 'Vérification immédiate, sans attente.'],
+  down: ['Lolalytics ne répond pas', 'Délai de 10 s dépassé ou erreur du serveur.'],
+  format: ['Page Lolalytics non reconnue', 'Le site a changé ; une mise à jour de l\'appli est nécessaire.']
+};
+/* Chargement simulé d'une page : 'loading', puis 'ok', 'missing' (maquette : non collecté) ou 'error:<raison>'. */
+function load(key, available) {
+  if (SIM.fail === 'offline') { fetched.set(key, 'error:offline'); return; }
+  fetched.set(key, 'loading');
+  const fail = SIM.fail;
+  setTimeout(() => { fetched.set(key, fail ? 'error:' + fail : available() ? 'ok' : 'missing'); detail.runeLoading = null; render(); }, LOAD_MS);
+}
+const failBox = (title, state, retry) => { const [why, how] = FAIL[state.slice(6)]; return `<div class="card fail"><span class="strong">${title}</span><span class="why">${why}</span><span class="small muted">${how}</span>
+  <button class="btn" data-retry="${esc(retry)}">Réessayer</button></div>`; };
+const directOpponent = (name, role) => !DRAFT.on ? null : DRAFT.allies[role] === name ? DRAFT.enemies[role] : DRAFT.enemies[role] === name ? DRAFT.allies[role] : null;
+document.getElementById('sim').onclick = (e) => { DRAFT.on = !DRAFT.on; e.currentTarget.classList.toggle('is-on', DRAFT.on); render(); };
+const go = (hash) => { location.hash = hash; };
+const parse = () => { const p = decodeURIComponent(location.hash.slice(2)).split('/'); return p[0] === 'c' ? { name: p[1], role: p[2], tab: p[3] || 'build' } : null; };
+
+function render() {
+  const r = parse();
+  const app = document.getElementById('app');
+  app.innerHTML = r && byName.get(r.name) ? renderDetail(byName.get(r.name), r) : renderList();
+  bind(app, r);
+  // Défilement seulement au changement de page : en haut du détail, à la position quittée au retour à la liste.
+  const route = location.hash;
+  if (route !== render.route) window.scrollTo({ top: r ? 0 : list.scroll ?? 0 });
+  render.route = route;
+}
+
+/* ---------------- Liste ---------------- */
+function rows() {
+  const q = list.q.trim().toLowerCase();
+  let out = M.champions.filter((c) => Object.keys(c.roles).length && (!q || c.name.toLowerCase().includes(q)) && (list.role === 'all' || c.roles[list.role]));
+  const val = (c) => {
+    const r = list.role === 'all' ? mainRole(c)[1] : c.roles[list.role];
+    return { name: c.name, wr: r.wr, games: list.role === 'all' ? totalGames(c) : r.games, share: r.share }[list.sort];
+  };
+  out.sort((a, b) => { const x = val(a), y = val(b); return (typeof x === 'string' ? x.localeCompare(y, 'fr') : x - y) * list.dir; });
+  return out;
+}
+function renderList() {
+  const rs = rows();
+  const roleSeg = ['all', ...ROLES].map((r) => `<button class="btn ${list.role === r ? 'is-on' : ''}" data-role="${r}">${r === 'all' ? 'Tous' : r}</button>`).join('');
+  const sortSel = `<select class="input" style="min-width:0" data-sort>${[['name', 'Nom'], ['wr', 'Win rate'], ['games', 'Parties'], ['share', 'Part du rôle']].map(([k, l]) => `<option value="${k}" ${list.sort === k ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  const viewSeg = `<div class="seg"><button class="btn ${list.view === 'grid' ? 'is-on' : ''}" data-view="grid">Grille</button><button class="btn ${list.view === 'table' ? 'is-on' : ''}" data-view="table">Tableau</button></div>`;
+  const head = `<div class="toolbar"><h1 class="h2">Champions</h1>
+    <input class="input" placeholder="Rechercher un champion" value="${esc(list.q)}" data-q aria-label="Rechercher un champion">
+    <div class="seg" role="group" aria-label="Rôle">${roleSeg}</div>
+    <div class="right">${list.view === 'grid' ? sortSel : ''}${viewSeg}</div></div>`;
+  return draftBar() + head + (list.view === 'grid' ? grid(rs) : table(rs));
+}
+function draftBar() {
+  if (!DRAFT.on) return '';
+  const face = (name, role) => `<button class="dface" data-open="${esc(name)}" data-orole="${role}" title="${esc(name)} · ${role}">${portrait(name, 40, '')}<span class="small">${role}</span></button>`;
+  return `<section class="card draftbar"><button class="btn todraft" data-todraft title="Draft en cours">← Retour à la draft</button>
+    <div class="team is-ally">${ROLES.map((r) => face(DRAFT.allies[r], r)).join('')}</div>
+    <div class="team is-enemy">${ROLES.map((r) => face(DRAFT.enemies[r], r)).join('')}</div></section>`;
+}
+function grid(rs) {
+  return `<div class="grid">${rs.map((c) => {
+    const roles = list.role === 'all' ? Object.entries(c.roles).sort((a, b) => b[1].share - a[1].share) : [[list.role, c.roles[list.role]]];
+    return `<button class="tile" data-open="${esc(c.name)}">${portrait(c.name, 140, 'tile-bg')}${portrait(c.name, 52)}
+      <span style="min-width:0"><span class="name" style="display:block">${esc(c.name)}</span>
+      <span class="roles">${roles.map(([r, s]) => `<span class="rchip">${r} <b>${pct(s.wr)}</b></span>`).join('')}</span></span></button>`;
+  }).join('')}</div>`;
+}
+function table(rs) {
+  const th = (k, l, cls = '') => `<th class="${cls} ${list.sort === k ? 'is-sort' : ''}" data-th="${k}">${l}${list.sort === k ? (list.dir > 0 ? ' ↑' : ' ↓') : ''}</th>`;
+  const all = list.role === 'all';
+  return `<table class="table"><thead><tr>${th('name', 'Champion')}<th>${all ? 'Rôles' : 'Rôle'}</th>${th('wr', 'Win rate', 'r')}${th('games', 'Parties', 'r')}${th('share', 'Part du rôle', 'r')}<th>Classes</th></tr></thead><tbody>
+  ${rs.map((c) => {
+    const [role, r] = all ? mainRole(c) : [list.role, c.roles[list.role]];
+    const others = all ? Object.keys(c.roles).filter((x) => x !== role) : [];
+    return `<tr data-open="${esc(c.name)}" data-orole="${role}"><td><span class="who">${portrait(c.name, 32, '')}<span class="strong">${esc(c.name)}</span></span></td>
+      <td><span class="rchip"><b>${role}</b></span> ${others.map((o) => `<span class="rchip">${o}</span>`).join(' ')}</td>
+      <td class="r num strong">${pct(r.wr, 2)}</td><td class="r num">${int(all ? totalGames(c) : r.games)}</td><td class="r num">${pct(r.share)}</td>
+      <td class="soft">${c.classes.join(', ')}</td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+/* ---------------- Détail ---------------- */
+function renderDetail(c, r) {
+  const roles = Object.entries(c.roles).sort((a, b) => b[1].share - a[1].share);
+  const role = c.roles[r.role] ? r.role : roles[0][0];
+  const s = c.roles[role];
+  const tabs = [['build', 'Build'], ['matchups', 'Matchups'], ['duos', 'Duos']];
+  const phase = ['Début', 'Milieu', 'Fin'];
+  return `<button class="btn back" data-back>← Champions</button>${draftBar()}
+  <section class="card hero">
+    <span class="art"><img src="${IMG}champions/centered/${c.id}.jpg" alt=""></span>
+    ${portrait(c.name, 84)}
+    <div><h1 class="h1">${esc(c.name)}</h1>
+      <div class="tags">${c.classes.map((x) => `<span class="tag">${x}</span>`).join('')}<span class="tag">${DAMAGE[c.damage] ?? c.damage}</span>${c.provides.map((x) => `<span class="tag">${x}</span>`).join('')}</div></div>
+    <div class="roletabs" role="tablist" aria-label="Rôle">${roles.map(([k, v]) => `<button class="roletab ${k === role ? 'is-on' : ''}" data-crole="${k}">
+      <span class="rname">${k}</span><span class="small soft num">${pct(v.wr, 2)} · ${int(v.games)} parties</span><span class="small muted">${pct(v.share)} de ses parties</span></button>`).join('')}</div>
+  </section>
+  <div class="stats">
+    <div class="card stat"><div class="small muted">Win rate</div><div class="v num">${pct(s.wr, 2)}</div></div>
+    <div class="card stat"><div class="small muted">Parties</div><div class="v num">${int(s.games)}</div></div>
+    <div class="card stat"><div class="small muted">Part du rôle</div><div class="v num">${pct(s.share)}</div></div>
+    <div class="card stat"><div class="small muted">Scaling</div><div class="scaling">${s.scaling.map((v, i) => `<div><div class="small soft">${phase[i]} <span class="muted num">${v.toLocaleString('fr-FR')}</span></div><div class="bar"><i style="width:${v / 4 * 100}%"></i></div></div>`).join('')}</div></div>
+  </div>
+  <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button class="tab ${r.tab === k ? 'is-on' : ''}" data-tab="${k}">${l}</button>`).join('')}</nav>
+  ${r.tab === 'matchups' ? matchups(c, role, s) : r.tab === 'duos' ? duos(c, role, s) : buildTab(c, role, s)}
+  <div class="note"><b>Notes de maquette</b> (à retirer au dev) : le build est le build général de Lolalytics passé dans le moteur sans compo, donc
+  sans objets situationnels, sauf dans un build contre un adversaire. Les chargements sont simulés (1 s) ; les données d'Aatrox Top
+  sont réellement collectées sur Lolalytics (3 runes principales, 57 adversaires de lane). Un clic sur un champion d'un matchup ou d'un duo ouvre son détail. Dans la draft, le bouton info d'un pick pourrait ouvrir cette page.</div>`;
+}
+
+function buildTab(c, role, s) {
+  const key = c.name + '|' + role, d = DETAIL[key];
+  const opps = [...s.matchups].sort((a, b) => b[2] - a[2]); // [adversaire, win rate du matchup, parties]
+  const sel = detail.mode === 'vs' ? detail.vs : null;
+  const q = detail.pq.trim().toLowerCase();
+  const pop = detail.picker ? `<div class="pop" role="listbox" aria-label="Adversaires">
+      <input class="input" style="width:100%" placeholder="Rechercher un adversaire" value="${esc(detail.pq)}" data-pq>
+      <div class="pop-row pop-head small muted"><span></span><span>Adversaire (${opps.length})</span><span style="text-align:right">Win rate</span><span style="text-align:right">Parties</span></div>
+      <div class="pop-list">${!q ? `<button class="pop-row pop-all ${!sel ? 'is-on' : ''}" data-mode="general"><span></span><span class="strong small">Tous les adversaires</span><span class="num small" style="text-align:right">${pct(s.wr, 2)}</span><span class="num small muted" style="text-align:right">${int(s.games)}</span></button>` : ''}${opps.filter(([n]) => !q || n.toLowerCase().includes(q)).map(([n, wr, g]) => `<button class="pop-row ${n === sel ? 'is-on' : ''}" data-pick="${esc(n)}">
+        ${portrait(n, 28, '')}<span class="strong small">${esc(n)}</span><span class="num small" style="text-align:right">${pct(wr, 2)}</span><span class="num small muted" style="text-align:right">${int(g)}</span></button>`).join('')}</div></div>` : '';
+  const direct = directOpponent(c.name, role);
+  const shortcut = direct && opps.some(([n]) => n === direct) ? `<button class="btn direct ${sel === direct ? 'is-on' : ''}" data-pick="${esc(direct)}" title="Adversaire direct dans la draft en cours">${portrait(direct, 22, '')}<span><span class="muted small">Matchup direct</span> <span class="strong">${esc(direct)}</span></span></button>` : '';
+  const ctx = `<div class="ctx"><span class="small muted">Contre</span>
+    <div class="picker"><button class="btn pick-btn" data-picker aria-expanded="${detail.picker}">${sel ? portrait(sel, 22, '') + `<span class="strong">${esc(sel)}</span>` : '<span class="strong">Tous les adversaires</span>'}<span class="muted">▾</span></button>${pop}</div>${shortcut}
+  </div>`;
+  const general = { popular: s.popular, skills: d?.skills, abilities: d?.abilities };
+  if (SIM.web) return build(s.build, { ...general, web: true });
+  if (detail.mode !== 'vs') return ctx + build(withPages(s.build, d, key), { ...general, key });
+  if (!sel) return ctx;
+  const state = fetched.get(key + '|' + sel);
+  const m = s.matchups.find(([n]) => n === sel)?.slice(1);
+  const banner = `<section class="card vs-banner">${portrait(sel, 140, 'tile-bg')}
+    <span class="vs-who">${portrait(c.name, 44, '')}<span class="vs-x muted">contre</span>${portrait(sel, 44, '')}<span class="h2">${esc(sel)}</span></span>
+    <span class="vs-stat"><span class="small muted">Win rate du matchup</span><span class="v num">${m ? pct(m[0], 2) : '–'}</span></span>
+    <span class="vs-stat"><span class="small muted">Écart</span><span class="v num ${m ? deltaCls(m[0] - s.wr) : ''}">${m ? pts(m[0] - s.wr) : '–'}</span></span>
+    <span class="vs-stat"><span class="small muted">Parties du build</span><span class="v num">${state === 'ok' ? int(d.vs[sel].games) : '–'}</span></span>
+    <span class="small muted vs-src">${state === 'ok' ? 'Lolalytics · ' + dateFr(new Date()) + ' · patch ' + M.patch : ''}</span>
+  </section>`;
+  if (state === 'loading') return ctx + banner + `<div class="card loading"><span class="spinner"></span>Chargement du build contre ${esc(sel)}…</div>`;
+  if (state?.startsWith('error:')) return ctx + banner + failBox(`Build contre ${esc(sel)} indisponible`, state, key + '|' + sel);
+  if (state !== 'ok') return ctx + banner + `<div class="card loading muted">Maquette : builds par adversaire collectés seulement pour Aatrox Top</div>`;
+  return ctx + banner + build(d.vs[sel].proposal, { popular: d.vs[sel].popular, skills: d.vs[sel].skills, abilities: d.abilities });
+}
+
+/* Compétences : priorité de montée (la plus jouée, puis les autres) et ordre des 15 premiers niveaux le plus joué. */
+function skillsCard(skills, abilities) {
+  const ab = (k, size) => { const a = abilities['QWER'.indexOf(k)]; return `<span class="ab" title="${esc(k + ' · ' + a.name)}"><img src="${a.icon}" width="${size}" height="${size}" alt=""><b>${k}</b></span>`; };
+  const prio = (id, size) => [...id].map((k) => ab(k, size)).join('<span class="gt">›</span>');
+  const [main, ...alts] = skills.priority;
+  const [seq, wr, games] = skills.order[0];
+  const grid = 'QWER'.split('').map((k, row) => `<span>${ab(k, 26)}</span>${[...seq].map((x, i) => `<span class="cell ${+x === row + 1 ? 'on' + (k === 'R' ? ' r' : '') : ''}">${+x === row + 1 ? i + 1 : ''}</span>`).join('')}`).join('');
+  return `<section class="card skills">
+    <div><div class="sec-title">Compétences</div><div class="opt"><span class="prio">${prio(main[0], 34)}</span>${stat({ winRate: main[1], games: main[2] })}</div>
+      ${alts.length ? `<div class="prio-alt">${alts.map(([id, w, g]) => `<div class="row"><span class="prio">${prio(id, 24)}</span>${stat({ winRate: w, games: g })}</div>`).join('')}</div>` : ''}</div>
+    <div><div class="levels"><span></span>${Array.from({ length: 15 }, (_, i) => `<span class="lv">${i + 1}</span>`).join('')}${grid}</div>
+      <div class="lv-foot small"><span class="muted">Ordre le plus joué jusqu'au niveau 15</span><span class="num"><span class="strong">${pct(wr)}</span> <span class="muted">${int(games)}</span></span></div></div>
+  </section>`;
+}
+
+/* Pages de runes chargées à la demande (une par rune principale) ajoutées à celles du build général. */
+function withPages(b, d, key) {
+  if (!b || !d) return b;
+  const extra = d.runePages.filter((p) => fetched.get(key + '|#' + p.primary[0]) === 'ok' && !b.runes.some((x) => x.primary[0] === p.primary[0]));
+  return { ...b, runes: [...b.runes, ...extra] };
+}
+
+function build(b, { popular, skills, abilities, web, key } = {}) {
+  if (!b) return `<p class="muted">Aucun build collecté sur ce rôle.</p>`;
+  const path = b.paths[Math.min(detail.style, b.paths.length - 1)];
+  const styles = b.paths.map((p, i) => `<button class="btn stylebtn ${i === Math.min(detail.style, b.paths.length - 1) ? 'is-on' : ''}" data-style="${i}" title="Win rate et parties des builds commençant par ce style">
+    <span class="strong">${STYLE[p.style] ?? p.style}</span><span class="style-items">${p.core.map((c) => icon('item', c.item, 26, itemName(c.item))).join('')}</span><span class="small num">${pct(p.winRate)} · ${int(p.games)}</span></button>`).join('');
+  const opt = (icons, v, alt) => `<div class="opt ${alt ? 'is-alt' : ''}"><span class="icons">${icons}</span>${stat(v)}</div>`;
+  const choice = (ch, render) => ch ? opt(render(ch.value, 40), ch) + ch.alternatives.map((a) => opt(render(a.value, 32), a, true)).join('') : '<span class="muted small">–</span>';
+  const items = (ids, size) => ids.map((id) => icon('item', id, size, itemName(id))).join('');
+  const spells = (ids, size) => ids.map((id) => icon('spell', id, size, spellName(id))).join('');
+  const core = path.core.map((c, i) => `${i ? '<span class="arrow">→</span>' : ''}<div class="step">
+    <span class="small muted">${i + 1}${i ? 'e' : 'er'} objet</span>${icon('item', c.item, 46, itemName(c.item))}
+    <span class="small soft" style="line-height:1.2">${esc(itemName(c.item))}</span>${stat(c.stats)}
+    ${c.alternatives.length ? `<span class="alts" title="Autres options">${c.alternatives.map((a) => icon('item', a.value, 26, itemName(a.value) + ' · ' + pct(a.winRate) + ' · ' + int(a.games))).join('')}</span>` : ''}</div>`).join('');
+  const later = path.later.map((col, i) => `<div><div class="sec-title">${i + 4}e objet</div>${col.map((o) => opt(icon('item', o.value, 32, itemName(o.value)), o)).join('') || '<span class="muted small">–</span>'}</div>`).join('');
+  return `<div class="styles"><span class="small muted" style="margin-right:4px">Styles de build</span>${styles}</div>
+  <div class="board">
+    <section class="card">${runes(b, web, key)}</section>
+    <div class="right">
+      <div class="basics">
+        <section class="card"><div class="sec-title">Sorts</div>${choice(b.spells, spells)}</section>
+        <section class="card"><div class="sec-title">Départ</div>${choice(b.start, items)}</section>
+        <section class="card"><div class="sec-title">Bottes</div>${choice(b.boots, (id, s) => items([id], s))}</section>
+      </div>
+      ${skills && abilities ? skillsCard(skills, abilities) : ''}
+      <section class="card core-card"><div><div class="sec-title">Objets principaux</div><div class="path">${core}</div></div>
+        ${popular?.length ? `<div class="popular"><div class="sec-title">Objets les plus construits</div><div class="pop-items">${popular.map(([id, wr, g]) => opt(icon('item', id, 32, itemName(id)), { winRate: wr, games: g })).join('')}</div></div>` : ''}</section>
+      <section class="card"><div class="later">${later}</div></section>
+    </div>
+  </div>`;
+}
+
+function runes(b, web, key) {
+  const all = b.keystones.length ? b.keystones : b.runes.map((p) => ({ value: p.primary[0], winRate: p.winRate, games: p.games }));
+  const options = web ? all.filter((k) => b.runes.some((p) => p.primary[0] === k.value)) : all;
+  const chosen = options.some((k) => k.value === detail.keystone) ? detail.keystone : (b.runes[0]?.primary[0] ?? options[0]?.value);
+  const page = b.runes.find((p) => p.primary[0] === chosen);
+  const pageState = key ? fetched.get(key + '|#' + chosen) : null;
+  const tree = (id) => C.runes[id]?.tree;
+  const picked = new Set(page ? [...page.primary, ...page.secondary] : [chosen]);
+  const rowsOf = (slots, size, first, pick = (i, id) => picked.has(id)) => slots.map((row, i) => `<div class="rrow">${row.map((id) =>
+    `<span class="rcell ${pick(i, id) ? 'is-picked' : ''}">${icon('rune', id, i === 0 && first ? first : size, runeName(id))}</span>`).join('')}</div>`).join('');
+  const pt = C.trees[tree(chosen)], st = page ? C.trees[tree(page.secondary[0])] : null;
+  return `<div class="sec-title">Runes</div>
+  <div class="keys">${options.map((k) => `<button class="key ${k.value === chosen ? 'is-on' : ''}" data-key="${k.value}">${icon('rune', k.value, 34, runeName(k.value))}
+    <span class="strong small">${esc(runeName(k.value))}</span>${stat(k)}</button>`).join('')}</div>
+  ${pt ? `<div class="tree"><span class="tree-name">${icon('tree', tree(chosen), 18, pt.name)}<span class="small muted">${pt.name}</span></span>${rowsOf(pt.slots, 30, 40)}</div>` : ''}
+  ${page ? `<div class="rbottom">
+    ${st ? `<div class="tree"><span class="tree-name">${icon('tree', tree(page.secondary[0]), 18, st.name)}<span class="small muted">${st.name}</span></span>${rowsOf(st.slots.slice(1), 26)}</div>` : ''}
+    <div class="tree"><span class="tree-name small muted">Fragments</span>${rowsOf(C.shardRows, 20, 0, (i, id) => page.shards[i] === id)}</div></div>`
+    : detail.runeLoading === chosen ? `<p class="small muted"><span class="spinner"></span>Chargement de la page…</p>`
+    : pageState?.startsWith('error:') ? `<div class="fail-inline small"><span class="why">Page indisponible : ${FAIL[pageState.slice(6)][0]}</span><button class="btn" data-retry="${esc(key + '|#' + chosen)}">Réessayer</button></div>`
+    : `<p class="small muted">Page complète non collectée</p>`}`;
+}
+
+/* Matchups : face à face sur le rôle, ou contre un autre rôle ennemi. Écart = win rate du matchup − win rate du champion. */
+function pairList(entries, base, kind) {
+  // entries : [nom, valeur, parties] ; kind 'wr' (win rate du matchup) ou 'delta' (écart de duo en points).
+  return entries.map(([n, v, g]) => {
+    const d = kind === 'wr' ? v - base : v;
+    return { n, v, g, d };
+  });
+}
+function rowsHtml(items, kind, vs) {
+  return items.map((x) => `<div class="mrow ${vs ? 'has-build' : ''}" data-open="${esc(x.n)}">${portrait(x.n, 28, '')}<span class="mname strong small">${esc(x.n)}</span>
+    <span class="num small strong" style="text-align:right">${kind === 'wr' ? pct(x.v, 2) : pts(x.v)}</span>
+    <span class="delta ${deltaCls(x.d)}">${pts(x.d)}</span><span class="num small muted" style="text-align:right">${int(x.g)}</span>
+    ${vs ? `<button class="btn bld" data-vs="${esc(x.n)}" title="Build contre ${esc(x.n)}">Build</button>` : ''}</div>`).join('');
+}
+function sorted(items, { key, dir }) {
+  const f = { n: (a, b) => a.n.localeCompare(b.n, 'fr'), v: (a, b) => a.v - b.v, d: (a, b) => a.d - b.d, g: (a, b) => a.g - b.g }[key];
+  return [...items].sort((a, b) => f(a, b) * dir);
+}
+function pairView(items, kind, labels, vs) {
+  const q = detail.mq.trim().toLowerCase();
+  const reliable = items.filter((x) => x.g >= 200);
+  const best = sorted(reliable, { key: 'd', dir: -1 }).slice(0, 8), worst = sorted(reliable, { key: 'd', dir: 1 }).slice(0, 8);
+  const all = sorted(items.filter((x) => !q || x.n.toLowerCase().includes(q)), detail.sort);
+  const cols = [['n', 'Champion', 'left'], ['v', kind === 'wr' ? 'Win rate' : 'Écart duo', 'right'], ['d', kind === 'wr' ? 'Écart' : '', 'center'], ['g', 'Parties', 'right']];
+  const head = (sortable) => `<div class="mrow small muted ${vs ? 'has-build' : ''}" style="cursor:default"><span></span>${cols.map(([k, l, a]) => !l ? '<span></span>' : sortable
+    ? `<span class="sorth ${detail.sort.key === k ? 'is-sort' : ''}" data-sort-col="${k}" style="text-align:${a}">${l}${detail.sort.key === k ? (detail.sort.dir > 0 ? ' ↑' : ' ↓') : ''}</span>`
+    : `<span style="text-align:${a}">${l}</span>`).join('')}${vs ? '<span></span>' : ''}</div>`;
+  return `<div class="two">
+    <section class="card"><div class="sec-title">${labels[0]} <span class="muted">(200 parties ou plus)</span></div>${head(false)}${rowsHtml(best, kind, vs)}</section>
+    <section class="card"><div class="sec-title">${labels[1]} <span class="muted">(200 parties ou plus)</span></div>${head(false)}${rowsHtml(worst, kind, vs)}</section>
+  </div>
+  <section class="card"><div class="mtool"><span class="sec-title" style="margin:0">Tous (${items.length})</span>
+    <input class="input" placeholder="Rechercher" value="${esc(detail.mq)}" data-mq></div>
+    ${head(true)}${rowsHtml(all, kind, vs)}</section>`;
+}
+function matchups(c, role, s) {
+  const targets = [role, ...ROLES.filter((r) => r !== role && s.cross[r])];
+  const target = targets.includes(detail.mrole) ? detail.mrole : role;
+  const entries = target === role ? s.matchups : s.cross[target];
+  const seg = targets.map((r) => `<button class="btn ${r === target ? 'is-on' : ''}" data-mrole="${r}">${r === role ? 'Face à face · ' + r : r + ' ennemi'}</button>`).join('');
+  return `<div class="mtool"><span class="small muted">Contre</span><div class="seg">${seg}</div>
+    <span class="small muted" style="margin-left:auto">Écart : win rate du matchup − win rate du champion (${pct(s.wr, 2)})</span></div>
+    ${pairView(pairList(entries, s.wr, 'wr'), 'wr', ['Plus favorables', 'Plus difficiles'], target === role && !SIM.web)}`;
+}
+function duos(c, role, s) {
+  const targets = ROLES.filter((r) => r !== role && s.duos[r]);
+  const target = targets.includes(detail.mrole) ? detail.mrole : targets[0];
+  if (!target) return `<p class="muted">Aucun duo collecté.</p>`;
+  const seg = targets.map((r) => `<button class="btn ${r === target ? 'is-on' : ''}" data-mrole="${r}">${r} allié</button>`).join('');
+  return `<div class="mtool"><span class="small muted">Avec</span><div class="seg">${seg}</div>
+    <span class="small muted" style="margin-left:auto">Écart duo : points de win rate par rapport aux deux champions pris séparément</span></div>
+    ${pairView(pairList(s.duos[target], 0, 'delta'), 'delta', ['Meilleurs duos', 'Moins bons duos'], null)}`;
+}
+
+/* ---------------- Interactions ---------------- */
+function pickOpponent(r, name) {
+  const c = byName.get(r.name), role = c.roles[r.role] ? r.role : mainRole(c)[0], key = r.name + '|' + role + '|' + name;
+  Object.assign(detail, { mode: 'vs', vs: name, picker: false, style: 0, keystone: null });
+  if (!fetched.has(key) || fetched.get(key).startsWith('error:')) load(key, () => DETAIL[r.name + '|' + role]?.vs[name]);
+  if (r.tab !== 'build') go(`#/c/${encodeURIComponent(r.name)}/${role}/build`); else render();
+}
+
+function bind(app, r) {
+  app.onclick = (e) => {
+    // Clic hors du sélecteur d'adversaire : il se ferme.
+    if (detail.picker && !e.target.closest('.picker')) { detail.picker = false; render(); return; }
+    const t = e.target.closest('button, [data-sort-col], [data-open], [data-th]');
+    if (t && t.disabled) return;
+    if (!t) return;
+    const d = t.dataset;
+    if (d.role) { list.role = d.role; render(); }
+    else if (d.view) { list.view = d.view; render(); }
+    else if (d.th) { list.dir = list.sort === d.th ? -list.dir : (d.th === 'name' ? 1 : -1); list.sort = d.th; render(); }
+    else if (d.open) { if (!r) list.scroll = window.scrollY; Object.assign(detail, { style: 0, keystone: null, mrole: null, mq: '', mode: 'general', vs: null, picker: false }); go(`#/c/${encodeURIComponent(d.open)}/${list.role !== 'all' && byName.get(d.open)?.roles[list.role] ? list.role : (d.orole || '')}/${r ? r.tab : 'build'}`); }
+    else if (d.back !== undefined) go('#/');
+    else if (d.crole) { Object.assign(detail, { style: 0, keystone: null, mrole: null, mode: 'general', vs: null, picker: false }); go(`#/c/${encodeURIComponent(r.name)}/${d.crole}/${r.tab}`); }
+    else if (d.tab) { detail.mrole = null; detail.mq = ''; go(`#/c/${encodeURIComponent(r.name)}/${r.role || ''}/${d.tab}`); }
+    else if (d.style) { detail.style = +d.style; render(); }
+    else if (d.key) {
+      detail.keystone = +d.key; render();
+      // Build général sans page complète pour cette rune principale : chargement de la page filtrée (1 s).
+      const c = byName.get(r.name), role = c.roles[r.role] ? r.role : mainRole(c)[0], key = r.name + '|' + role + '|#' + d.key;
+      const b = c.roles[role].build;
+      if (detail.mode === 'general' && b && !b.runes.some((p) => p.primary[0] === +d.key) && !fetched.has(key)) {
+        load(key, () => DETAIL[r.name + '|' + role]?.runePages.some((p) => p.primary[0] === +d.key));
+        if (fetched.get(key) === 'loading') detail.runeLoading = +d.key;
+        render();
+      }
+    }
+    else if (d.retry) {
+      const [champ, role, what] = d.retry.split('|');
+      if (what.startsWith('#')) { load(d.retry, () => DETAIL[champ + '|' + role]?.runePages.some((p) => p.primary[0] === +what.slice(1))); if (fetched.get(d.retry) === 'loading') detail.runeLoading = +what.slice(1); }
+      else load(d.retry, () => DETAIL[champ + '|' + role]?.vs[what]);
+      render();
+    }
+    else if (d.mrole) { detail.mrole = d.mrole; render(); }
+    else if (d.sortCol) { const k = d.sortCol; detail.sort = { key: k, dir: detail.sort.key === k ? -detail.sort.dir : (k === 'g' ? -1 : 1) }; render(); }
+    else if (false) {
+      const c = byName.get(r.name), key = r.name + '|' + (c.roles[r.role] ? r.role : mainRole(c)[0]);
+      if (!DETAIL[key]) { loaded.set(key, 'missing'); render(); return; }
+      loaded.set(key, 'loading'); render();
+      setTimeout(() => { loaded.set(key, new Date()); render(); }, 1200);
+    }
+    else if (d.mode) { Object.assign(detail, { mode: 'general', vs: null, style: 0, keystone: null, picker: false }); render(); }
+    else if (d.picker !== undefined) { detail.picker = !detail.picker; detail.pq = ''; render(); }
+    else if (d.pick || d.vs) { pickOpponent(r, d.pick || d.vs); }
+  };
+  const q = app.querySelector('[data-q]');
+  if (q) q.oninput = () => { list.q = q.value; const pos = q.selectionStart; render(); const n = document.querySelector('[data-q]'); n.focus(); n.setSelectionRange(pos, pos); };
+  const sel = app.querySelector('[data-sort]');
+  if (sel) sel.onchange = () => { list.sort = sel.value; list.dir = sel.value === 'name' ? 1 : -1; render(); };
+  const pq = app.querySelector('[data-pq]');
+  if (pq) { pq.focus(); pq.oninput = () => { detail.pq = pq.value; const pos = pq.selectionStart; render(); const n = document.querySelector('[data-pq]'); n.focus(); n.setSelectionRange(pos, pos); }; }
+  const mq = app.querySelector('[data-mq]');
+  if (mq) mq.oninput = () => { detail.mq = mq.value; const pos = mq.selectionStart; render(); const n = document.querySelector('[data-mq]'); n.focus(); n.setSelectionRange(pos, pos); window.scrollTo({ top: n.getBoundingClientRect().top + window.scrollY - 120 }); };
+}
+window.addEventListener('hashchange', render);
+render();
+</script>
+</body>
+</html>

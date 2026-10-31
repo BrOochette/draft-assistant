@@ -41,6 +41,7 @@ const catalog: BuildCatalog = {
   trees: {},
   shardRows: [],
   spells: {},
+  abilities: {},
   ranged: ['Vayne', 'Lux', 'Syndra']
 };
 const cand = (extra: Partial<Candidate> = {}): Candidate => ({

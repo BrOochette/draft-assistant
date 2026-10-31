@@ -94,17 +94,20 @@ const getJson = async (url: string): Promise<unknown> => {
 
 /**
  * Télécharge le catalogue des builds pour une version de Data Dragon et les icônes manquantes dans `iconDir`
- * (item/<id>.png, rune/<id>.png, tree/<id>.png, spell/<clé>.png). Renvoie le catalogue et le nombre d'icônes téléchargées.
+ * (item/<id>.png, rune/<id>.png, tree/<id>.png, spell/<clé>.png, ability/<champion>_<Q|W|E|R>.png). Renvoie le catalogue et le nombre d'icônes téléchargées.
  */
 export const downloadBuildCatalog = async (version: string, iconDir: string): Promise<{ catalog: BuildCatalog; fetched: number; failed: string[] }> => {
   const data = CDN + version + '/data/fr_FR/';
   const items = ((await getJson(data + 'item.json')) as { data: Record<string, DdItem> }).data;
   const trees = (await getJson(data + 'runesReforged.json')) as DdRuneTree[];
   const spells = ((await getJson(data + 'summoner.json')) as { data: Record<string, { key: string; name: string; modes: string[]; image: { full: string } }> }).data;
-  const champions = ((await getJson(data + 'champion.json')) as { data: Record<string, { name: string; id: string; stats: { attackrange: number } }> }).data;
+  // Fichier complet : compétences de tous les champions en une requête.
+  const champions = ((await getJson(data + 'championFull.json')) as {
+    data: Record<string, { name: string; id: string; stats: { attackrange: number }; spells: { name: string; image: { full: string } }[] }>;
+  }).data;
 
   const icons: { path: string; url: string }[] = [];
-  const catalog: BuildCatalog = { version, items: {}, runes: {}, trees: {}, shardRows: SHARD_ROWS, spells: {}, ranged: [] };
+  const catalog: BuildCatalog = { version, items: {}, runes: {}, trees: {}, shardRows: SHARD_ROWS, spells: {}, abilities: {}, ranged: [] };
   for (const [id, item] of Object.entries(items)) {
     // Faille de l'invocateur, achetable ; les variantes d'autres modes ont des identifiants à 6 chiffres.
     if (!item.maps?.['11'] || !item.gold?.purchasable || Number(id) >= 100000) continue;
@@ -129,6 +132,10 @@ export const downloadBuildCatalog = async (version: string, iconDir: string): Pr
     if (!s.modes.includes('CLASSIC')) continue;
     catalog.spells[s.key] = { name: s.name };
     icons.push({ path: `spell/${s.key}.png`, url: `${CDN}${version}/img/spell/${s.image.full}` });
+  }
+  for (const c of Object.values(champions)) {
+    catalog.abilities[c.id] = c.spells.map((s) => s.name);
+    for (const [i, s] of c.spells.entries()) icons.push({ path: `ability/${c.id}_${'QWER'[i]}.png`, url: `${CDN}${version}/img/spell/${s.image.full}` });
   }
   catalog.ranged = Object.values(champions).filter((c) => c.stats.attackrange >= RANGED_FROM).map((c) => c.id).sort();
 

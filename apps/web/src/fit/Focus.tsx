@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MAIN_ROLE_SHARE, type Evaluation, type RoleResult, type SuggestionMode } from '@draft/engine';
 import { CARD_TEXT as C, DRAFT_TEXT as D, POOL_TAG, VIEW_TEXT as V } from '@draft/i18n-fr';
-import { Chip, Icon, Portrait, ScalingBars, WinRateChips } from '../ui';
+import { ChampionLink, Chip, Icon, Portrait, ScalingBars, WinRateChips } from '../ui';
 import { ReasonChip, SampleText } from '../draft/RecCard';
 import { RoleModes } from '../draft/modes';
 import { ScoreStats, ScoreSub, ScoreValue } from '../draft/score';
@@ -35,7 +35,7 @@ export const FocusCard = ({ e, row, rank, onLock, highlight = false, compact = f
     <Splash name={e.champion} />
     <div className="fcard-top">
       <span className="rec-face">
-        <Portrait name={e.champion} size={compact ? 44 : 56} />
+        <ChampionLink name={e.champion} role={row.role}><Portrait name={e.champion} size={compact ? 44 : 56} /></ChampionLink>
         {rank != null && <span className={'rank' + (rank === 1 ? ' is-first' : '')}>{rank}</span>}
       </span>
       <span className="col gap-4 min0 grow">
@@ -73,7 +73,7 @@ const OtherRow = ({ e, row, kind, onLock }: { e: Evaluation; row: RoleResult; ki
   return (
   <li className={'orow' + (focus.onSelect ? ' is-selectable' : '') + (focus.selected ? ' is-selected' : '')} onClick={focus.onSelect}>
     <Splash name={e.champion} />
-    <Portrait name={e.champion} size={36} />
+    <ChampionLink name={e.champion} role={row.role}><Portrait name={e.champion} size={36} /></ChampionLink>
     <span className="col min0 grow">
       <span className="row-gap orow-head">
         <span className="strong ellipsis">{e.champion}</span>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { STATS_TEXT as T } from '@draft/i18n-fr';
+import type { Build, Role } from '@draft/schemas';
 import { Icon } from './ui';
 
 // Appli desktop : mise à jour des stats Lolalytics par le processus principal (absent sur le site web).
@@ -13,6 +14,15 @@ export interface StatsStatus {
   nextAllowed: string | null;
   error: StatsError | null;
 }
+export type BuildLoadError = 'OFFLINE' | 'DOWN' | 'FORMAT';
+export interface BuildRequest {
+  patch: string;
+  champion: string;
+  role: Role;
+  opponent?: string;
+  keystone?: number;
+}
+export type BuildResult = { ok: true; build: Build; games: number; winRate: number; fetchedAt: string } | { ok: false; error: BuildLoadError };
 interface DesktopApi {
   stats: {
     status: () => Promise<StatsStatus>;
@@ -20,7 +30,15 @@ interface DesktopApi {
     cancel: () => Promise<void>;
     onChange: (cb: (s: StatsStatus) => void) => () => void;
   };
+  /** Builds de l'écran Champions chargés sur Lolalytics au clic (absent des versions antérieures du processus principal). */
+  builds?: {
+    load: (req: BuildRequest) => Promise<BuildResult>;
+    prune: (patch: string, keep: string[]) => Promise<void>;
+  };
 }
+
+/** Chargement à la demande de l'appli desktop, null sur le site web (Lolalytics n'y est pas joignable). */
+export const desktopBuilds = () => desktop()?.builds ?? null;
 
 const desktop = (): DesktopApi | null => (window as unknown as { draftDesktop?: DesktopApi }).draftDesktop ?? null;
 

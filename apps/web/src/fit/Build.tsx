@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { BuildChoice, BuildOption, BuildProposal } from '@draft/engine';
-import { BUILD_TEXT as B, buildReasonText, fmtInt, fmtPct } from '@draft/i18n-fr';
+import { BUILD_TEXT as B, CHAMPIONS_TEXT as CH, buildReasonText, fmtInt, fmtPct } from '@draft/i18n-fr';
 import type { Role } from '@draft/schemas';
-import { Portrait, useData } from '../ui';
+import { ChampionLink, Portrait, useData } from '../ui';
+import { championHash } from '../champions/route';
+import { desktopBuilds } from '../desktop';
 import { Splash } from './Cards';
 
 // Build d'un champion : styles joués, runes, sorts, départ, bottes, chemin d'objets et objets situationnels, sur un
@@ -39,14 +41,14 @@ export const useChampionFocus = (target: BuildTarget) => {
 
 type Kind = 'item' | 'rune' | 'tree' | 'spell';
 
-const useName = () => {
+export const useName = () => {
   const { buildCatalog } = useData();
   return (kind: Kind, id: number) =>
     (kind === 'item' ? buildCatalog?.items[id] : kind === 'spell' ? buildCatalog?.spells[id] : kind === 'tree' ? buildCatalog?.trees[id] : buildCatalog?.runes[id])?.name ?? String(id);
 };
 
 /** Icône d'un objet, d'une rune ou d'un sort ; sans fichier, le nom seul. `tip` : infobulle à la place du nom. */
-const BuildIcon = ({ kind, id, size = 32, tip }: { kind: Kind; id: number; size?: number; tip?: string }) => {
+export const BuildIcon = ({ kind, id, size = 32, tip }: { kind: Kind; id: number; size?: number; tip?: string }) => {
   const name = useName()(kind, id);
   const [failed, setFailed] = useState(false);
   if (failed) return <span className="build-icon is-text" title={tip ?? name}>{name}</span>;
@@ -57,14 +59,14 @@ const BuildIcon = ({ kind, id, size = 32, tip }: { kind: Kind; id: number; size?
   );
 };
 
-const Stats = ({ o }: { o: { winRate: number; games: number } }) => (
+export const Stats = ({ o }: { o: { winRate: number; games: number } }) => (
   <span className="small muted nowrap" title={B.statsTip}>{B.stats(o.winRate, o.games)}</span>
 );
 
 /** Infobulle d'une option : nom (ou noms), win rate et parties. */
 const tipOf = (names: string, o: BuildOption<unknown>) => names + ' · ' + B.stats(o.winRate, o.games);
 
-const Section = ({ title, stats, children, className = '' }: { title: string; stats?: BuildOption<unknown> | null; children: ReactNode; className?: string }) => (
+export const Section = ({ title, stats, children, className = '' }: { title: string; stats?: BuildOption<unknown> | null; children: ReactNode; className?: string }) => (
   <section className={'build-section ' + className} aria-label={title}>
     <span className="build-head">
       <span className="eyebrow">{title}</span>
@@ -78,7 +80,7 @@ const Reason = ({ choice }: { choice: { reason: BuildChoice<unknown>['reason'] }
   choice?.reason ? <span className="small accent-text build-reason">{buildReasonText(choice.reason)}</span> : null;
 
 /** Autres options, en petites icônes après « ou » ; win rate et parties dans l'infobulle. */
-const Or = <T,>({ list, icons }: { list: BuildOption<T>[]; icons: (v: T, tip: (names: string) => string) => ReactNode }) =>
+export const Or = <T,>({ list, icons }: { list: BuildOption<T>[]; icons: (v: T, tip: (names: string) => string) => ReactNode }) =>
   list.length ? (
     <span className="build-or" aria-label={B.others}>
       <span className="small muted">{B.or}</span>
@@ -107,13 +109,21 @@ const RuneRows = ({ rows, picked, size, first }: { rows: number[][]; picked: (ro
 /**
  * Runes : une ligne par rune principale jouée (win rate, parties), puis l'arborescence complète de la ligne choisie :
  * arbre principal, arbre secondaire et fragments, runes prises en couleur. Sans page complète collectée pour cette
- * rune principale, seule elle est marquée.
+ * rune principale, seule elle est marquée, ou `missing` l'affiche (chargement à la demande). `withPagesOnly` : seules les
+ * runes principales qui ont une page complète (site web, sans chargement).
  */
-const Runes = ({ pages, keystones }: { pages: BuildProposal['runes']; keystones: BuildProposal['keystones'] }) => {
+export const Runes = ({ pages, keystones, missing, onChoose, withPagesOnly }: {
+  pages: BuildProposal['runes'];
+  keystones: BuildProposal['keystones'];
+  missing?: (keystone: number) => ReactNode;
+  onChoose?: (keystone: number) => void;
+  withPagesOnly?: boolean;
+}) => {
   const name = useName();
   const { buildCatalog } = useData();
   // Sans stats par rune (collecte antérieure) : la rune principale de chaque page.
-  const options = keystones.length ? keystones : pages.map((p) => ({ value: p.primary[0]!, winRate: p.winRate, games: p.games }));
+  const all = keystones.length ? keystones : pages.map((p) => ({ value: p.primary[0]!, winRate: p.winRate, games: p.games }));
+  const options = withPagesOnly ? all.filter((k) => pages.some((p) => p.primary[0] === k.value)) : all;
   const [chosen, setChosen] = useState(pages[0]?.primary[0] ?? options[0]?.value);
   const page = pages.find((p) => p.primary[0] === chosen);
   const treeOf = (rune: number | undefined) => (rune != null ? buildCatalog?.runes[rune]?.tree : undefined);
@@ -127,7 +137,10 @@ const Runes = ({ pages, keystones }: { pages: BuildProposal['runes']; keystones:
     <Section title={B.runes} className="build-runes">
       <div role="group" aria-label={B.keystones} className="build-keystones">
         {options.map((k) => (
-          <button key={k.value} type="button" className={'build-keystone' + (k.value === chosen ? ' is-on' : '')} aria-pressed={k.value === chosen} title={B.stats(k.winRate, k.games)} onClick={() => setChosen(k.value)}>
+          <button key={k.value} type="button" className={'build-keystone' + (k.value === chosen ? ' is-on' : '')} aria-pressed={k.value === chosen} title={B.stats(k.winRate, k.games)} onClick={() => {
+            setChosen(k.value);
+            onChoose?.(k.value);
+          }}>
             <BuildIcon kind="rune" id={k.value} size={32} />
             <span className="small strong ellipsis grow">{name('rune', k.value)}</span>
             <span className="col build-keystone-stats">
@@ -158,7 +171,7 @@ const Runes = ({ pages, keystones }: { pages: BuildProposal['runes']; keystones:
             </div>
           )}
         </div>
-      ) : <span className="small muted">{B.noPage}</span>}
+      ) : chosen != null && missing ? missing(chosen) : <span className="small muted">{B.noPage}</span>}
     </Section>
   );
 };
@@ -195,11 +208,18 @@ export const BuildPanel = ({ build, opponent, side }: { build: BuildProposal; op
     <section aria-label={B.region(build.champion)} className="card fit-focus build-panel">
       <div className="build-title">
         <Splash name={build.champion} />
-        <Portrait name={build.champion} size={40} />
+        <ChampionLink name={build.champion} role={build.role}><Portrait name={build.champion} size={40} /></ChampionLink>
         <span className="col min0">
           <span className="h3">{B.title(build.champion)}</span>
           <span className="small muted">{build.role}{side === 'enemy' ? ' · ' + B.enemy : ''}{opponent ? ' · ' + B.vs(opponent) : ''}</span>
         </span>
+        {/* Matchup direct : build contre le vis-à-vis, chargé à la demande (appli desktop). */}
+        {opponent && desktopBuilds() && (
+          <a className="btn btn-sm direct" href={championHash(build.champion, build.role, 'build', opponent)} title={CH.directTip}>
+            <Portrait name={opponent} size={22} />
+            <span><span className="muted small">{CH.direct}</span> <span className="strong">{opponent}</span></span>
+          </a>
+        )}
         {build.paths.length > 1 && (
           <div role="group" aria-label={B.styles} className="build-styles">
             {build.paths.map((p, i) => (

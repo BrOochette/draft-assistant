@@ -7,8 +7,8 @@ import {
   DRAFT_TEXT as D,
   VIEW_TEXT as T
 } from '@draft/i18n-fr';
-import { ROLES } from '@draft/schemas';
-import { Chip, Icon, Portrait, ScalingBars, toneOf, useData, WinRateChips } from '../ui';
+import { ROLES, type Role } from '@draft/schemas';
+import { ChampionLink, Chip, Icon, Portrait, ScalingBars, toneOf, useData, WinRateChips } from '../ui';
 import { ScoreValue } from '../draft/score';
 import { Contribs, Highlights, ScalingChart, sustainedAlerts } from './parts';
 import { BanReason } from '../draft/BanBar';
@@ -73,7 +73,7 @@ export const BanPanel = ({ result, dispatch }: { result: DraftResult; dispatch: 
                       {/* Portrait, nom et valeur ; puis force, win rate et parties ; puis l'effet sur ta meilleure option. */}
                       <div className="ban-head">
                         <span className="rec-face">
-                          <Portrait name={c.champion} size={36} label={c.champion} />
+                          <ChampionLink name={c.champion} role={c.role}><Portrait name={c.champion} size={36} label={c.champion} /></ChampionLink>
                           <span className={'rank' + (i === 0 ? ' is-first' : '')}>{i + 1}</span>
                         </span>
                         <span className="strong ellipsis grow">{c.champion}</span>
@@ -121,11 +121,11 @@ const usePickSub = () => {
  * Un pick de la ligne d'une lane, même contenu des deux côtés (en miroir pour l'ennemi) : identité, note sur 20,
  * contributions, chips WR, vs et avec (fenêtres flottantes), scaling.
  */
-const LaneSide = ({ e, side, sub, avg }: { e: Evaluation | null; side: 'ally' | 'enemy'; sub: string; avg: number | null }) => (
+const LaneSide = ({ e, side, sub, avg, role }: { e: Evaluation | null; side: 'ally' | 'enemy'; sub: string; avg: number | null; role: Role }) => (
   <div className={'lane-side is-' + side}>
     {e && (
       <>
-        <span className="lane-face"><Portrait name={e.champion} size={40} /></span>
+        <span className="lane-face"><ChampionLink name={e.champion} role={role}><Portrait name={e.champion} size={40} /></ChampionLink></span>
         <span className="col min0 lane-id">
           <span className="strong ellipsis">{e.champion}</span>
           <span className="small muted ellipsis">{sub}</span>
@@ -144,8 +144,8 @@ const LaneRow = ({ row }: { row: RoleResult }) => {
   const enemySub = usePickSub();
   return (
     <section aria-label={D.roleRegion(row.role)} className="lane-row">
-      <LaneSide e={row.locked} side="ally" sub={(row.player ?? D.noPlayer) + (row.allyPick ? ' · ' + enemySub(row.allyPick) : '')} avg={row.averageWr} />
-      <LaneSide e={row.enemyEval} side="enemy" sub={row.enemyPick ? enemySub(row.enemyPick) : ''} avg={row.averageWr} />
+      <LaneSide e={row.locked} side="ally" sub={(row.player ?? D.noPlayer) + (row.allyPick ? ' · ' + enemySub(row.allyPick) : '')} avg={row.averageWr} role={row.role} />
+      <LaneSide e={row.enemyEval} side="enemy" sub={row.enemyPick ? enemySub(row.enemyPick) : ''} avg={row.averageWr} role={row.role} />
     </section>
   );
 };

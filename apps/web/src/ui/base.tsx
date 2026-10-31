@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { CARD_TEXT, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
-import type { Scaling } from '@draft/schemas';
+import { CARD_TEXT, CHAMPIONS_TEXT, PHASE_LABEL, PHASE_SHORT } from '@draft/i18n-fr';
+import type { Role, Scaling } from '@draft/schemas';
+import { championHash } from '../champions/route';
 import type { AppData } from '../data';
 
 export const DataContext = createContext<AppData | null>(null);
@@ -78,3 +79,13 @@ export const ScalingBars = ({ scaling }: { scaling: Scaling }) => (
 
 /** Classe de couleur d'un écart signé. */
 export const toneOf = (v: number) => (Math.round(v * 10) >= 0 ? 'pos-text' : 'neg-text');
+
+/**
+ * Lien vers la fiche d'un champion (écran Champions) autour de son portrait. Un lien, pas un bouton : un clic sur une
+ * carte sélectionnable l'ignore (voir useChampionFocus).
+ */
+export const ChampionLink = ({ name, role, children }: { name: string; role?: Role | null; children: ReactNode }) => (
+  <a className="champ-link" href={championHash(name, role)} title={role ? CHAMPIONS_TEXT.openIn(name, role) : CHAMPIONS_TEXT.open(name)} aria-label={CHAMPIONS_TEXT.open(name)}>
+    {children}
+  </a>
+);

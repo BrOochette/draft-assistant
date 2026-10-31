@@ -2,7 +2,7 @@ import { useMemo, useState, type Dispatch } from 'react';
 import { availability, MAX_BANS, type BanCard, type DraftAction, type DraftResult, type Side } from '@draft/engine';
 import { BAN_BLOCKED_LABEL, BANS_TEXT as B } from '@draft/i18n-fr';
 import { ROLES, type DraftState } from '@draft/schemas';
-import { Icon, Portrait, toneOf, useData } from '../ui';
+import { ChampionLink, Icon, Portrait, toneOf, useData } from '../ui';
 import { ChampionPicker, filterChampions, RoleFilter, type RoleFilterValue } from './ChampionPicker';
 
 interface Props {
@@ -119,7 +119,7 @@ export const BanBar = ({ draft, bans, dispatch }: Props) => {
                 <ul className="ban-cards">
                   {list.map((c) => (
                     <li key={c.champion} className="ban-card">
-                      <Portrait name={c.champion} size={44} label={c.champion} />
+                      <ChampionLink name={c.champion} role={c.role}><Portrait name={c.champion} size={44} label={c.champion} /></ChampionLink>
                       <div className="grow min0 col">
                         <span className="strong ellipsis">{c.champion}</span>
                         <BanReason c={c} />

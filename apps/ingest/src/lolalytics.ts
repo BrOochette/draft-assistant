@@ -75,6 +75,9 @@ const SET_MIN_GAMES = 100;
 const SETS_MAX = 40;
 /** Page de runes au meilleur win rate gardée à partir de ce nombre de parties. */
 const RUNE_PAGE_MIN_GAMES = 500;
+/** Priorités de montée et ordres de compétences gardés à partir de ce pick rate (en %), au plus SKILLS_MAX. */
+const SKILL_MIN_PR = 1;
+const SKILLS_MAX = 3;
 /** Bottes de base, « sans bottes » et bottes de la rune Chaussures magiques : pas des choix de bottes. */
 const NOT_BOOTS = new Set([1001, 9999, 2422]);
 
@@ -85,7 +88,7 @@ const int = (v: unknown) => Math.round(Number(v) || 0);
  * Build général d'une page build : runes, sorts, départs et bottes (lignes [clé, win rate, pick rate, parties…]),
  * trois premiers objets, puis objets construits (les plus construits, complétés par les 4e et 5e objets).
  */
-export const parseBuild = (data: Record<string, unknown>): Build => {
+export const parseBuild = (data: Record<string, unknown>, { lateMinGames }: { lateMinGames?: number } = {}): Build => {
   type Summary = {
     runes?: { wr?: number; n?: number; set?: { pri?: number[]; sec?: number[]; mod?: number[] } };
     items?: { core?: { set?: number[]; wr?: number; n?: number }; item6?: { id: number; n: number; wr: number }[] };
@@ -110,6 +113,13 @@ export const parseBuild = (data: Record<string, unknown>): Build => {
   const runes = page(pick.runes);
   for (const w of page(summary.win?.runes)) if (w.games >= RUNE_PAGE_MIN_GAMES && !runes.some((p) => same(p, w))) runes.push(w);
   const core = pick.items?.core;
+  // Lignes [suite, win rate, pick rate, parties] ; suite en lettres (« QEW ») ou en chiffres (1 = Q … 4 = R).
+  const skills = (list: unknown) =>
+    (Array.isArray(list) ? list : [])
+      .filter((r): r is [string | number, number, number, number] => Array.isArray(r) && Number(r[2]) >= SKILL_MIN_PR)
+      .map((r): [string, number, number] => [String(r[0]).replace(/[1-4]/g, (d) => 'QWER'[Number(d) - 1]!), Number(r[1]), int(r[3])])
+      .filter(([keys]) => /^[QWER]+$/.test(keys))
+      .slice(0, SKILLS_MAX);
   return {
     runes,
     spells: sets(data.spells, SPELL_MIN_PR, 3),
@@ -119,7 +129,10 @@ export const parseBuild = (data: Record<string, unknown>): Build => {
     slots: [
       singles(data.item1, FIRST_SLOT_MIN_PR).slice(0, FIRST_SLOT_MAX),
       ...[data.item2, data.item3].map((list) => singles(list, SLOT_MIN_PR).slice(0, SLOT_MAX)),
-      ...[data.item4, data.item5].map((list) => singles(list, LATE_SLOT_MIN_PR).slice(0, SLOT_MAX)),
+      // Seuil en parties (build contre un adversaire) : peu de parties y atteignent 5 objets, le pick rate viderait le 5e.
+      ...[data.item4, data.item5].map((list) =>
+        (lateMinGames != null ? rows(list).filter((r) => int(r[3]) >= lateMinGames).map((r): [number, number, number] => [r[0], Number(r[1]), int(r[3])]) : singles(list, LATE_SLOT_MIN_PR)).slice(0, SLOT_MAX)
+      ),
       // 6e objet : absent des listes par slot, seulement dans le résumé (les plus joués).
       (pick.items?.item6 ?? []).slice(0, SLOT_MAX).map((x): [number, number, number] => [x.id, Number(x.wr), int(x.n)])
     ],
@@ -132,8 +145,46 @@ export const parseBuild = (data: Record<string, unknown>): Build => {
         return u && /^\d+$/.test(id) && Number(u[0]) >= RUNE_MIN_PR && Number.isFinite(Number(u[1])) ? [[Number(id), Number(u[1]), int(u[2])]] : [];
       })
       .sort((a, b) => b[2] - a[2]),
-    items: items.slice(0, 30)
+    items: items.slice(0, 30),
+    skills: { priority: skills(data.skillOrder), order: skills(data.skill15) }
   };
+};
+
+/** 4e et 5e objets d'un build contre un adversaire : options gardées à partir de ce nombre de parties (provisoire). */
+export const MATCHUP_LATE_MIN_GAMES = 10;
+
+/** Identifiant d'URL Lolalytics d'un champion : son nom en minuscules sans espaces ni ponctuation, sauf exceptions. */
+const SLUG_EXCEPTIONS: Record<string, string> = { 'Nunu & Willump': 'nunu', 'Renata Glasc': 'renata' };
+export const lolalyticsSlug = (name: string) => SLUG_EXCEPTIONS[name] ?? name.toLowerCase().replace(/[^a-z]/g, '');
+
+/**
+ * Page build chargée à la demande : contre un adversaire de la même lane (`vslane` obligatoire, sinon l'adversaire est
+ * compté sur tous les rôles), ou filtrée par rune principale (page de runes complète).
+ */
+export const onDemandBuildUrl = (champion: string, role: Role, by: { opponent: string } | { keystone: number }) =>
+  'opponent' in by
+    ? `https://lolalytics.com/lol/${lolalyticsSlug(champion)}/vs/${lolalyticsSlug(by.opponent)}/build/?lane=${LANE[role]}&vslane=${LANE[role]}&tier=${TIER}&region=${DEFAULT_REGION}`
+    : `https://lolalytics.com/lol/${lolalyticsSlug(champion)}/build/?lane=${LANE[role]}&tier=${TIER}&region=${DEFAULT_REGION}&keystone=${by.keystone}`;
+
+/** Page non reconnue (format changé) : à distinguer d'une erreur réseau. */
+export class PageFormatError extends Error {}
+
+/**
+ * Build d'une page chargée à la demande, avec ses parties et son win rate (celui du matchup sur une page contre). Seuil
+ * en parties pour les 4e et 5e objets sur une page contre.
+ */
+export const parseOnDemandBuild = (html: string, matchup: boolean): { build: Build; games: number; winRate: number } => {
+  let data: Record<string, unknown> | undefined;
+  try {
+    data = readQwikState(html).find((o) => o.summary !== undefined && o.header !== undefined);
+  } catch {
+    data = undefined;
+  }
+  const header = data?.header as { wr?: unknown; n?: unknown } | undefined;
+  if (!data || !header || header.wr === undefined) throw new PageFormatError('Page build non reconnue');
+  const build = BuildSchema.safeParse(parseBuild(data, matchup ? { lateMinGames: MATCHUP_LATE_MIN_GAMES } : {}));
+  if (!build.success) throw new PageFormatError('Build non reconnu');
+  return { build: build.data, games: int(data.n ?? header.n), winRate: Number(header.wr) };
 };
 
 /** Données d'une page « build » d'un champion sur une lane. */

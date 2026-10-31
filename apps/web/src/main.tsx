@@ -12,6 +12,7 @@ import '@fontsource/barlow-condensed/latin-700.css';
 import './styles.css';
 // Thème de l'appli, après les styles de base qu'il surcharge.
 import './theme.css';
+import './champions.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

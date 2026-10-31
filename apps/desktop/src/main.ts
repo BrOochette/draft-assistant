@@ -3,6 +3,7 @@ import { join, normalize, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { app, BrowserWindow, ipcMain, Menu, net, protocol, shell, type MenuItemConstructorOptions } from 'electron';
 import { startBridge, type Bridge } from '@draft/bridge/server';
+import { BuildRequestSchema, createBuildLoader } from './builds';
 import { createStatsUpdater, localSnapshot, type StatsPaths } from './stats';
 import { startUpdater } from './updater';
 
@@ -208,6 +209,16 @@ if (!app.requestSingleInstanceLock()) {
     ipcMain.handle('stats:status', () => stats.status());
     ipcMain.handle('stats:start', () => stats.start());
     ipcMain.handle('stats:cancel', () => stats.cancel());
+    // Écran Champions : builds chargés sur Lolalytics au clic, gardés dans le dossier de l'utilisateur.
+    const builds = createBuildLoader(join(app.getPath('userData'), 'builds'), () => net.isOnline());
+    ipcMain.handle('builds:load', (_ev, req: unknown) => {
+      const r = BuildRequestSchema.safeParse(req);
+      return r.success ? builds.load(r.data) : { ok: false, error: 'FORMAT' };
+    });
+    ipcMain.handle('builds:prune', (_ev, patch: unknown, keep: unknown) => {
+      if (typeof patch !== 'string' || !Array.isArray(keep)) return;
+      return builds.prune(patch, keep.filter((k): k is string => typeof k === 'string'));
+    });
     createWindow();
     if (!SMOKE) startUpdater(() => BrowserWindow.getAllWindows()[0]);
   });

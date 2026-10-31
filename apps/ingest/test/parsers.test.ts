@@ -103,7 +103,7 @@ describe('page build Lolalytics', () => {
       crossMatchups: {},
       duos: {},
       // Page réduite, sans données de build.
-      build: { runes: [], spells: [], starts: [], boots: [], slots: [[], [], [], [], [], []], sets: [], runeStats: [], items: [] }
+      build: { runes: [], spells: [], starts: [], boots: [], slots: [[], [], [], [], [], []], sets: [], runeStats: [], items: [], skills: { priority: [], order: [] } }
     });
   });
 
@@ -120,7 +120,9 @@ describe('page build Lolalytics', () => {
       popularItem: [[3031, 55.04, 81.19, 68778, 20], [6676, 50.97, 47.46, 40205, 12], [3179, 42.75, 0.33, 276, 11]],
       builtBootSet3: [['6676_3006_3031', 52.78, 10.9, 9231], ['3095_3008_3031', 56.1, 5.81, 4922], ['6676_3047_3031', 54.62, 0.1, 60]],
       runes: { stats: { 8005: [[76.9, 51.7, 65116]], 8008: [[1.2, 48, 900]], 8017: [[93.7, 51.2, 79400], [1.5, 45.4, 1291]], pri: [[50, 50, 10]] } },
-      item4: [[3036, 64.57, 8.21, 6951, 28], [3031, 59.43, 2.43, 2058, 28]]
+      item4: [[3036, 64.57, 8.21, 6951, 28], [3031, 59.43, 2.43, 2058, 28]],
+      skillOrder: [['QEW', 51.8, 88.2, 80331], ['QWE', 51.5, 1.8, 1459], ['WQE', 40, 0.4, 300]],
+      skill15: [['131241141223233', 56, 60.1, 55338], ['1x2', 50, 10, 900]]
     });
     expect(b).toEqual({
       runes: [
@@ -136,7 +138,9 @@ describe('page build Lolalytics', () => {
       sets: [[[6676, 3006, 3031], 52.78, 9231], [[3095, 3008, 3031], 56.1, 4922]],
       // Runes à moins de 3 % de pick rate et clés non numériques écartées ; les plus jouées d'abord.
       runeStats: [[8017, 51.2, 79400], [8005, 51.7, 65116]],
-      items: [[3031, 55.04, 68778], [6676, 50.97, 40205], [3036, 64.57, 6951]]
+      items: [[3031, 55.04, 68778], [6676, 50.97, 40205], [3036, 64.57, 6951]],
+      // Ordres à moins de 1 % de pick rate et suites illisibles écartés ; chiffres traduits (1 = Q … 4 = R).
+      skills: { priority: [['QEW', 51.8, 80331], ['QWE', 51.5, 1459]], order: [['QEQWRQQRQWWEWEE', 56, 55338]] }
     });
   });
 

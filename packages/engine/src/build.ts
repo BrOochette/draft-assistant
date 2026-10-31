@@ -105,6 +105,8 @@ export interface BuildInput {
   /** Picks de ton équipe (le champion compris ou non). */
   allies: RoleSlots;
   enemies: RoleSlots;
+  /** Build à adapter à la place du build général du snapshot (build contre un adversaire, chargé à la demande). */
+  build?: Build;
 }
 
 /**
@@ -120,7 +122,7 @@ export interface BuildInput {
  */
 export const proposeBuild = (input: BuildInput, data: EngineData, catalog: BuildCatalog): BuildProposal | null => {
   const { champion, role } = input;
-  const build = data.stats.getRoleStats(champion, role).build;
+  const build = input.build ?? data.stats.getRoleStats(champion, role).build;
   if (!build) return null;
   const has = (id: number, tag: ItemTag) => catalog.items[id]?.tags.includes(tag) ?? false;
   const info = (name: string) => data.catalog.get(name);

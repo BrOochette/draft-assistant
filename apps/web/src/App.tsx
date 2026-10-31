@@ -6,11 +6,13 @@ import { initialDraft, loadAppData, type AppData } from './data';
 import { PlayersScreen } from './players/PlayersScreen';
 import { FitScreen } from './fit/FitScreen';
 import { loadMe, loadPools, loadRiotIds, saveMe, savePools, saveRiotIds } from './store';
-import { APP_TEXT as T, CLIENT_TEXT } from '@draft/i18n-fr';
+import { APP_TEXT as T, CHAMPIONS_TEXT, CLIENT_TEXT } from '@draft/i18n-fr';
 import { DataContext, TooltipLayer } from './ui';
-import { StatsUpdate } from './desktop';
+import { desktopBuilds, StatsUpdate } from './desktop';
+import { ChampionsScreen, draftStarted } from './champions/ChampionsScreen';
+import { isChampionsHash, LIST_HASH, parseChampionHash } from './champions/route';
 
-type Screen = 'draft' | 'players';
+type Screen = 'draft' | 'players' | 'champions';
 
 /** Draft de départ : l'état de la maquette avec les données d'exemple, une draft vide avec de vraies stats. */
 const startDraft = (data: AppData | undefined) =>
@@ -38,7 +40,7 @@ const useWide = (): boolean => {
   return wide;
 };
 
-const screenFromHash = (): Screen => (location.hash === '#/joueurs' ? 'players' : 'draft');
+const screenFromHash = (): Screen => (location.hash === '#/joueurs' ? 'players' : isChampionsHash(location.hash) ? 'champions' : 'draft');
 
 interface Props {
   /** Pour les tests : données déjà chargées, sans fetch ni IndexedDB. */
@@ -51,6 +53,7 @@ export const App = ({ initialData, initialPools }: Props) => {
   const [pools, setPools] = useState<Pools | null>(initialPools ?? null);
   const [error, setError] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen>(screenFromHash);
+  const [hash, setHash] = useState(() => location.hash);
   const wide = useWide();
   // Vue client sur tous les écrans ; sur grand écran, elle tient dans la fenêtre sans défilement.
   const fit = screen === 'draft' && wide;
@@ -116,10 +119,23 @@ export const App = ({ initialData, initialPools }: Props) => {
   }, [screen]);
 
   useEffect(() => {
-    const onHash = () => setScreen(screenFromHash());
+    const onHash = () => {
+      setScreen(screenFromHash());
+      setHash(location.hash);
+    };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
+
+  // Builds chargés à la demande (appli desktop) : les champions des pools restent, les autres partent 14 jours après leur
+  // dernière ouverture, tout part au changement de patch.
+  const patch = data?.snapshot.patch;
+  useEffect(() => {
+    const api = desktopBuilds();
+    if (!api || !patch || !pools) return;
+    const keep = [...new Set(Object.values(pools).flatMap((byRole) => Object.values(byRole).flatMap((list) => (list ?? []).map((e) => e.champion))))];
+    void api.prune(patch, keep).catch(() => {});
+  }, [patch, pools]);
 
   const changeRiotIds = useCallback((next: RiotIds) => {
     setRiotIds(next);
@@ -154,6 +170,7 @@ export const App = ({ initialData, initialPools }: Props) => {
           <nav aria-label={T.nav} className="row-gap">
             <a href="#/joueurs" className={'nav-link' + (screen === 'players' ? ' is-on' : '')} aria-current={screen === 'players' ? 'page' : undefined}>{T.players}</a>
             <a href="#/" className={'nav-link' + (screen === 'draft' ? ' is-on' : '')} aria-current={screen === 'draft' ? 'page' : undefined}>{T.draft}</a>
+            <a href={LIST_HASH} className={'nav-link' + (screen === 'champions' ? ' is-on' : '')} aria-current={screen === 'champions' ? 'page' : undefined}>{CHAMPIONS_TEXT.nav}</a>
           </nav>
           <span className="grow" />
           {data && (
@@ -170,7 +187,7 @@ export const App = ({ initialData, initialPools }: Props) => {
               {CLIENT_TEXT.status[client.status]}
             </span>
           )}
-          {screen !== 'players' && (confirmReset ? (
+          {screen === 'draft' && (confirmReset ? (
             <div role="group" aria-label={T.resetGroup} className="row-gap wrap center">
               <span className="small warn-text strong">{T.resetAsk}</span>
               <button type="button" className="btn btn-danger" onClick={() => { dispatch({ type: 'reset' }); setConfirmReset(false); }}>{T.resetYes}</button>
@@ -187,6 +204,8 @@ export const App = ({ initialData, initialPools }: Props) => {
           <DataContext.Provider value={data}>
             {screen === 'draft'
               ? <FitScreen session={session} dispatch={dispatch} pools={pools} liveBans={liveBans} me={me} />
+              : screen === 'champions'
+              ? <ChampionsScreen route={parseChampionHash(hash)} draft={draftStarted(session.draft) || client.draft ? session.draft : null} canLoad={!!desktopBuilds()} />
               : <PlayersScreen pools={pools} onChange={changePools} riotIds={riotIds} onRiotIdsChange={changeRiotIds} me={me} onMeChange={changeMe} />}
           </DataContext.Provider>
         )}

@@ -66,6 +66,8 @@ const itemId = z.number().int().positive();
 const setSample = z.tuple([z.array(itemId), z.number().min(0).max(100), z.number().int().nonnegative()]);
 /** [identifiant, win rate en %, nombre de parties]. */
 const idSample = z.tuple([itemId, z.number().min(0).max(100), z.number().int().nonnegative()]);
+/** [suite de touches Q, W, E, R, win rate en %, nombre de parties]. */
+const skillSample = z.tuple([z.string().regex(/^[QWER]+$/), z.number().min(0).max(100), z.number().int().nonnegative()]);
 
 /**
  * Build général d'un champion sur un rôle (Lolalytics), options du plus joué au moins joué. Le moteur choisit parmi
@@ -94,7 +96,12 @@ export const BuildSchema = z.object({
   /** Runes prises dans l'arbre principal, avec leur win rate et leurs parties (keystones comprises). Absentes des collectes antérieures. */
   runeStats: z.array(idSample).default([]),
   /** Objets construits sur ce rôle, hors bottes, du plus joué au moins joué. */
-  items: z.array(idSample)
+  items: z.array(idSample),
+  /**
+   * Compétences, du plus joué au moins joué : priorité de montée (« QEW ») et ordre des 15 premiers niveaux (« QWEQQRQEQEREEWW »).
+   * Absentes des collectes antérieures.
+   */
+  skills: z.object({ priority: z.array(skillSample), order: z.array(skillSample) }).optional()
 });
 export type Build = z.infer<typeof BuildSchema>;
 
@@ -121,6 +128,8 @@ export const BuildCatalogSchema = z.object({
   /** Lignes de fragments (attaque, polyvalence, défense). Absentes des catalogues antérieurs. */
   shardRows: z.array(z.array(z.number().int())).default([]),
   spells: z.record(z.string(), z.object({ name: z.string() })),
+  /** Noms des compétences Q, W, E et R de chaque champion, par identifiant Data Dragon. Absents des catalogues antérieurs. */
+  abilities: z.record(z.string(), z.array(z.string())).default({}),
   /** Identifiants Data Dragon des champions à distance (portée d'attaque d'au moins 300). */
   ranged: z.array(z.string())
 });
