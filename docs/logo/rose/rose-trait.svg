@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 150 150">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2e35"/><stop offset="1" stop-color="#0f1013"/></linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient>
+    <linearGradient id="pb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity=".04"/></linearGradient>
+    <linearGradient id="pm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".40"/><stop offset="1" stop-color="#fff" stop-opacity=".06"/></linearGradient>
+    <linearGradient id="pf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity=".10"/></linearGradient>
+    <linearGradient id="e" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity=".25"/></linearGradient>
+  </defs>
+  <rect width="150" height="150" rx="32" fill="url(#tile)"/>
+  <rect x="1" y="1" width="148" height="148" rx="31" fill="none" stroke="url(#rim)" stroke-width="2"/>
+  
+  
+  <g stroke="url(#e)" stroke-width="1.6" stroke-linejoin="round">
+    <path fill="none" d="M30 60 C28 46 38 36 50 38 C56 28 70 25 80 29 C92 24 106 30 108 38 C120 38 126 50 122 60 C108 54 92 52 75 52 C58 52 42 54 30 60 Z"/>
+    <path fill="none" d="M46 50 C50 40 62 35 76 35 C90 35 102 41 104 50 C94 46 84 44 74 45 C62 46 54 47 46 50 Z"/>
+    <path fill="none" d="M37 58 C30 52 22 50 15 53 C18 55 21 59 23 64 C22 84 30 100 44 110 C34 96 32 78 37 58 Z"/>
+    <path fill="none" d="M113 57 C120 51 128 49 135 52 C132 54 129 58 127 63 C128 84 120 100 106 110 C116 96 118 78 113 57 Z"/>
+    <path fill="none" d="M118 58 C122 82 114 106 94 118 C80 126 62 124 50 116 C62 108 70 92 70 74 C84 62 102 56 118 58 Z"/>
+    <path fill="none" d="M30 58 C46 54 66 58 84 70 C86 90 80 108 66 122 C46 116 30 100 28 80 C28 72 28 64 30 58 Z"/>
+    <path fill="none" d="M54 118 C60 106 70 98 82 96 C92 98 100 104 104 112 C96 122 82 126 70 125 C64 124 58 122 54 118 Z"/>
+  </g>
+  <g fill="none" stroke="#fff" stroke-linecap="round">
+    <path stroke-opacity=".75" stroke-width="1.3" d="M60 45 C66 39 80 38 88 42 C82 42 76 44 72 47"/>
+    <path stroke-opacity=".5" stroke-width="1.1" d="M70 41 C76 37 90 37 96 43"/>
+    <path stroke-opacity=".8" stroke-width="2" d="M32 59 C48 55 66 59 83 70"/>
+    <path stroke-opacity=".55" stroke-width="1.6" d="M72 74 C86 63 102 57 116 58"/>
+    <path stroke-opacity=".8" stroke-width="1.8" d="M56 117 C62 106 72 99 82 97 C91 99 98 104 102 111"/>
+    <path stroke-opacity=".55" stroke-width="1.5" d="M16 53 C22 51 30 53 36 58"/>
+    <path stroke-opacity=".55" stroke-width="1.5" d="M134 52 C128 50 120 52 114 57"/>
+  </g>
+</svg>

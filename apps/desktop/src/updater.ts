@@ -35,7 +35,7 @@ export const startUpdater = (window: () => BrowserWindow | undefined) => {
     const options = {
       type: 'info' as const,
       title: 'Mise à jour',
-      message: 'Draft Assistant ' + info.version + ' est prête.',
+      message: 'Lunaris ' + info.version + ' est prête.',
       detail: 'Elle s’installe au redémarrage de l’appli. Joueurs, pools et stats sont conservés.',
       buttons: ['Redémarrer maintenant', 'Au prochain lancement'],
       defaultId: 0,

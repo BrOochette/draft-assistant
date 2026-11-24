@@ -1,0 +1,88 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:transparent}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// Blason original : écu de fer forgé, champ d'émail rouge ajouré, rose en bronze au centre, couronne de trois pointes.
+import * as THREE from 'three';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const S = 1024;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setSize(S, S); renderer.setPixelRatio(1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+const camera = new THREE.PerspectiveCamera(28, 1, 1, 1000);
+camera.position.set(18, -14, 330); camera.lookAt(0, 4, 0);
+
+const key = new THREE.DirectionalLight(0xfff1dc, 3.2); key.position.set(-90, 140, 160); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110 }); scene.add(key);
+const rim = new THREE.DirectionalLight(0x9fb0ff, 1.2); rim.position.set(120, -60, 40); scene.add(rim);
+const ember = new THREE.PointLight(0xff2238, 5000, 160); ember.position.set(0, 6, 60); scene.add(ember);
+
+// Texture de bruit pour l'usure du métal.
+const noise = (() => { const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d'); const img = g.createImageData(512, 512);
+  for (let i = 0; i < img.data.length; i += 4) { const v = 150 + Math.random() * 105; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  g.putImageData(img, 0, 0); g.globalAlpha = .25; for (let k = 0; k < 400; k++) { g.strokeStyle = Math.random() < .5 ? '#fff' : '#000'; g.beginPath(); const x = Math.random() * 512, y = Math.random() * 512; g.moveTo(x, y); g.lineTo(x + (Math.random() - .5) * 60, y + (Math.random() - .5) * 8); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(.02, .02); return t; })();
+const iron = new THREE.MeshPhysicalMaterial({ color: 0x24262b, metalness: 1, roughness: 0.5, roughnessMap: noise, clearcoat: 0.2 });
+const bronze = new THREE.MeshPhysicalMaterial({ color: 0xa8925f, metalness: 1, roughness: 0.32, roughnessMap: noise });
+const bronzeDark = new THREE.MeshPhysicalMaterial({ color: 0x6d5c3a, metalness: 1, roughness: 0.42, roughnessMap: noise });
+const enamel = new THREE.MeshPhysicalMaterial({ color: 0x3a050c, metalness: 0.2, roughness: 0.35, clearcoat: 1, clearcoatRoughness: 0.2, emissive: 0x2a0207, emissiveIntensity: 1 });
+const blackRose = new THREE.MeshPhysicalMaterial({ color: 0x1c1d21, metalness: 1, roughness: 0.22, clearcoat: 0.8 });
+
+const shapesOf = (d) => SVGLoader.createShapes(new SVGLoader().parse(`<svg xmlns="http://www.w3.org/2000/svg"><path d="${d}"/></svg>`).paths[0]);
+const group = new THREE.Group(); scene.add(group);
+const add = (d, mat, depth, z, bevel = 1.2, holes = []) => {
+  for (const s of shapesOf(d)) {
+    for (const h of holes) for (const hs of shapesOf(h)) s.holes.push(new THREE.Path(hs.getPoints(48)));
+    const m = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel * .8, bevelSegments: 4, curveSegments: 32 }), mat);
+    m.position.z = z; m.castShadow = m.receiveShadow = true; group.add(m);
+  }
+};
+// Coordonnées du SVG 150 × 150, y vers le bas.
+const shield = 'M20 30 L75 22 L130 30 L130 76 C130 106 106 128 75 142 C44 128 20 106 20 76 Z';
+const field = 'M30 38 L75 31 L120 38 L120 76 C120 100 100 118 75 130 C50 118 30 100 30 76 Z';
+add(shield, iron, 9, 0, 1.6, [field]);                       // bordure de fer
+add(field, enamel, 2, 0, 0.6);                               // champ d'émail rouge, en retrait
+// nervures de fer qui rayonnent du médaillon vers la bordure
+for (let k = 0; k < 12; k++) { const ang = k / 12 * Math.PI * 2 + Math.PI / 12;
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(18, 2, 3), iron); bar.position.set(75 + Math.cos(ang) * 38, 76 + Math.sin(ang) * 38, 3.2);
+  bar.rotation.z = ang; bar.castShadow = bar.receiveShadow = true; group.add(bar); }
+// bandeau de bronze gravé sous le chef
+add('M24 31 L75 23.5 L126 31 L126 35 L75 27.5 L24 35 Z', bronze, 10.5, 0, 0.6);
+// couronne : trois pointes de bronze
+add('M66 25 L75 2 L84 25 L75 21 Z', bronze, 8, 1, 1);
+add('M34 30 L38 10 L46 28 Z', bronzeDark, 6, 1, 0.8);
+add('M116 30 L112 10 L104 28 Z', bronzeDark, 6, 1, 0.8);
+// pointe basse
+add('M70 134 L75 149 L80 134 L75 138 Z', bronze, 6, 1, 0.8);
+// rivets
+for (const [x, y] of [[25, 42], [125, 42], [25, 74], [125, 74], [38, 112], [112, 112], [75, 136]]) {
+  const r = new THREE.Mesh(new THREE.SphereGeometry(2.1, 20, 16), bronze); r.position.set(x, y, 11.4); r.scale.z = .6; r.castShadow = true; group.add(r);
+}
+// rose noire en relief, cerclée de bronze
+const roseG = new THREE.Group(); group.add(roseG);
+const petals = [
+  'M30 60 C28 46 38 36 50 38 C56 28 70 25 80 29 C92 24 106 30 108 38 C120 38 126 50 122 60 C108 54 92 52 75 52 C58 52 42 54 30 60 Z',
+  'M46 50 C50 40 62 35 76 35 C90 35 102 41 104 50 C94 46 84 44 74 45 C62 46 54 47 46 50 Z',
+  'M37 58 C30 52 22 50 15 53 C18 55 21 59 23 64 C22 84 30 100 44 110 C34 96 32 78 37 58 Z',
+  'M113 57 C120 51 128 49 135 52 C132 54 129 58 127 63 C128 84 120 100 106 110 C116 96 118 78 113 57 Z',
+  'M118 58 C122 82 114 106 94 118 C80 126 62 124 50 116 C62 108 70 92 70 74 C84 62 102 56 118 58 Z',
+  'M30 58 C46 54 66 58 84 70 C86 90 80 108 66 122 C46 116 30 100 28 80 C28 72 28 64 30 58 Z',
+  'M54 118 C60 106 70 98 82 96 C92 98 100 104 104 112 C96 122 82 126 70 125 C64 124 58 122 54 118 Z'];
+petals.forEach((d, i) => { for (const s of shapesOf(d)) {
+  const m = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 2 + i * .8, bevelEnabled: true, bevelThickness: 1.4, bevelSize: 1, bevelSegments: 5, curveSegments: 32 }), blackRose);
+  m.position.z = i * 1.3; m.castShadow = m.receiveShadow = true; roseG.add(m); } });
+roseG.scale.set(.42, .42, .42); roseG.position.set(75 - 75 * .42, 76 - 75 * .42, 3);
+const ring = new THREE.Mesh(new THREE.TorusGeometry(26, 1.6, 16, 96), bronze); ring.position.set(75, 76, 4); ring.castShadow = true; group.add(ring);
+
+group.scale.set(1, -1, 1); group.position.set(-75, 76, 0);
+renderer.render(scene, camera);
+window.done = true;
+</script></body></html>

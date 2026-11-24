@@ -1,0 +1,68 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:transparent}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const S = 1024;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setSize(S, S); renderer.setPixelRatio(1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(30, 1, 1, 1000);
+camera.position.set(26, -22, 318); camera.lookAt(0, 0, 0);
+
+// Carré de verre sombre, au fond.
+const rr = new THREE.Shape(); { const w = 150, r = 32, h = w / 2;
+  rr.moveTo(-h + r, -h); rr.lineTo(h - r, -h); rr.quadraticCurveTo(h, -h, h, -h + r); rr.lineTo(h, h - r); rr.quadraticCurveTo(h, h, h - r, h);
+  rr.lineTo(-h + r, h); rr.quadraticCurveTo(-h, h, -h, h - r); rr.lineTo(-h, -h + r); rr.quadraticCurveTo(-h, -h, -h + r, -h); }
+const tile = new THREE.Mesh(new THREE.ExtrudeGeometry(rr, { depth: 8, bevelEnabled: true, bevelThickness: 2, bevelSize: 2, bevelSegments: 6, curveSegments: 32 }),
+  new THREE.MeshPhysicalMaterial({ color: 0x0d0e10, roughness: 0.8, metalness: 0.2 }));
+tile.position.z = -24; scene.add(tile);
+
+// Lueur rouge derrière le centre du blason.
+const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  const r = g.createRadialGradient(128, 128, 0, 128, 128, 128); r.addColorStop(0, 'rgba(220,30,60,.95)'); r.addColorStop(.5, 'rgba(160,15,40,.35)'); r.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c); })();
+const glow = new THREE.Mesh(new THREE.PlaneGeometry(90, 120), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false }));
+glow.position.set(0, -4, -10); scene.add(glow);
+const red = new THREE.PointLight(0xff2a48, 6000, 160); red.position.set(0, 30, -14); scene.add(red);
+
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(-60, 90, 120); scene.add(key);
+const rim = new THREE.DirectionalLight(0xc8d4ff, 1.4); rim.position.set(80, -40, 60); scene.add(rim);
+
+// Formes du blason (dessin original), en coordonnées du SVG 150 × 150.
+const mir = (d) => d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (m, x, y) => (150 - +x) + ' ' + y);
+const pillar = 'M16 54 L22 48 L22 40 L27 40 L27 32 L32 32 L32 24 L37 28 L37 112 L46 128 L30 128 L16 114 Z';
+const blade = 'M70 36 C54 30 34 34 18 56 C30 52 40 56 46 64 C50 78 54 90 64 100 C56 80 58 58 70 36 Z';
+const parts = [
+  { d: pillar, depth: 7, mat: 'smoke' }, { d: mir(pillar), depth: 7, mat: 'smoke' },
+  { d: blade, depth: 5, mat: 'clear', z: 6 }, { d: mir(blade), depth: 5, mat: 'clear', z: 6 },
+  { d: 'M75 44 L88 56 L84 98 L75 116 L66 98 L62 56 Z', depth: 10, mat: 'ruby', z: 4 },
+  { d: 'M68 112 L75 138 L82 112 L75 118 Z', depth: 5, mat: 'clear', z: 3 },
+];
+const mats = {
+  smoke: new THREE.MeshPhysicalMaterial({ color: 0x1f2125, metalness: 1, roughness: 0.38, clearcoat: 0.3, clearcoatRoughness: 0.4 }),
+  clear: new THREE.MeshPhysicalMaterial({ color: 0x9c8c62, metalness: 1, roughness: 0.36 }),
+  ruby: new THREE.MeshPhysicalMaterial({ color: 0x5e0a16, metalness: 0.3, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.08, emissive: 0x2a0308 }),
+};
+const crest = new THREE.Group();
+for (const p of parts) {
+  const data = new SVGLoader().parse(`<svg xmlns="http://www.w3.org/2000/svg"><path d="${p.d}"/></svg>`);
+  for (const shape of SVGLoader.createShapes(data.paths[0])) {
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: p.depth, bevelEnabled: true, bevelThickness: 1.6, bevelSize: 1.1, bevelSegments: 4, curveSegments: 24 });
+    const m = new THREE.Mesh(geo, mats[p.mat]); m.position.z = p.z ?? 0; crest.add(m);
+  }
+}
+crest.scale.set(0.9, -0.9, 0.9); crest.position.set(-75 * 0.9, 75 * 0.9 + 2, 0);
+scene.add(crest);
+
+renderer.render(scene, camera);
+window.done = true;
+</script></body></html>

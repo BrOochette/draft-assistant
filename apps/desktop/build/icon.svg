@@ -1,11 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <!-- Icône de Draft Assistant : le logo de l'en-tête (Λ dans un carré arrondi), dégradé des deux équipes. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 150 150">
+  <!-- Icône de Lunaris : nouvelle lune étoilée, arc fin sur le bord, sur un carré de verre sombre. -->
   <defs>
-    <linearGradient id="teams" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#4da3ff" />
-      <stop offset="1" stop-color="#ff4d5e" />
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b2e35" />
+      <stop offset="1" stop-color="#0f1013" />
     </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".35" />
+      <stop offset=".5" stop-color="#ffffff" stop-opacity=".04" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".12" />
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".9" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".15" />
+    </linearGradient>
+    <radialGradient id="disc" cx=".38" cy=".32" r=".8">
+      <stop offset="0" stop-color="#2a2d34" />
+      <stop offset="1" stop-color="#050506" />
+    </radialGradient>
+    <path id="star" d="M0 -10 Q1.5 -1.5 10 0 Q1.5 1.5 0 10 Q-1.5 1.5 -10 0 Q-1.5 -1.5 0 -10 Z" fill="#ffffff" />
   </defs>
-  <rect x="28" y="28" width="456" height="456" rx="104" fill="#14161b" stroke="url(#teams)" stroke-width="32" />
-  <path d="M150 346 L256 152 L362 346" fill="none" stroke="url(#teams)" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" />
+  <rect width="150" height="150" rx="32" fill="url(#tile)" />
+  <rect x="1" y="1" width="148" height="148" rx="31" fill="none" stroke="url(#rim)" stroke-width="2" />
+  <circle cx="75" cy="75" r="48" fill="url(#disc)" />
+  <use href="#star" transform="translate(94 66)" />
+  <use href="#star" transform="translate(81 76) scale(.6)" />
+  <use href="#star" transform="translate(104 82) scale(.45)" />
+  <circle cx="58" cy="52" r="1.6" fill="#ffffff" opacity=".8" />
+  <circle cx="50" cy="88" r="1.2" fill="#ffffff" opacity=".6" />
+  <circle cx="70" cy="104" r="1.4" fill="#ffffff" opacity=".7" />
+  <circle cx="96" cy="42" r="1.1" fill="#ffffff" opacity=".6" />
+  <circle cx="66" cy="78" r="1" fill="#ffffff" opacity=".5" />
+  <path d="M75 27 A48 48 0 0 0 75 123" fill="none" stroke="url(#edge)" stroke-width="3" stroke-linecap="round" />
 </svg>

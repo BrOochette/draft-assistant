@@ -114,7 +114,7 @@ const menu = (win: BrowserWindow, prefs: Prefs) => {
 const createWindow = () => {
   const prefs = readPrefs();
   const win = new BrowserWindow({
-    title: 'Draft Assistant',
+    title: 'Lunaris',
     width: prefs.bounds?.width ?? 1600,
     height: prefs.bounds?.height ?? 960,
     ...(prefs.bounds && { x: prefs.bounds.x, y: prefs.bounds.y }),

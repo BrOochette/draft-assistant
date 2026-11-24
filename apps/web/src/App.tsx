@@ -170,9 +170,9 @@ export const App = ({ initialData, initialPools }: Props) => {
       <div className="app-screen">
         <header className="header">
           <div className="brand">
-            {/* Même logo que l'icône de l'appli desktop et le favicon du site. */}
-            <img className="brand-logo" src={import.meta.env.BASE_URL + 'favicon.svg'} alt="" width={30} height={30} />
-            <span className="visually-hidden">{T.brand}</span>
+            {/* Lune étoilée de l'icône de l'appli desktop et du favicon, au-dessus du nom. */}
+            <img className="brand-logo" src={import.meta.env.BASE_URL + 'logo.svg'} alt="" width={28} height={28} />
+            <span className="brand-name">{T.brand}</span>
           </div>
           <nav aria-label={T.nav} className="row-gap">
             <a href="#/joueurs" className={'nav-link' + (screen === 'players' ? ' is-on' : '')} aria-current={screen === 'players' ? 'page' : undefined}>{T.players}</a>

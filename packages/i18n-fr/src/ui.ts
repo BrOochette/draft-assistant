@@ -16,7 +16,7 @@ export const ARCHETYPE_LABEL: Record<Archetype, string> = {
 export const POOL_TAG: Record<PoolStatus, string> = { in: 'Pool', out: 'Hors pool', all: 'Tous les champions' };
 
 export const APP_TEXT = {
-  brand: 'Draft Assistant',
+  brand: 'Lunaris',
   nav: 'Navigation principale',
   players: 'Joueurs',
   draft: 'Draft',
@@ -33,7 +33,7 @@ export const APP_TEXT = {
   loading: 'Chargement…',
   /** Mention exigée par Riot pour un projet de fan (texte officiel, en anglais). */
   legalRiot:
-    "Draft Assistant isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+    "Lunaris isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
   legalSources: 'Projet de fan non commercial. Stats : Lolalytics. Attributs des champions : wiki League of Legends. Portraits : Data Dragon (Riot Games).',
   footer: 'Mentions',
   snapshotMissing: (status: number) => 'Snapshot introuvable (' + status + '). Lancer « npm run ingest -- sample ».'
@@ -354,12 +354,12 @@ export const PLAYERS_TEXT = {
   copied: 'JSON copié',
   copyFailed: 'Copie impossible : presse-papiers indisponible',
   pasteButton: 'Coller',
-  pasteTip: 'Lit le JSON copié depuis Draft Assistant (presse-papiers) : les joueurs du même nom sont remplacés, les autres ajoutés',
+  pasteTip: 'Lit le JSON copié depuis Lunaris (presse-papiers) : les joueurs du même nom sont remplacés, les autres ajoutés',
   pasteLabel: 'JSON des joueurs',
   pastePlaceholder: 'Coller ici le JSON copié',
   pasteRead: 'Lire le JSON',
   exportTip: 'Télécharge un fichier JSON avec tous les joueurs, leurs Riot ID et leurs pools',
-  importTip: 'Lit un fichier JSON exporté depuis Draft Assistant : les joueurs du même nom sont remplacés, les autres ajoutés',
+  importTip: 'Lit un fichier JSON exporté depuis Lunaris : les joueurs du même nom sont remplacés, les autres ajoutés',
   importFile: 'Fichier de joueurs à importer',
   importAsk: 'Importer ces joueurs',
   importReplaced: 'remplacé',
@@ -369,7 +369,7 @@ export const PLAYERS_TEXT = {
   importDone: (n: number) => n + (n > 1 ? ' joueurs importés' : ' joueur importé'),
   importError: {
     NOT_JSON: 'Illisible : ce n’est pas du JSON.',
-    BAD_FORMAT: 'Ce n’est pas une liste de joueurs exportée depuis Draft Assistant.',
+    BAD_FORMAT: 'Ce n’est pas une liste de joueurs exportée depuis Lunaris.',
     EMPTY: 'La liste ne contient aucun joueur.'
   } as Record<'NOT_JSON' | 'BAD_FORMAT' | 'EMPTY', string>
 };

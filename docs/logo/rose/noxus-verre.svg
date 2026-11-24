@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 150 150">
+  <!-- Blason d'inspiration noxienne en verre sombre : dessin original, pas l'emblème officiel. -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2e35"/><stop offset="1" stop-color="#0f1013"/></linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient>
+    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity=".04"/></linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity=".08"/></linearGradient>
+    <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient>
+    <linearGradient id="e" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity=".25"/></linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#d0203a" stop-opacity=".55"/><stop offset="1" stop-color="#d0203a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="150" height="150" rx="32" fill="url(#tile)"/>
+  <rect x="1" y="1" width="148" height="148" rx="31" fill="none" stroke="url(#rim)" stroke-width="2"/>
+  <ellipse cx="75" cy="78" rx="30" ry="42" fill="url(#glow)"/>
+  <g stroke="url(#e)" stroke-width="1" stroke-linejoin="miter">
+    <path fill="url(#g1)" d="M16 54 L22 48 L22 40 L27 40 L27 32 L32 32 L32 24 L37 28 L37 112 L46 128 L30 128 L16 114 Z"/>
+    <path fill="url(#g1)" d="M134 54 L128 48 L128 40 L123 40 L123 32 L118 32 L118 24 L113 28 L113 112 L104 128 L120 128 L134 114 Z"/>
+    <path fill="url(#g2)" d="M70 36 C54 30 34 34 18 56 C30 52 40 56 46 64 C50 78 54 90 64 100 C56 80 58 58 70 36 Z"/>
+    <path fill="url(#g2)" d="M80 36 C96 30 116 34 132 56 C120 52 110 56 104 64 C100 78 96 90 86 100 C94 80 92 58 80 36 Z"/>
+    <path fill="url(#g3)" d="M75 44 L88 56 L84 98 L75 116 L66 98 L62 56 Z"/>
+    <path fill="url(#g2)" d="M68 112 L75 138 L82 112 L75 118 Z"/>
+  </g>
+  <g fill="none" stroke="#fff" stroke-linecap="round">
+    <path stroke-opacity=".6" stroke-width="1" d="M75 46 L75 114"/>
+    <path stroke-opacity=".75" stroke-width="1.6" d="M64 40 C50 36 36 40 24 52 M86 40 C100 36 114 40 126 52"/>
+    <path stroke-opacity=".5" stroke-width="1.2" d="M64 66 L75 72 L86 66"/>
+  </g>
+</svg>
